@@ -35,7 +35,7 @@ Hardware tab - Base Memory = 4096MB, Processors = 4
 
 Hard Disk tab - Create Virtual Hard Disk Now - 32GB
 
-Hit OK but hit Settings, go to the Netowrk tab, select Cable Connected.  Hit Okay.
+Hit OK but hit Settings, go to the Network tab, select Cable Connected.  Hit Okay.
 
 Start
 
