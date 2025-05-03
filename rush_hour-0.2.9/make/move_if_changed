@@ -1,0 +1,20 @@
+#! /bin/sh
+A="$1"
+B="$2"
+test -z "$A" && exit 1
+
+if test -z "$B"; then
+   B="$A"
+   A="${B}.new"
+fi
+
+if test -s "$A"; then
+    if test -f "$B" && cmp -s "$A" "$B" 2> /dev/null; then
+        :
+    else
+        mv "$A" "$B" || exit 1
+    fi
+    rm -f "$A" 2>/dev/null
+fi
+
+exit 0

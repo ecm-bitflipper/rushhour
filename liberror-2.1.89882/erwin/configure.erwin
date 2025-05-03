@@ -1,0 +1,68 @@
+######################################################################
+# Configure erwin
+######################################################################
+
+#
+# Environment variables for Erwin configure script
+export MORE_CPPFLAGS          # additional entries to the CPPFLAGS
+export MORE_CXXFLAGS          # dito for CXXFLAGS
+export MORE_CFLAGS            # dito for CFLAGS
+export MORE_LDFLAGS           # dito for LDFLAGS
+
+if test -z "$UNT"; then
+    UNT=":"
+    echo "Starting to configure Erwin library..."
+    if test -f config.unt; then
+        UNT=`cat config.unt`
+    fi
+
+    if test "x$UNT" != "x:" ; then
+        echo "Untemplatize is already set to $UNT"
+    else
+        AC_PATH_PROG(untemplatize2,untemplatize2)
+        AC_PATH_PROG(untemplatize,untemplatize)
+
+        if test ! -z "$untemplatize2"; then
+            UNT="$untemplatize2"
+            echo "Found Erwin2 untemplatize in $UNT.  This will be the default."
+            echo "$UNT" > config.unt
+        else
+           if test ! -z "$untemplatize"; then
+              UNT="$untemplatize"
+              echo "Found Erwin2 untemplatize in $UNT.  This will be the default."
+              echo "$UNT" > config.unt
+           fi
+        fi
+    fi
+
+    if test "x$UNT" = "x:" ; then
+        for testprog in /usr/local/bin/untemplatize2 \
+                        /usr/local/bin/untemplatize \
+                        "$HOME/opt/bin/untemplatize2" \
+                        "$HOME/opt/bin/untemplatize"
+        do
+            if test "x$UNT" = "x:" ; then
+                if grep Erwin-Version-2 "$testprog" 2>/dev/null >/dev/null ; then
+                    UNT="$testprog"
+                    echo "Found Erwin2 untemplatize in $UNT.  This will be the default."
+                    echo "$UNT" > config.unt
+                fi
+            fi
+        done
+    fi
+fi
+
+if test "x$UNT" = "x:" ; then
+    UNT=your/path/to/untemplatize
+else
+    echo "$UNT" > config.unt
+fi
+
+if test -d erwin; then
+   AC_CONFIG_SUBDIRS(erwin)
+else
+   echo "Please untemplatize to generate erwin sub-directory."
+   echo "I.e. do something like: make unt UNT=$UNT"
+fi
+
+######################################################################

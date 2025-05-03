@@ -1,0 +1,31 @@
+# @MODE_FUNDAMENTAL@ -*- Mode: Makefile -*-
+######################################################################
+
+srcdir    = .
+top_srcdir= ..
+
+include $(top_srcdir)/make/Defs
+
+######################################################################
+
+SUBDIRS=
+
+######################################################################
+
+PROG = testerror
+
+EXTRA_DEFS = -DHAVE_LIBERROR
+EXTRA_LIBS = ../liberror.a
+
+CPPMODULES = testerror
+
+######################################################################
+
+do-it-all: all-top
+
+all-post: $(PROG)
+
+$(PROG): ../liberror.a
+
+include $(top_srcdir)/make/Rules
+

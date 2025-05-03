@@ -1,0 +1,593 @@
+Make-HT
+=======
+
+Meta
+----
+To make an HTML version of this file, either type:
+
+   : erwin-cgen --text2html MANUAL.txt > MANUAL.html
+
+or change into the subdirectory |SELF| and type |make|:
+
+   : cd SELF
+   : make
+
+Basics
+------
+|Makefile.in| must always start like this:
+
+   :  srcdir    = @srcdir@
+   :  top_srcdir= @top_srcdir@
+   :
+   :  include $(top_srcdir)/make/Defs
+
+Then comes the main file body, and then it must end with:
+
+   :  include $(top_srcdir)/make/Rules
+
+There may be an additional line after the inclusion of |Defs| that
+selects one of the licensing options supported out of the box:
+
+   :  include $(top_srcdir)/make/absint/Config
+   :           # Binary license (c) AbsInt
+or
+   :  include $(top_srcdir)/make/ht+absint/Config
+   :           # Free source code license (c) Henrik & AbsInt
+or
+   :  include $(top_srcdir)/make/ht/Config
+   :           # Free source code license (c) Henrik
+
+This selects the packaging, includes a copyright notices, etc.
+
+
+Windos
+------
+The |nmakefile| is generated.  All options go into |Makefile.in|.
+Development is only supported under Linux (or at least Unix).
+
+
+Online Help
+-----------
+
+To check what basic make targets exist, use
+   : make help
+
+
+Building
+--------
+The name of the project is defined in |configure.in|:
+    : define(_PROGNAME, error)
+
+This defines the name of the Erwin subdirectories, the subdir in
+|include| (for libraries), etc.
+
+|Makefile.in|:
+    : CPPMODULES    (for C++)
+    : CMODULES      (for C)
+    : HHEADERS
+
+(The extensions |.C|, |.hh|, |.hpp|, |.cc| are supported to a limited
+extent, but strongly deprecated.)
+
+The files that are needed for compilation.  The extension is not
+included, but inferred from the macro name (e.g. |.cpp| for
+|CPPMODULES|).
+
+For a library, use
+    : LIBRARY=name
+
+This will result in a library called 'libname.a' (under Unix).
+
+For a program, use
+    : PROG=name
+
+This will result in an executable called 'name' (under Unix).
+
+Note that |LIBRARY| and |PROG| are often the same as the |PROGNAME|
+set in |configure.in|, but they need not be the same.
+
+Further, |PROGNAME| also defines a global prefix to be used for
+auto-generated identifiers (for symbols, failure macros, version info,
+Erwin).  To change that prefix, you may want to include another line
+in |Makefile.in|:
+
+    : GLOBAL_PREFIX=nam_
+
+(This must be lower case, but will be converted to upper case when
+needed.)
+
+The default target of the Makefile is always |do-it-all|.
+However, this target is mainly thought to be for redirection,
+so you should include a line like this:
+
+    : do-it-all: all-top
+
+This will make a simple 'make' first change into the top level
+directory of the build tree, and then recursively make the whole
+project.
+
+To can things to be done in the current directory, use the
+following target:
+
+    : all: documentation
+
+This will *also* make the documentation if the recursive build reaches
+this Makefile.  Note that this target may *not* have actions, since it
+already has actions.  It's a pure dependency target.  To add action
+to the local 'all' target, use the following |Makefile.in| rule:
+
+    : all-local:
+    :     echo Also do this.
+
+In the same way, to do more local cleanup, use:
+    : safeclean-local:      # delete objects, but not main targets
+    :     -rm -f garbage
+    :
+    : clean-local:          # delete objects, but leave Makefile intact
+    :     -rm -f garbage
+    :
+    : distclean-local:      # delete Makefile stuff
+    :     -rm -f moregarbage
+    :
+    : develclean-local:     # delete anything not in CVS
+    :     -rm -f evenmoregarbage
+    :
+    : sweep-local:          # delete backup files, etc.
+    :     -rm -f *.bak
+
+And to add actions for 'make run' and 'make test', i.e., use something
+like:
+
+    : run-local:
+    :     ./$(PROG) --version
+    :
+    : test-local:
+    :     ./$(PROG) input > output
+    :     diff input output
+
+
+C only -- no C++ please!
+~~~~~~~~~~~~~~~~~~~~~~~~
+In order to switch all generated source files (symbols, Flex, Bison,
+etc.) to C, use the following line in |Makefile.in|:
+
+    : CXX_EXT = c
+
+Sorry for the obvious misnomer!  This was originally used to switch to
+a different extension of C++ files, but it can also be used to switch
+off C++ totally.
+
+This declaration also switches the linker to C if possible.
+
+Note: If you link a module (see Section "Modules") that uses C++, you
+will need to link against the C++ library although programming a
+C-only library and even if no C++ library features (like <iostream>)
+are used in the library you use.  I consider this a bug in GCC 3.x,
+but nevertheless, to support this, such a library prevents the switch
+to the C linker.  You don't need to take care manually, however.
+
+
+Additional Defines
+~~~~~~~~~~~~~~~~~~
+To add additional #defines for the proprocessor from the |Makefile.in|,
+use the following variable:
+    : EXTRA_DEFINES = MYDEF=7 YOURDEF=16
+
+Do not include the |-D|, since these are automatically added under
+Unix, while under Windos, |/D| is prefixed.
+
+If you think there is no other way to do it, or if it *is*
+operating system specific, you should use the OS specific ways to
+add other options to the preprocessor flags.  For Unix:
+
+    : EXTRA_DEFS= ...           # for anything with -D or -U
+    : EXTRA_CPPFLAGS= ...       # for other options
+
+And for Windos:
+    : EXTRA_WIN_DEFS= ...       # for anything with /D or /U
+    : EXTRA_WINCPPFLAGS= ...    # for other options
+
+
+Additional Compiler/Linker Flags
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Adding additional compiler or linker flags is OS specific!  Only
+do this in case of emergency or when it *is* OS specific.
+
+For Unix, use:
+
+    : EXTRA_CFLAGS= ...
+    : EXTRA_CXXFLAGS= ...
+    : EXTRA_LDFLAGS= ...
+
+And for Windos, use:
+    : EXTRA_WINCFLAGS= ...
+    : EXTRA_WINCXXLAGS= ...
+    : EXTRA_WINLDFLAGS= ...
+
+
+Additional Object Files
+~~~~~~~~~~~~~~~~~~~~~~~
+Adding additional object files is OS specific!  Only
+do this in case of emergency or when it *is* OS specific.
+
+For Unix, use:
+
+    : EXTRA_OBJS= ...
+
+And for Windos, use:
+
+    : EXTRA_WIN_OBJS= ...
+
+
+Compiler Flags for GNU C/C++
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+To add compiler flags that are only valid for GNU C++, use something
+linke the following line in your |Makefile.in|:
+
+    : EXTRA_OPTIONS_GXX = -fno-for-scope -fno-operator-names
+
+And for GNU C, use something like:
+
+
+Per File Compiler Flags
+~~~~~~~~~~~~~~~~~~~~~~~
+To add compiler flags for Gcc only for a given file, include something
+like the following comment in that file:
+
+    : /* --extra-options-gcc: -fno-unused */
+
+The input files for the C/C++ compiler are automatically scanned for
+such comments and the options are included on the commant line.
+
+
+Flex & Bison
+~~~~~~~~~~~~
+Flex scanner and Bison parser files should be added to the
+following |Makefile.in| variables, resp.:
+    : LMODULES
+    : YMODULES
+
+
+Generated Sources
+-----------------
+If you generate sources that are to be compiled by some other means
+than by the ways directly supported, you still get a bit of
+support for that.  Just add the generated source files in one
+of the following |Makefile.in| variables:
+
+    : EXTRA_GENCPPMODULES
+    : EXTRA_GENCMODULES
+    : EXTRA_GENHMODULES
+
+These files will be compiled like normal source files, but dependency
+rules will be added, they will be deleted in 'make clean' and they
+will be excluded from counting.
+
+Of course you'll need to provide Makefile rules to generate them. :-)
+
+
+Included Sources
+~~~~~~~~~~~~~~~~
+Source files that are included by other source files, but which
+should not be compiled by themselves (i.e., include files), should
+be added to the following |Makefile.in| variable:
+
+    : INCMODULES
+
+These files will also be scanned for failure macros and symbols.
+They'll get a |.inc| extension automatically, so don't include it.
+
+For generated include files ones, use:
+
+    : EXTRA_GENINCMODULES
+
+The generated files will not be counted and will be deleted in 'make
+clean'.
+
+For |.inc| files generated by GPerf, see the special spection "GPerf".
+
+
+Scripts and Other Source Files
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+For any other source files, e.g. Perl or Shell scripts, whatever, use:
+
+    : EXTRA_SOURCES
+
+This may also include source files that are currently inactive, but
+should be counted.
+
+Note: Files in this variable must include the file extension -- there
+is no implicit extension.
+
+
+GPerf
+-----
+If you use GPerf to generated some include files (with extension
+|.inc|), you should add them to the following variable:
+
+   : GPERFMODULES = ...
+
+The extension is explicitly |.gperf|.
+
+This automatically generates |.inc| files from |.gperf| files, sets of
+dependency rules, and deletes the |.inc| files in 'make clean'.
+
+To define options for the GPerf command line, use a comment
+similar to the following in the |.gperf| file:
+   : %{
+   : /*
+   :  * The following line is read by Rules.in:
+   :  * Command-line: gperf -E -t -k 1 -L C++ -N lookup -Z CrlEdgeSearch -F,CRL_EDGE_INVALID
+   :  */
+   : %}
+
+Make-HT scans the input file for |Command-line:| and includes these
+options in the invocation of GPerf.
+
+
+LaTex
+-----
+If you use LaTeX to generate some docs, include the input files
+in the following variable:
+
+    : LATEXMODULES = manual
+
+The extension is explicitly |.tex|.
+
+This automatically generates |.ps| files from |.tex| files, sets of
+dependency rules, and deletes the |.ps|, |.dvi|, |.toc|, |.aux| files
+(and possibly others) in 'make clean'.
+
+For defining which output file you want, add the corresponding output
+file(s) to the following variable:
+    : GEN_DOC_FILES = manual.ps.gz
+
+
+Subdirectories
+--------------
+The Make-HT build concept works recursively on subdirectories.
+A subdirectory may either be dependend of it's parent (e.g.
+the subdirs contain applications using the library in the
+toplevel directory), or otherwise, the parent is assumed to be
+dependent on the child (the toplevel dir uses libraries compiled
+in the subdirs).  Depending on this, the Makefile layout is
+different.
+
+Subdirectories must be cared for in two places: in |configure.in|
+to generate the |Makefile| from |Makefile.in|:
+
+    : AC_OUTPUT(Makefile
+    :     include/Makefile
+    :     include/_PROGNAME/Makefile
+    :     test/Makefile
+    :     eprintf/Makefile
+    :     doc/Makefile
+    :     ...
+    : )
+
+and in the parent's |Makefile.in|, where they may be included
+in the following variable, e.g.:
+    : SUBDIRS = test eprintf
+
+Only include those subdirs that you want to include in the make, make
+clean, etc. process.  For example, if you want the documentation to be
+optionally built, don't include it here.
+
+The SUBDIRS variable does not include the subdirs in 'make install'
+and 'make uninstall'.  To include them, use two Makefile rules
+for each subdir:
+    : install-subdirs:
+    :     cd eprintf && $(MAKE) install-all-local
+    : uninstall-subdirs:
+	:     cd eprintf && $(MAKE) uninstall-all-local
+
+
+In The Sub-Makefile.in
+~~~~~~~~~~~~~~~~~~~~~~
+FIXME: continue
+
+
+Installation
+------------
+To install additional scripts, add them to the following
+|Makefile.in| variable:
+
+    : EXTRA_SCRIPT = ...
+
+The same exists for programs (these are additionally
+subject to stripping, if the user requests that):
+    : EXTRA_PROG  = ...
+
+To install shared data files, use
+    : SHARE_FILES = ...
+
+Note: Shared files are assumed to reside in the |share|
+subdirectory.
+
+
+Documentation
+-------------
+Documentation is assumed to reside in the |doc| subdirectory.
+
+To automatically install documentation, include all files in
+the following |Makefile.in| variables:
+    : DOC_FILES
+
+And for generated documentation files:
+    : GEN_DOC_FILES
+
+This variable may contain wildcards like 'html/*.html'.  Please note
+that in the case a wildcard does not match, the installation will
+probably fail, so make sure each wildcard matches at least one file
+even in the documentation is optional and was not generated properly!
+
+Again, the |GEN_DOC_FILES| will be deleted automatically in 'make
+clean' and excluded from counting.
+
+To include documentation files from the main directory (i.e., not
+the doc subdir), put the file names in the following variable:
+    : TOP_DOC_FILES
+
+This typically includes |README|, |Changes|, etc.
+
+To optionally build the documentation, i.e., if you have not included
+it in |SUBDIRS|, use the following |Makefile.in| rules:
+
+    : all: documentation
+    :
+    : .PHONY: documentation
+    : documentation:
+	:     -cd doc && $(MAKE)
+
+
+Assertion/Failure Macros
+------------------------
+You can request the use of Erwin's |assert.pl| to generate
+very complex assertion failure macros in the style of GTK.
+
+|Makefile.in|:
+    : USE_FAILURE      (default: 0)
+    : INSTALL_FAILURE  (default: 0)
+
+Autogenerated file:
+    : failure.h
+
+If the failure macros are installed to be visible to the user, the
+file |failure.h| will be in the library's include subdir.
+Additionally, a file |./failure.h| will be generated for |#include|
+redirection.
+
+
+Symbols
+-------
+|Makefile.in|:
+    : USE_SYMBOL      (default: 0)
+    : INSTALL_SYMBOL  (default: 0)
+
+Autogenerated files:
+    : symbol.c*
+    : symbol.inc
+    : symbol.h
+
+If the symbols are installed to be visible to the user, the files
+|symbol.inc| and |symbol.h| will be in the library's include subdir.
+Additionally, a file |./symbol.h| will be generated for |#include|
+redirection.
+
+
+Version Management
+------------------
+Versions are automatically incremented for each build.  This is
+only done for the subversion, the base version is user-provided
+and is set in |configure.in|:
+
+    : BASE_VERSION=1.0
+
+The following files are used for automatic version enumeration
+and *must* be checked into CVS, otherwise version information
+may be lost.
+
+    : .base-version
+    : .sub-version
+
+The files
+    : version.c*
+    : version.h
+are automatically generated and contain version information.  The
+prototype of a textual representation of the current version is
+as follows:
+    : extern char const *${global_prefix}version;
+
+It is declared in |version.h|.
+
+The make variable
+    : INSTALL_VERSION  (default: 0)
+
+decides whether a library installs the |version.h| in order to
+provide the library user with the definitions of that file.
+It defaults to 1.  If you think version information is private,
+use
+    : INSTALL_VERSION=0
+
+In your |Makefile.in|.
+
+If the version stuff is installed to be visible to the user, the file
+|version.h| will be in the library's include subdir.  Additionally, a
+file |./version.h| will be generated for |#include| redirection.
+
+
+Compatibility #define
+~~~~~~~~~~~~~~~~~~~~~
+A library may support downward compatibility.  |version.h| provides
+the following |#define|s.
+
+- |${PREFIX}BASE_VERSION_CODE|:
+     A single integer representing the library's base version.
+     Can be used in comparisons.
+
+- |${PREFIX}BASE_VERSION(MAJOR[,MINOR[,MICRO]])|:
+     A macro for composing a single integer representing
+     the library's base version.  The number of params depends
+     of the number of dots in the |BASE_VERSION| in the
+     |configure.in|, e.g.:
+
+         : BASE_VERSION=1.0
+
+     results in two arguments.
+
+- |${PREFIX}CHECK_COMPAT(MAJOR[,MINOR[,MICRO]])|:
+     For the developer of a library:
+
+     Given a base version number of the introduction of a
+     given feature, this macro checks whether the user has
+     selected to include that feature.  By default, *all*
+     compatibilities are enables.
+
+- |${PREFIX}COMPAT|:
+     For the user of a library:
+
+     A version code (composed with |${PREFIX}BASE_VERSION|) defining
+     to which version you want to be compatible.  Incompatible newer
+     features will not be included (if the programmer has used
+     |${PREFIX}CHECK_COMPAT| on them).
+
+     This tells the library that anything introduced in base versions
+     > (greater than) this should not be included.
+
+- |${PREFIX}NO_COMPAT|:
+     For the user of a library:
+
+     A version code (composed with |${PREFIX}BASE_VERSION|) defining
+     what older features you do not need since you use the new
+     interface.  If |#define|d, the code may be smaller.
+
+     This tells the library that anything introduced in base versions
+     < (less than) this need not be included.
+
+
+Modules
+-------
+In |configure.in| you can select which standard modules shall be
+used.  Dependencies are automatically resolved, thus other modules
+will be included, too, if they are needed.
+
+For now, check the file |make/configure.in| which modules are supported.
+
+If you change the |make| subdir itself, do not forget to include a
+template line in that file so the users immediately see that a new
+feature is available.
+
+
+Packaging
+---------
+Anything you want to include in a source distribution that is not
+mentioned in the above sections must be included in the following
+|Makefile.in| variable:
+
+     : EXTRA_FILES = ...
+
+Make-HT supports tarballs and ISO-images of source and binary
+distributions out of the box.  In generates install scripts for binary
+distros of libraries.  This is currently not supported for Windos.
+
+Further, try 'make help-archive' for now.

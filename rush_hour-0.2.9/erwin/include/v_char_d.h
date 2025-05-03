@@ -1,0 +1,1305 @@
+/* -*- Mode: C -*- */
+/* Generated Tue Aug 19 15:44:02 GMT 2008
+ */
+
+#ifdef ERWIN_DEBUG_INCLUDE
+#warning "Including v_char_d.h"
+#endif
+
+#ifndef ERWIN_V_CHAR_D_h
+#define ERWIN_V_CHAR_D_h
+
+#ifdef ERWIN_DEBUG_INCLUDE
+#warning "First inclusion of v_char_d.h"
+#endif
+
+#include "vector_u.h"
+#include "v_char_u.h"
+
+
+
+/* Preface */
+#  define V_CHAR_INDEX_IS_VOID 0
+#  define V_CHAR_INDEX_IS_INT 0
+#  define V_CHAR_INDEX_IS_CHAR 1
+
+/* CONSTANT_ZERO */
+#if V_CHAR_INDEX_IS_VOID
+#  undef V_CHAR_CONSTANT_ZERO
+#  define V_CHAR_CONSTANT_ZERO 1
+#  undef V_CHAR_DYN_ZERO
+#elif defined(V_CHAR_CONSTANT_ZERO)
+#  if ERWIN_BOOL_VALUE(V_CHAR_CONSTANT_ZERO)
+#    undef V_CHAR_CONSTANT_ZERO
+#    define V_CHAR_CONSTANT_ZERO 1
+#  else
+#    undef V_CHAR_CONSTANT_ZERO
+#    define V_CHAR_CONSTANT_ZERO 0
+#  endif
+#elif defined(V_CHAR_DYN_ZERO)
+#  if !ERWIN_BOOL_VALUE(V_CHAR_DYN_ZERO)
+#    define V_CHAR_CONSTANT_ZERO 1
+#  else
+#    define V_CHAR_CONSTANT_ZERO 0
+#  endif
+#elif defined(CHAR_HAS_CONSTANT_ZERO)
+#  if ERWIN_BOOL_VALUE(CHAR_HAS_CONSTANT_ZERO)
+#    define V_CHAR_CONSTANT_ZERO 1
+#  else
+#    define V_CHAR_CONSTANT_ZERO 0
+#  endif
+#elif defined(VECTOR_CONSTANT_ZERO)
+#  if ERWIN_BOOL_VALUE(VECTOR_CONSTANT_ZERO)
+#    define V_CHAR_CONSTANT_ZERO 1
+#  else
+#    define V_CHAR_CONSTANT_ZERO 0
+#  endif
+#elif defined(VECTOR_DYN_ZERO)
+#  if !ERWIN_BOOL_VALUE(VECTOR_DYN_ZERO)
+#    define V_CHAR_CONSTANT_ZERO 1
+#  else
+#    define V_CHAR_CONSTANT_ZERO 0
+#  endif
+#elif defined(ERWIN_CONSTANT_ZERO)
+#  if ERWIN_BOOL_VALUE(ERWIN_CONSTANT_ZERO)
+#    define V_CHAR_CONSTANT_ZERO 1
+#  else
+#    define V_CHAR_CONSTANT_ZERO 0
+#  endif
+#elif defined(ERWIN_DYN_ZERO)
+#  if !ERWIN_BOOL_VALUE(ERWIN_DYN_ZERO)
+#    define V_CHAR_CONSTANT_ZERO 1
+#  else
+#    define V_CHAR_CONSTANT_ZERO 0
+#  endif
+#elif defined(ALL_ERWIN_CONSTANT_ZERO)
+#  if ERWIN_BOOL_VALUE(ALL_ERWIN_CONSTANT_ZERO)
+#    define V_CHAR_CONSTANT_ZERO 1
+#  else
+#    define V_CHAR_CONSTANT_ZERO 0
+#  endif
+#elif !defined(ALL_ERWIN_DYN_ZERO)
+#  define V_CHAR_CONSTANT_ZERO 0
+#elif !ERWIN_BOOL_VALUE(ALL_ERWIN_DYN_ZERO)
+#  define V_CHAR_CONSTANT_ZERO 1
+#else
+#  define V_CHAR_CONSTANT_ZERO 0
+#endif
+#if !defined(V_CHAR_DYN_ZERO)
+#elif V_CHAR_CONSTANT_ZERO == ERWIN_BOOL_VALUE(V_CHAR_DYN_ZERO)
+#  error "Inconsistency: V_CHAR_CONSTANT_ZERO == V_CHAR_DYN_ZERO"
+#endif
+#if ERWIN_BOOL_VALUE(V_CHAR_CONSTANT_ZERO)
+#  define V_CHAR_DYN_ZERO 0
+#else
+#  define V_CHAR_DYN_ZERO 1
+#endif
+
+/* USE_DEFAULT_ARGS */
+#if !defined(__cplusplus)
+#  undef V_CHAR_USE_DEFAULT_ARGS
+#  define V_CHAR_USE_DEFAULT_ARGS 0
+#  undef V_CHAR_NO_DEFAULT_ARGS
+#elif defined(V_CHAR_USE_DEFAULT_ARGS)
+#  if ERWIN_BOOL_VALUE(V_CHAR_USE_DEFAULT_ARGS)
+#    undef V_CHAR_USE_DEFAULT_ARGS
+#    define V_CHAR_USE_DEFAULT_ARGS 1
+#  else
+#    undef V_CHAR_USE_DEFAULT_ARGS
+#    define V_CHAR_USE_DEFAULT_ARGS 0
+#  endif
+#elif defined(V_CHAR_NO_DEFAULT_ARGS)
+#  if !ERWIN_BOOL_VALUE(V_CHAR_NO_DEFAULT_ARGS)
+#    define V_CHAR_USE_DEFAULT_ARGS 1
+#  else
+#    define V_CHAR_USE_DEFAULT_ARGS 0
+#  endif
+#elif defined(VECTOR_USE_DEFAULT_ARGS)
+#  if ERWIN_BOOL_VALUE(VECTOR_USE_DEFAULT_ARGS)
+#    define V_CHAR_USE_DEFAULT_ARGS 1
+#  else
+#    define V_CHAR_USE_DEFAULT_ARGS 0
+#  endif
+#elif defined(VECTOR_NO_DEFAULT_ARGS)
+#  if !ERWIN_BOOL_VALUE(VECTOR_NO_DEFAULT_ARGS)
+#    define V_CHAR_USE_DEFAULT_ARGS 1
+#  else
+#    define V_CHAR_USE_DEFAULT_ARGS 0
+#  endif
+#elif defined(ERWIN_USE_DEFAULT_ARGS)
+#  if ERWIN_BOOL_VALUE(ERWIN_USE_DEFAULT_ARGS)
+#    define V_CHAR_USE_DEFAULT_ARGS 1
+#  else
+#    define V_CHAR_USE_DEFAULT_ARGS 0
+#  endif
+#elif defined(ERWIN_NO_DEFAULT_ARGS)
+#  if !ERWIN_BOOL_VALUE(ERWIN_NO_DEFAULT_ARGS)
+#    define V_CHAR_USE_DEFAULT_ARGS 1
+#  else
+#    define V_CHAR_USE_DEFAULT_ARGS 0
+#  endif
+#elif defined(ALL_ERWIN_USE_DEFAULT_ARGS)
+#  if ERWIN_BOOL_VALUE(ALL_ERWIN_USE_DEFAULT_ARGS)
+#    define V_CHAR_USE_DEFAULT_ARGS 1
+#  else
+#    define V_CHAR_USE_DEFAULT_ARGS 0
+#  endif
+#elif !defined(ALL_ERWIN_NO_DEFAULT_ARGS)
+#  define V_CHAR_USE_DEFAULT_ARGS 1
+#elif !ERWIN_BOOL_VALUE(ALL_ERWIN_NO_DEFAULT_ARGS)
+#  define V_CHAR_USE_DEFAULT_ARGS 1
+#else
+#  define V_CHAR_USE_DEFAULT_ARGS 0
+#endif
+#if !defined(V_CHAR_NO_DEFAULT_ARGS)
+#elif V_CHAR_USE_DEFAULT_ARGS == ERWIN_BOOL_VALUE(V_CHAR_NO_DEFAULT_ARGS)
+#  error "Inconsistency: V_CHAR_USE_DEFAULT_ARGS == V_CHAR_NO_DEFAULT_ARGS"
+#endif
+#if ERWIN_BOOL_VALUE(V_CHAR_USE_DEFAULT_ARGS)
+#  define V_CHAR_NO_DEFAULT_ARGS 0
+#else
+#  define V_CHAR_NO_DEFAULT_ARGS 1
+#endif
+#if defined(V_CHAR_USE_DEFAULT_ARGS) && V_CHAR_USE_DEFAULT_ARGS
+#  define V_CHAR_DEFAULT_ARG(X) = X
+#else
+#  define V_CHAR_DEFAULT_ARG(X)
+#endif
+
+/* SUPER_CLASS */
+#if !defined(__cplusplus)
+#elif defined(V_CHAR_SUPER_CLASS)
+#elif defined(VECTOR_SUPER_CLASS)
+#  define V_CHAR_SUPER_CLASS VECTOR_SUPER_CLASS
+#elif defined(ERWIN_SUPER_CLASS)
+#  define V_CHAR_SUPER_CLASS ERWIN_SUPER_CLASS
+#elif defined(ALL_ERWIN_SUPER_CLASS)
+#  define V_CHAR_SUPER_CLASS ALL_ERWIN_SUPER_CLASS
+#endif
+
+/* SUPER_CLASS_ACCESS */
+#if !defined(__cplusplus)
+#elif defined(V_CHAR_SUPER_CLASS_ACCESS)
+#elif defined(VECTOR_SUPER_CLASS_ACCESS)
+#  define V_CHAR_SUPER_CLASS_ACCESS VECTOR_SUPER_CLASS_ACCESS
+#elif defined(ERWIN_SUPER_CLASS_ACCESS)
+#  define V_CHAR_SUPER_CLASS_ACCESS ERWIN_SUPER_CLASS_ACCESS
+#elif defined(ALL_ERWIN_SUPER_CLASS_ACCESS)
+#  define V_CHAR_SUPER_CLASS_ACCESS ALL_ERWIN_SUPER_CLASS_ACCESS
+#else
+#  define V_CHAR_SUPER_CLASS_ACCESS private
+#endif
+
+/* STD_MEMBERS */
+#if defined(V_CHAR_TYPE_INFO_STD_MEMBERS)
+#elif defined(v_char_t_TYPE_INFO_STD_MEMBERS)
+#  define V_CHAR_TYPE_INFO_STD_MEMBERS v_char_t_TYPE_INFO_STD_MEMBERS
+#endif
+#if defined(V_CHAR_STD_MEMBERS)
+#elif defined(VECTOR_STD_MEMBERS)
+#  define V_CHAR_STD_MEMBERS(CLASS_NAME) VECTOR_STD_MEMBERS(CLASS_NAME)
+#  define V_CHAR_TYPE_INFO_STD_MEMBERS VECTOR_TYPE_INFO_STD_MEMBERS
+#elif defined(ERWIN_STD_MEMBERS)
+#  define V_CHAR_STD_MEMBERS(CLASS_NAME) ERWIN_STD_MEMBERS(CLASS_NAME)
+#  define V_CHAR_TYPE_INFO_STD_MEMBERS ERWIN_TYPE_INFO_STD_MEMBERS
+#elif defined(ALL_ERWIN_STD_MEMBERS)
+#  define V_CHAR_STD_MEMBERS(CLASS_NAME) ALL_ERWIN_STD_MEMBERS(CLASS_NAME)
+#  define V_CHAR_TYPE_INFO_STD_MEMBERS ALL_ERWIN_TYPE_INFO_STD_MEMBERS
+#else
+#  define V_CHAR_STD_MEMBERS(CLASS_NAME)
+#  define V_CHAR_TYPE_INFO_STD_MEMBERS
+#endif
+
+/* HAVE_SIG */
+#if defined(V_CHAR_HAVE_SIG)
+#  if ERWIN_BOOL_VALUE(V_CHAR_HAVE_SIG)
+#    undef V_CHAR_HAVE_SIG
+#    define V_CHAR_HAVE_SIG 1
+#  else
+#    undef V_CHAR_HAVE_SIG
+#    define V_CHAR_HAVE_SIG 0
+#  endif
+#elif defined(V_CHAR_NO_SIG)
+#  if !ERWIN_BOOL_VALUE(V_CHAR_NO_SIG)
+#    define V_CHAR_HAVE_SIG 1
+#  else
+#    define V_CHAR_HAVE_SIG 0
+#  endif
+#elif defined(V_CHAR_FORCE_SIG)
+#  if ERWIN_BOOL_VALUE(V_CHAR_FORCE_SIG)
+#    define V_CHAR_HAVE_SIG 1
+#  else
+#    define V_CHAR_HAVE_SIG 0
+#  endif
+#elif defined(VECTOR_HAVE_SIG)
+#  if ERWIN_BOOL_VALUE(VECTOR_HAVE_SIG)
+#    define V_CHAR_HAVE_SIG 1
+#  else
+#    define V_CHAR_HAVE_SIG 0
+#  endif
+#elif defined(VECTOR_NO_SIG)
+#  if !ERWIN_BOOL_VALUE(VECTOR_NO_SIG)
+#    define V_CHAR_HAVE_SIG 1
+#  else
+#    define V_CHAR_HAVE_SIG 0
+#  endif
+#elif defined(VECTOR_FORCE_SIG)
+#  if ERWIN_BOOL_VALUE(VECTOR_FORCE_SIG)
+#    define V_CHAR_HAVE_SIG 1
+#  else
+#    define V_CHAR_HAVE_SIG 0
+#  endif
+#elif defined(ERWIN_HAVE_SIG)
+#  if ERWIN_BOOL_VALUE(ERWIN_HAVE_SIG)
+#    define V_CHAR_HAVE_SIG 1
+#  else
+#    define V_CHAR_HAVE_SIG 0
+#  endif
+#elif defined(ERWIN_NO_SIG)
+#  if !ERWIN_BOOL_VALUE(ERWIN_NO_SIG)
+#    define V_CHAR_HAVE_SIG 1
+#  else
+#    define V_CHAR_HAVE_SIG 0
+#  endif
+#elif defined(ERWIN_FORCE_SIG)
+#  if ERWIN_BOOL_VALUE(ERWIN_FORCE_SIG)
+#    define V_CHAR_HAVE_SIG 1
+#  else
+#    define V_CHAR_HAVE_SIG 0
+#  endif
+#elif defined(ALL_ERWIN_HAVE_SIG)
+#  if ERWIN_BOOL_VALUE(ALL_ERWIN_HAVE_SIG)
+#    define V_CHAR_HAVE_SIG 1
+#  else
+#    define V_CHAR_HAVE_SIG 0
+#  endif
+#elif defined(ALL_ERWIN_NO_SIG)
+#  if !ERWIN_BOOL_VALUE(ALL_ERWIN_NO_SIG)
+#    define V_CHAR_HAVE_SIG 1
+#  else
+#    define V_CHAR_HAVE_SIG 0
+#  endif
+#elif defined(ALL_ERWIN_FORCE_SIG)
+#  if ERWIN_BOOL_VALUE(ALL_ERWIN_FORCE_SIG)
+#    define V_CHAR_HAVE_SIG 1
+#  else
+#    define V_CHAR_HAVE_SIG 0
+#  endif
+#elif defined(DEVEL)
+#  define V_CHAR_HAVE_SIG 1
+#else
+#  define V_CHAR_HAVE_SIG 0
+#endif
+#if !defined(V_CHAR_NO_SIG)
+#elif V_CHAR_HAVE_SIG == ERWIN_BOOL_VALUE(V_CHAR_NO_SIG)
+#  error "Inconsistency: V_CHAR_HAVE_SIG == V_CHAR_NO_SIG"
+#endif
+#if !defined(V_CHAR_FORCE_SIG)
+#elif V_CHAR_HAVE_SIG != ERWIN_BOOL_VALUE(V_CHAR_FORCE_SIG)
+#  error "Inconsistency: V_CHAR_HAVE_SIG != V_CHAR_FORCE_SIG"
+#endif
+#if ERWIN_BOOL_VALUE(V_CHAR_HAVE_SIG)
+#  define V_CHAR_NO_SIG 0
+#else
+#  define V_CHAR_NO_SIG 1
+#endif
+
+/* ALLOW_OUTOFRANGE */
+#if defined(V_CHAR_ALLOW_OUTOFRANGE)
+#  if ERWIN_BOOL_VALUE(V_CHAR_ALLOW_OUTOFRANGE)
+#    undef V_CHAR_ALLOW_OUTOFRANGE
+#    define V_CHAR_ALLOW_OUTOFRANGE 1
+#  else
+#    undef V_CHAR_ALLOW_OUTOFRANGE
+#    define V_CHAR_ALLOW_OUTOFRANGE 0
+#  endif
+#elif defined(VECTOR_ALLOW_OUTOFRANGE)
+#  if ERWIN_BOOL_VALUE(VECTOR_ALLOW_OUTOFRANGE)
+#    define V_CHAR_ALLOW_OUTOFRANGE 1
+#  else
+#    define V_CHAR_ALLOW_OUTOFRANGE 0
+#  endif
+#elif defined(ERWIN_ALLOW_OUTOFRANGE)
+#  if ERWIN_BOOL_VALUE(ERWIN_ALLOW_OUTOFRANGE)
+#    define V_CHAR_ALLOW_OUTOFRANGE 1
+#  else
+#    define V_CHAR_ALLOW_OUTOFRANGE 0
+#  endif
+#elif !defined(ALL_ERWIN_ALLOW_OUTOFRANGE)
+#  define V_CHAR_ALLOW_OUTOFRANGE 0
+#elif ERWIN_BOOL_VALUE(ALL_ERWIN_ALLOW_OUTOFRANGE)
+#  define V_CHAR_ALLOW_OUTOFRANGE 1
+#else
+#  define V_CHAR_ALLOW_OUTOFRANGE 0
+#endif
+
+/* INLINE_STORE */
+#if defined(V_CHAR_INLINE_STORE)
+#  if ERWIN_BOOL_VALUE(V_CHAR_INLINE_STORE)
+#    undef V_CHAR_INLINE_STORE
+#    define V_CHAR_INLINE_STORE 1
+#  else
+#    undef V_CHAR_INLINE_STORE
+#    define V_CHAR_INLINE_STORE 0
+#  endif
+#elif defined(VECTOR_INLINE_STORE)
+#  if ERWIN_BOOL_VALUE(VECTOR_INLINE_STORE)
+#    define V_CHAR_INLINE_STORE 1
+#  else
+#    define V_CHAR_INLINE_STORE 0
+#  endif
+#elif defined(ERWIN_INLINE_STORE)
+#  if ERWIN_BOOL_VALUE(ERWIN_INLINE_STORE)
+#    define V_CHAR_INLINE_STORE 1
+#  else
+#    define V_CHAR_INLINE_STORE 0
+#  endif
+#elif !defined(ALL_ERWIN_INLINE_STORE)
+#  define V_CHAR_INLINE_STORE 0
+#elif ERWIN_BOOL_VALUE(ALL_ERWIN_INLINE_STORE)
+#  define V_CHAR_INLINE_STORE 1
+#else
+#  define V_CHAR_INLINE_STORE 0
+#endif
+
+/* RANGE_CHECK */
+#if defined(V_CHAR_RANGE_CHECK)
+#  if ERWIN_BOOL_VALUE(V_CHAR_RANGE_CHECK)
+#    undef V_CHAR_RANGE_CHECK
+#    define V_CHAR_RANGE_CHECK 1
+#  else
+#    undef V_CHAR_RANGE_CHECK
+#    define V_CHAR_RANGE_CHECK 0
+#  endif
+#elif defined(V_CHAR_NO_RANGE_CHECK)
+#  if !ERWIN_BOOL_VALUE(V_CHAR_NO_RANGE_CHECK)
+#    define V_CHAR_RANGE_CHECK 1
+#  else
+#    define V_CHAR_RANGE_CHECK 0
+#  endif
+#elif defined(VECTOR_RANGE_CHECK)
+#  if ERWIN_BOOL_VALUE(VECTOR_RANGE_CHECK)
+#    define V_CHAR_RANGE_CHECK 1
+#  else
+#    define V_CHAR_RANGE_CHECK 0
+#  endif
+#elif defined(VECTOR_NO_RANGE_CHECK)
+#  if !ERWIN_BOOL_VALUE(VECTOR_NO_RANGE_CHECK)
+#    define V_CHAR_RANGE_CHECK 1
+#  else
+#    define V_CHAR_RANGE_CHECK 0
+#  endif
+#elif defined(ERWIN_RANGE_CHECK)
+#  if ERWIN_BOOL_VALUE(ERWIN_RANGE_CHECK)
+#    define V_CHAR_RANGE_CHECK 1
+#  else
+#    define V_CHAR_RANGE_CHECK 0
+#  endif
+#elif defined(ERWIN_NO_RANGE_CHECK)
+#  if !ERWIN_BOOL_VALUE(ERWIN_NO_RANGE_CHECK)
+#    define V_CHAR_RANGE_CHECK 1
+#  else
+#    define V_CHAR_RANGE_CHECK 0
+#  endif
+#elif defined(ALL_ERWIN_RANGE_CHECK)
+#  if ERWIN_BOOL_VALUE(ALL_ERWIN_RANGE_CHECK)
+#    define V_CHAR_RANGE_CHECK 1
+#  else
+#    define V_CHAR_RANGE_CHECK 0
+#  endif
+#elif !defined(ALL_ERWIN_NO_RANGE_CHECK)
+#  define V_CHAR_RANGE_CHECK 1
+#elif !ERWIN_BOOL_VALUE(ALL_ERWIN_NO_RANGE_CHECK)
+#  define V_CHAR_RANGE_CHECK 1
+#else
+#  define V_CHAR_RANGE_CHECK 0
+#endif
+#if !defined(V_CHAR_NO_RANGE_CHECK)
+#elif V_CHAR_RANGE_CHECK == ERWIN_BOOL_VALUE(V_CHAR_NO_RANGE_CHECK)
+#  error "Inconsistency: V_CHAR_RANGE_CHECK == V_CHAR_NO_RANGE_CHECK"
+#endif
+#if ERWIN_BOOL_VALUE(V_CHAR_RANGE_CHECK)
+#  define V_CHAR_NO_RANGE_CHECK 0
+#else
+#  define V_CHAR_NO_RANGE_CHECK 1
+#endif
+
+/* MANY_CASTS */
+#if !defined(__cplusplus)
+#  undef V_CHAR_MANY_CASTS
+#  define V_CHAR_MANY_CASTS 0
+#elif defined(V_CHAR_MANY_CASTS)
+#  if ERWIN_BOOL_VALUE(V_CHAR_MANY_CASTS)
+#    undef V_CHAR_MANY_CASTS
+#    define V_CHAR_MANY_CASTS 1
+#  else
+#    undef V_CHAR_MANY_CASTS
+#    define V_CHAR_MANY_CASTS 0
+#  endif
+#elif defined(VECTOR_MANY_CASTS)
+#  if ERWIN_BOOL_VALUE(VECTOR_MANY_CASTS)
+#    define V_CHAR_MANY_CASTS 1
+#  else
+#    define V_CHAR_MANY_CASTS 0
+#  endif
+#elif defined(ERWIN_MANY_CASTS)
+#  if ERWIN_BOOL_VALUE(ERWIN_MANY_CASTS)
+#    define V_CHAR_MANY_CASTS 1
+#  else
+#    define V_CHAR_MANY_CASTS 0
+#  endif
+#elif !defined(ALL_ERWIN_MANY_CASTS)
+#  define V_CHAR_MANY_CASTS 0
+#elif ERWIN_BOOL_VALUE(ALL_ERWIN_MANY_CASTS)
+#  define V_CHAR_MANY_CASTS 1
+#else
+#  define V_CHAR_MANY_CASTS 0
+#endif
+#if defined(V_CHAR_MANY_CASTS) && V_CHAR_MANY_CASTS
+#  define V_CHAR_DEFAULT_ARG_MANY(X) V_CHAR_DEFAULT_ARG(X)
+#else
+#  define V_CHAR_DEFAULT_ARG_MANY(X)
+#endif
+
+/* LOW_MEM */
+#if defined(V_CHAR_LOW_MEM)
+#  if ERWIN_BOOL_VALUE(V_CHAR_LOW_MEM)
+#    undef V_CHAR_LOW_MEM
+#    define V_CHAR_LOW_MEM 1
+#  else
+#    undef V_CHAR_LOW_MEM
+#    define V_CHAR_LOW_MEM 0
+#  endif
+#elif defined(VECTOR_LOW_MEM)
+#  if ERWIN_BOOL_VALUE(VECTOR_LOW_MEM)
+#    define V_CHAR_LOW_MEM 1
+#  else
+#    define V_CHAR_LOW_MEM 0
+#  endif
+#elif defined(ERWIN_LOW_MEM)
+#  if ERWIN_BOOL_VALUE(ERWIN_LOW_MEM)
+#    define V_CHAR_LOW_MEM 1
+#  else
+#    define V_CHAR_LOW_MEM 0
+#  endif
+#elif !defined(ALL_ERWIN_LOW_MEM)
+#  define V_CHAR_LOW_MEM 0
+#elif ERWIN_BOOL_VALUE(ALL_ERWIN_LOW_MEM)
+#  define V_CHAR_LOW_MEM 1
+#else
+#  define V_CHAR_LOW_MEM 0
+#endif
+
+/* SMALL_SIZE */
+#if defined(V_CHAR_SMALL_SIZE)
+#  if ERWIN_BOOL_VALUE(V_CHAR_SMALL_SIZE)
+#    undef V_CHAR_SMALL_SIZE
+#    define V_CHAR_SMALL_SIZE 1
+#  else
+#    undef V_CHAR_SMALL_SIZE
+#    define V_CHAR_SMALL_SIZE 0
+#  endif
+#elif defined(VECTOR_SMALL_SIZE)
+#  if ERWIN_BOOL_VALUE(VECTOR_SMALL_SIZE)
+#    define V_CHAR_SMALL_SIZE 1
+#  else
+#    define V_CHAR_SMALL_SIZE 0
+#  endif
+#elif defined(ERWIN_SMALL_SIZE)
+#  if ERWIN_BOOL_VALUE(ERWIN_SMALL_SIZE)
+#    define V_CHAR_SMALL_SIZE 1
+#  else
+#    define V_CHAR_SMALL_SIZE 0
+#  endif
+#elif !defined(ALL_ERWIN_SMALL_SIZE)
+#  define V_CHAR_SMALL_SIZE 0
+#elif ERWIN_BOOL_VALUE(ALL_ERWIN_SMALL_SIZE)
+#  define V_CHAR_SMALL_SIZE 1
+#else
+#  define V_CHAR_SMALL_SIZE 0
+#endif
+
+/* MEDIUM_SIZE */
+#if defined(V_CHAR_MEDIUM_SIZE)
+#  if ERWIN_BOOL_VALUE(V_CHAR_MEDIUM_SIZE)
+#    undef V_CHAR_MEDIUM_SIZE
+#    define V_CHAR_MEDIUM_SIZE 1
+#  else
+#    undef V_CHAR_MEDIUM_SIZE
+#    define V_CHAR_MEDIUM_SIZE 0
+#  endif
+#elif defined(VECTOR_MEDIUM_SIZE)
+#  if ERWIN_BOOL_VALUE(VECTOR_MEDIUM_SIZE)
+#    define V_CHAR_MEDIUM_SIZE 1
+#  else
+#    define V_CHAR_MEDIUM_SIZE 0
+#  endif
+#elif defined(ERWIN_MEDIUM_SIZE)
+#  if ERWIN_BOOL_VALUE(ERWIN_MEDIUM_SIZE)
+#    define V_CHAR_MEDIUM_SIZE 1
+#  else
+#    define V_CHAR_MEDIUM_SIZE 0
+#  endif
+#elif !defined(ALL_ERWIN_MEDIUM_SIZE)
+#  define V_CHAR_MEDIUM_SIZE 0
+#elif ERWIN_BOOL_VALUE(ALL_ERWIN_MEDIUM_SIZE)
+#  define V_CHAR_MEDIUM_SIZE 1
+#else
+#  define V_CHAR_MEDIUM_SIZE 0
+#endif
+
+/* LARGE_INDEX */
+#if defined(V_CHAR_LARGE_INDEX)
+#  if ERWIN_BOOL_VALUE(V_CHAR_LARGE_INDEX)
+#    undef V_CHAR_LARGE_INDEX
+#    define V_CHAR_LARGE_INDEX 1
+#  else
+#    undef V_CHAR_LARGE_INDEX
+#    define V_CHAR_LARGE_INDEX 0
+#  endif
+#elif defined(VECTOR_LARGE_INDEX)
+#  if ERWIN_BOOL_VALUE(VECTOR_LARGE_INDEX)
+#    define V_CHAR_LARGE_INDEX 1
+#  else
+#    define V_CHAR_LARGE_INDEX 0
+#  endif
+#elif defined(ERWIN_LARGE_INDEX)
+#  if ERWIN_BOOL_VALUE(ERWIN_LARGE_INDEX)
+#    define V_CHAR_LARGE_INDEX 1
+#  else
+#    define V_CHAR_LARGE_INDEX 0
+#  endif
+#elif !defined(ALL_ERWIN_LARGE_INDEX)
+#  define V_CHAR_LARGE_INDEX 0
+#elif ERWIN_BOOL_VALUE(ALL_ERWIN_LARGE_INDEX)
+#  define V_CHAR_LARGE_INDEX 1
+#else
+#  define V_CHAR_LARGE_INDEX 0
+#endif
+
+/* PREALLOC_SIZE */
+#if defined(V_CHAR_PREALLOC_SIZE)
+#elif defined(VECTOR_PREALLOC_SIZE)
+#  define V_CHAR_PREALLOC_SIZE VECTOR_PREALLOC_SIZE
+#elif defined(ERWIN_PREALLOC_SIZE)
+#  define V_CHAR_PREALLOC_SIZE ERWIN_PREALLOC_SIZE
+#elif defined(ALL_ERWIN_PREALLOC_SIZE)
+#  define V_CHAR_PREALLOC_SIZE ALL_ERWIN_PREALLOC_SIZE
+#endif
+
+/* CHUNK_SIZE */
+#if defined(V_CHAR_CHUNK_SIZE)
+#elif defined(VECTOR_CHUNK_SIZE)
+#  define V_CHAR_CHUNK_SIZE VECTOR_CHUNK_SIZE
+#elif defined(ERWIN_CHUNK_SIZE)
+#  define V_CHAR_CHUNK_SIZE ERWIN_CHUNK_SIZE
+#elif defined(ALL_ERWIN_CHUNK_SIZE)
+#  define V_CHAR_CHUNK_SIZE ALL_ERWIN_CHUNK_SIZE
+#endif
+
+/* ALLOW_NULL */
+#if defined(V_CHAR_ALLOW_NULL)
+#  if ERWIN_BOOL_VALUE(V_CHAR_ALLOW_NULL)
+#    undef V_CHAR_ALLOW_NULL
+#    define V_CHAR_ALLOW_NULL 1
+#  else
+#    undef V_CHAR_ALLOW_NULL
+#    define V_CHAR_ALLOW_NULL 0
+#  endif
+#elif defined(VECTOR_ALLOW_NULL)
+#  if ERWIN_BOOL_VALUE(VECTOR_ALLOW_NULL)
+#    define V_CHAR_ALLOW_NULL 1
+#  else
+#    define V_CHAR_ALLOW_NULL 0
+#  endif
+#elif defined(ERWIN_ALLOW_NULL)
+#  if ERWIN_BOOL_VALUE(ERWIN_ALLOW_NULL)
+#    define V_CHAR_ALLOW_NULL 1
+#  else
+#    define V_CHAR_ALLOW_NULL 0
+#  endif
+#elif !defined(ALL_ERWIN_ALLOW_NULL)
+#  define V_CHAR_ALLOW_NULL 0
+#elif ERWIN_BOOL_VALUE(ALL_ERWIN_ALLOW_NULL)
+#  define V_CHAR_ALLOW_NULL 1
+#else
+#  define V_CHAR_ALLOW_NULL 0
+#endif
+
+/* DIRECT_RECURSION */
+#if !defined(__cplusplus)
+#elif defined(V_CHAR_DIRECT_RECURSION)
+#  if ERWIN_BOOL_VALUE(V_CHAR_DIRECT_RECURSION)
+#    undef V_CHAR_DIRECT_RECURSION
+#    define V_CHAR_DIRECT_RECURSION 1
+#  else
+#    undef V_CHAR_DIRECT_RECURSION
+#    define V_CHAR_DIRECT_RECURSION 0
+#  endif
+#elif defined(VECTOR_DIRECT_RECURSION)
+#  if ERWIN_BOOL_VALUE(VECTOR_DIRECT_RECURSION)
+#    define V_CHAR_DIRECT_RECURSION 1
+#  else
+#    define V_CHAR_DIRECT_RECURSION 0
+#  endif
+#elif defined(ERWIN_DIRECT_RECURSION)
+#  if ERWIN_BOOL_VALUE(ERWIN_DIRECT_RECURSION)
+#    define V_CHAR_DIRECT_RECURSION 1
+#  else
+#    define V_CHAR_DIRECT_RECURSION 0
+#  endif
+#elif !defined(ALL_ERWIN_DIRECT_RECURSION)
+#  define V_CHAR_DIRECT_RECURSION 0
+#elif ERWIN_BOOL_VALUE(ALL_ERWIN_DIRECT_RECURSION)
+#  define V_CHAR_DIRECT_RECURSION 1
+#else
+#  define V_CHAR_DIRECT_RECURSION 0
+#endif
+
+/* HAVE_INT_CONSTRUCTOR */
+#if defined(__cplusplus)
+#  if V_CHAR_DYN_ZERO && V_CHAR_INDEX_IS_INT
+#    undef V_CHAR_HAVE_INT_CONSTRUCTOR
+#    define V_CHAR_HAVE_INT_CONSTRUCTOR 0
+#    undef V_CHAR_NO_INT_CONSTRUCTOR
+#  elif defined(V_CHAR_HAVE_INT_CONSTRUCTOR)
+#    if ERWIN_BOOL_VALUE(V_CHAR_HAVE_INT_CONSTRUCTOR)
+#      undef V_CHAR_HAVE_INT_CONSTRUCTOR
+#      define V_CHAR_HAVE_INT_CONSTRUCTOR 1
+#    else
+#      undef V_CHAR_HAVE_INT_CONSTRUCTOR
+#      define V_CHAR_HAVE_INT_CONSTRUCTOR 0
+#    endif
+#  elif defined(V_CHAR_NO_INT_CONSTRUCTOR)
+#    if !ERWIN_BOOL_VALUE(V_CHAR_NO_INT_CONSTRUCTOR)
+#      define V_CHAR_HAVE_INT_CONSTRUCTOR 1
+#    else
+#      define V_CHAR_HAVE_INT_CONSTRUCTOR 0
+#    endif
+#  elif defined(VECTOR_HAVE_INT_CONSTRUCTOR)
+#    if ERWIN_BOOL_VALUE(VECTOR_HAVE_INT_CONSTRUCTOR)
+#      define V_CHAR_HAVE_INT_CONSTRUCTOR 1
+#    else
+#      define V_CHAR_HAVE_INT_CONSTRUCTOR 0
+#    endif
+#  elif defined(VECTOR_NO_INT_CONSTRUCTOR)
+#    if !ERWIN_BOOL_VALUE(VECTOR_NO_INT_CONSTRUCTOR)
+#      define V_CHAR_HAVE_INT_CONSTRUCTOR 1
+#    else
+#      define V_CHAR_HAVE_INT_CONSTRUCTOR 0
+#    endif
+#  elif defined(ERWIN_HAVE_INT_CONSTRUCTOR)
+#    if ERWIN_BOOL_VALUE(ERWIN_HAVE_INT_CONSTRUCTOR)
+#      define V_CHAR_HAVE_INT_CONSTRUCTOR 1
+#    else
+#      define V_CHAR_HAVE_INT_CONSTRUCTOR 0
+#    endif
+#  elif defined(ERWIN_NO_INT_CONSTRUCTOR)
+#    if !ERWIN_BOOL_VALUE(ERWIN_NO_INT_CONSTRUCTOR)
+#      define V_CHAR_HAVE_INT_CONSTRUCTOR 1
+#    else
+#      define V_CHAR_HAVE_INT_CONSTRUCTOR 0
+#    endif
+#  elif defined(ALL_ERWIN_HAVE_INT_CONSTRUCTOR)
+#    if ERWIN_BOOL_VALUE(ALL_ERWIN_HAVE_INT_CONSTRUCTOR)
+#      define V_CHAR_HAVE_INT_CONSTRUCTOR 1
+#    else
+#      define V_CHAR_HAVE_INT_CONSTRUCTOR 0
+#    endif
+#  elif !defined(ALL_ERWIN_NO_INT_CONSTRUCTOR)
+#    define V_CHAR_HAVE_INT_CONSTRUCTOR 1
+#  elif !ERWIN_BOOL_VALUE(ALL_ERWIN_NO_INT_CONSTRUCTOR)
+#    define V_CHAR_HAVE_INT_CONSTRUCTOR 1
+#  else
+#    define V_CHAR_HAVE_INT_CONSTRUCTOR 0
+#  endif
+#  if !defined(V_CHAR_NO_INT_CONSTRUCTOR)
+#  elif V_CHAR_HAVE_INT_CONSTRUCTOR == ERWIN_BOOL_VALUE(V_CHAR_NO_INT_CONSTRUCTOR)
+#    error "Inconsistency: V_CHAR_HAVE_INT_CONSTRUCTOR == V_CHAR_NO_INT_CONSTRUCTOR"
+#  endif
+#  if ERWIN_BOOL_VALUE(V_CHAR_HAVE_INT_CONSTRUCTOR)
+#    define V_CHAR_NO_INT_CONSTRUCTOR 0
+#  else
+#    define V_CHAR_NO_INT_CONSTRUCTOR 1
+#  endif
+#endif
+
+/* IMPLEMENT_FORMAT */
+#if V_CHAR_INDEX_IS_CHAR
+#  if defined(V_CHAR_IMPLEMENT_FORMAT)
+#    if ERWIN_BOOL_VALUE(V_CHAR_IMPLEMENT_FORMAT)
+#      undef V_CHAR_IMPLEMENT_FORMAT
+#      define V_CHAR_IMPLEMENT_FORMAT 1
+#    else
+#      undef V_CHAR_IMPLEMENT_FORMAT
+#      define V_CHAR_IMPLEMENT_FORMAT 0
+#    endif
+#  elif defined(V_CHAR_NO_FORMAT)
+#    if !ERWIN_BOOL_VALUE(V_CHAR_NO_FORMAT)
+#      define V_CHAR_IMPLEMENT_FORMAT 1
+#    else
+#      define V_CHAR_IMPLEMENT_FORMAT 0
+#    endif
+#  elif defined(VECTOR_IMPLEMENT_FORMAT)
+#    if ERWIN_BOOL_VALUE(VECTOR_IMPLEMENT_FORMAT)
+#      define V_CHAR_IMPLEMENT_FORMAT 1
+#    else
+#      define V_CHAR_IMPLEMENT_FORMAT 0
+#    endif
+#  elif defined(VECTOR_NO_FORMAT)
+#    if !ERWIN_BOOL_VALUE(VECTOR_NO_FORMAT)
+#      define V_CHAR_IMPLEMENT_FORMAT 1
+#    else
+#      define V_CHAR_IMPLEMENT_FORMAT 0
+#    endif
+#  elif defined(ERWIN_IMPLEMENT_FORMAT)
+#    if ERWIN_BOOL_VALUE(ERWIN_IMPLEMENT_FORMAT)
+#      define V_CHAR_IMPLEMENT_FORMAT 1
+#    else
+#      define V_CHAR_IMPLEMENT_FORMAT 0
+#    endif
+#  elif defined(ERWIN_NO_FORMAT)
+#    if !ERWIN_BOOL_VALUE(ERWIN_NO_FORMAT)
+#      define V_CHAR_IMPLEMENT_FORMAT 1
+#    else
+#      define V_CHAR_IMPLEMENT_FORMAT 0
+#    endif
+#  elif defined(ALL_ERWIN_IMPLEMENT_FORMAT)
+#    if ERWIN_BOOL_VALUE(ALL_ERWIN_IMPLEMENT_FORMAT)
+#      define V_CHAR_IMPLEMENT_FORMAT 1
+#    else
+#      define V_CHAR_IMPLEMENT_FORMAT 0
+#    endif
+#  elif !defined(ALL_ERWIN_NO_FORMAT)
+#    define V_CHAR_IMPLEMENT_FORMAT 1
+#  elif !ERWIN_BOOL_VALUE(ALL_ERWIN_NO_FORMAT)
+#    define V_CHAR_IMPLEMENT_FORMAT 1
+#  else
+#    define V_CHAR_IMPLEMENT_FORMAT 0
+#  endif
+#  if !defined(V_CHAR_NO_FORMAT)
+#  elif V_CHAR_IMPLEMENT_FORMAT == ERWIN_BOOL_VALUE(V_CHAR_NO_FORMAT)
+#    error "Inconsistency: V_CHAR_IMPLEMENT_FORMAT == V_CHAR_NO_FORMAT"
+#  endif
+#  if ERWIN_BOOL_VALUE(V_CHAR_IMPLEMENT_FORMAT)
+#    define V_CHAR_NO_FORMAT 0
+#  else
+#    define V_CHAR_NO_FORMAT 1
+#  endif
+#endif
+
+/* POSITION_POINTER */
+#if defined(V_CHAR_POSITION_POINTER)
+#  if ERWIN_BOOL_VALUE(V_CHAR_POSITION_POINTER)
+#    undef V_CHAR_POSITION_POINTER
+#    define V_CHAR_POSITION_POINTER 1
+#  else
+#    undef V_CHAR_POSITION_POINTER
+#    define V_CHAR_POSITION_POINTER 0
+#  endif
+#elif defined(VECTOR_POSITION_POINTER)
+#  if ERWIN_BOOL_VALUE(VECTOR_POSITION_POINTER)
+#    define V_CHAR_POSITION_POINTER 1
+#  else
+#    define V_CHAR_POSITION_POINTER 0
+#  endif
+#elif defined(ERWIN_POSITION_POINTER)
+#  if ERWIN_BOOL_VALUE(ERWIN_POSITION_POINTER)
+#    define V_CHAR_POSITION_POINTER 1
+#  else
+#    define V_CHAR_POSITION_POINTER 0
+#  endif
+#elif !defined(ALL_ERWIN_POSITION_POINTER)
+#  define V_CHAR_POSITION_POINTER 0
+#elif ERWIN_BOOL_VALUE(ALL_ERWIN_POSITION_POINTER)
+#  define V_CHAR_POSITION_POINTER 1
+#else
+#  define V_CHAR_POSITION_POINTER 0
+#endif
+
+/* # */
+#ifdef V_CHAR_IMPLEMENTATION
+
+
+
+#ifdef ERWIN_COMPILING
+#  include "erwin/defaults.h"
+#  include "erwin/forwards.h"
+#else
+#  include <erwin/defaults.h>
+#  include <erwin/forwards.h>
+#endif
+
+/* NOMEM_IS_FATAL */
+#if defined(V_CHAR_NOMEM_IS_FATAL)
+#  if ERWIN_BOOL_VALUE(V_CHAR_NOMEM_IS_FATAL)
+#    undef V_CHAR_NOMEM_IS_FATAL
+#    define V_CHAR_NOMEM_IS_FATAL 1
+#  else
+#    undef V_CHAR_NOMEM_IS_FATAL
+#    define V_CHAR_NOMEM_IS_FATAL 0
+#  endif
+#elif defined(VECTOR_NOMEM_IS_FATAL)
+#  if ERWIN_BOOL_VALUE(VECTOR_NOMEM_IS_FATAL)
+#    define V_CHAR_NOMEM_IS_FATAL 1
+#  else
+#    define V_CHAR_NOMEM_IS_FATAL 0
+#  endif
+#elif defined(ERWIN_NOMEM_IS_FATAL)
+#  if ERWIN_BOOL_VALUE(ERWIN_NOMEM_IS_FATAL)
+#    define V_CHAR_NOMEM_IS_FATAL 1
+#  else
+#    define V_CHAR_NOMEM_IS_FATAL 0
+#  endif
+#elif !defined(ALL_ERWIN_NOMEM_IS_FATAL)
+#  define V_CHAR_NOMEM_IS_FATAL 0
+#elif ERWIN_BOOL_VALUE(ALL_ERWIN_NOMEM_IS_FATAL)
+#  define V_CHAR_NOMEM_IS_FATAL 1
+#else
+#  define V_CHAR_NOMEM_IS_FATAL 0
+#endif
+
+/* ASSERTION_FAILED_HANDLER */
+#if defined(V_CHAR_ASSERTION_FAILED_HANDLER)
+#elif defined(VECTOR_ASSERTION_FAILED_HANDLER)
+#  define V_CHAR_ASSERTION_FAILED_HANDLER(FILE,LINE,FUNC,CHECK) VECTOR_ASSERTION_FAILED_HANDLER(FILE,LINE,FUNC,CHECK)
+#elif defined(ERWIN_ASSERTION_FAILED_HANDLER)
+#  define V_CHAR_ASSERTION_FAILED_HANDLER(FILE,LINE,FUNC,CHECK) ERWIN_ASSERTION_FAILED_HANDLER(FILE,LINE,FUNC,CHECK)
+#elif defined(ALL_ERWIN_ASSERTION_FAILED_HANDLER)
+#  define V_CHAR_ASSERTION_FAILED_HANDLER(FILE,LINE,FUNC,CHECK) ALL_ERWIN_ASSERTION_FAILED_HANDLER(FILE,LINE,FUNC,CHECK)
+#else
+#  define V_CHAR_ASSERTION_FAILED_HANDLER(FILE,LINE,FUNC,CHECK) ERWIN_DEFAULT_ASSERTION_FAILED_HANDLER(FILE,LINE,FUNC,CHECK)
+#endif
+
+/* OPTIMISE_SIZE */
+#if defined(V_CHAR_OPTIMISE_SIZE)
+#  if ERWIN_BOOL_VALUE(V_CHAR_OPTIMISE_SIZE)
+#    undef V_CHAR_OPTIMISE_SIZE
+#    define V_CHAR_OPTIMISE_SIZE 1
+#  else
+#    undef V_CHAR_OPTIMISE_SIZE
+#    define V_CHAR_OPTIMISE_SIZE 0
+#  endif
+#elif defined(VECTOR_OPTIMISE_SIZE)
+#  if ERWIN_BOOL_VALUE(VECTOR_OPTIMISE_SIZE)
+#    define V_CHAR_OPTIMISE_SIZE 1
+#  else
+#    define V_CHAR_OPTIMISE_SIZE 0
+#  endif
+#elif defined(ERWIN_OPTIMISE_SIZE)
+#  if ERWIN_BOOL_VALUE(ERWIN_OPTIMISE_SIZE)
+#    define V_CHAR_OPTIMISE_SIZE 1
+#  else
+#    define V_CHAR_OPTIMISE_SIZE 0
+#  endif
+#elif !defined(ALL_ERWIN_OPTIMISE_SIZE)
+#elif ERWIN_BOOL_VALUE(ALL_ERWIN_OPTIMISE_SIZE)
+#  define V_CHAR_OPTIMISE_SIZE 1
+#else
+#  define V_CHAR_OPTIMISE_SIZE 0
+#endif
+
+/* SPLIT */
+#if defined(V_CHAR_SPLIT)
+#  if ERWIN_BOOL_VALUE(V_CHAR_SPLIT)
+#    undef V_CHAR_SPLIT
+#    define V_CHAR_SPLIT 1
+#  else
+#    undef V_CHAR_SPLIT
+#    define V_CHAR_SPLIT 0
+#  endif
+#elif defined(VECTOR_SPLIT)
+#  if ERWIN_BOOL_VALUE(VECTOR_SPLIT)
+#    define V_CHAR_SPLIT 1
+#  else
+#    define V_CHAR_SPLIT 0
+#  endif
+#elif defined(ERWIN_SPLIT)
+#  if ERWIN_BOOL_VALUE(ERWIN_SPLIT)
+#    define V_CHAR_SPLIT 1
+#  else
+#    define V_CHAR_SPLIT 0
+#  endif
+#elif !defined(ALL_ERWIN_SPLIT)
+#elif ERWIN_BOOL_VALUE(ALL_ERWIN_SPLIT)
+#  define V_CHAR_SPLIT 1
+#else
+#  define V_CHAR_SPLIT 0
+#endif
+
+/* AUTO_SHRINK */
+#if defined(V_CHAR_AUTO_SHRINK)
+#  if ERWIN_BOOL_VALUE(V_CHAR_AUTO_SHRINK)
+#    undef V_CHAR_AUTO_SHRINK
+#    define V_CHAR_AUTO_SHRINK 1
+#  else
+#    undef V_CHAR_AUTO_SHRINK
+#    define V_CHAR_AUTO_SHRINK 0
+#  endif
+#elif defined(V_CHAR_NO_AUTO_SHRINK)
+#  if !ERWIN_BOOL_VALUE(V_CHAR_NO_AUTO_SHRINK)
+#    define V_CHAR_AUTO_SHRINK 1
+#  else
+#    define V_CHAR_AUTO_SHRINK 0
+#  endif
+#elif defined(VECTOR_AUTO_SHRINK)
+#  if ERWIN_BOOL_VALUE(VECTOR_AUTO_SHRINK)
+#    define V_CHAR_AUTO_SHRINK 1
+#  else
+#    define V_CHAR_AUTO_SHRINK 0
+#  endif
+#elif defined(VECTOR_NO_AUTO_SHRINK)
+#  if !ERWIN_BOOL_VALUE(VECTOR_NO_AUTO_SHRINK)
+#    define V_CHAR_AUTO_SHRINK 1
+#  else
+#    define V_CHAR_AUTO_SHRINK 0
+#  endif
+#elif defined(ERWIN_AUTO_SHRINK)
+#  if ERWIN_BOOL_VALUE(ERWIN_AUTO_SHRINK)
+#    define V_CHAR_AUTO_SHRINK 1
+#  else
+#    define V_CHAR_AUTO_SHRINK 0
+#  endif
+#elif defined(ERWIN_NO_AUTO_SHRINK)
+#  if !ERWIN_BOOL_VALUE(ERWIN_NO_AUTO_SHRINK)
+#    define V_CHAR_AUTO_SHRINK 1
+#  else
+#    define V_CHAR_AUTO_SHRINK 0
+#  endif
+#elif defined(ALL_ERWIN_AUTO_SHRINK)
+#  if ERWIN_BOOL_VALUE(ALL_ERWIN_AUTO_SHRINK)
+#    define V_CHAR_AUTO_SHRINK 1
+#  else
+#    define V_CHAR_AUTO_SHRINK 0
+#  endif
+#elif !defined(ALL_ERWIN_NO_AUTO_SHRINK)
+#  define V_CHAR_AUTO_SHRINK 1
+#elif !ERWIN_BOOL_VALUE(ALL_ERWIN_NO_AUTO_SHRINK)
+#  define V_CHAR_AUTO_SHRINK 1
+#else
+#  define V_CHAR_AUTO_SHRINK 0
+#endif
+#if !defined(V_CHAR_NO_AUTO_SHRINK)
+#elif V_CHAR_AUTO_SHRINK == ERWIN_BOOL_VALUE(V_CHAR_NO_AUTO_SHRINK)
+#  error "Inconsistency: V_CHAR_AUTO_SHRINK == V_CHAR_NO_AUTO_SHRINK"
+#endif
+#if ERWIN_BOOL_VALUE(V_CHAR_AUTO_SHRINK)
+#  define V_CHAR_NO_AUTO_SHRINK 0
+#else
+#  define V_CHAR_NO_AUTO_SHRINK 1
+#endif
+
+/* C_MM */
+#if !defined(__cplusplus)
+#  undef V_CHAR_C_MM
+#  define V_CHAR_C_MM 1
+#elif defined(V_CHAR_C_MM)
+#  if ERWIN_BOOL_VALUE(V_CHAR_C_MM)
+#    undef V_CHAR_C_MM
+#    define V_CHAR_C_MM 1
+#  else
+#    undef V_CHAR_C_MM
+#    define V_CHAR_C_MM 0
+#  endif
+#elif defined(VECTOR_C_MM)
+#  if ERWIN_BOOL_VALUE(VECTOR_C_MM)
+#    define V_CHAR_C_MM 1
+#  else
+#    define V_CHAR_C_MM 0
+#  endif
+#elif defined(ERWIN_C_MM)
+#  if ERWIN_BOOL_VALUE(ERWIN_C_MM)
+#    define V_CHAR_C_MM 1
+#  else
+#    define V_CHAR_C_MM 0
+#  endif
+#elif !defined(ALL_ERWIN_C_MM)
+#  define V_CHAR_C_MM 0
+#elif ERWIN_BOOL_VALUE(ALL_ERWIN_C_MM)
+#  define V_CHAR_C_MM 1
+#else
+#  define V_CHAR_C_MM 0
+#endif
+
+/* COMPARE_LEXICOGRAPHICALLY */
+#if defined(V_CHAR_COMPARE_LEXICOGRAPHICALLY)
+#  if ERWIN_BOOL_VALUE(V_CHAR_COMPARE_LEXICOGRAPHICALLY)
+#    undef V_CHAR_COMPARE_LEXICOGRAPHICALLY
+#    define V_CHAR_COMPARE_LEXICOGRAPHICALLY 1
+#  else
+#    undef V_CHAR_COMPARE_LEXICOGRAPHICALLY
+#    define V_CHAR_COMPARE_LEXICOGRAPHICALLY 0
+#  endif
+#elif defined(VECTOR_COMPARE_LEXICOGRAPHICALLY)
+#  if ERWIN_BOOL_VALUE(VECTOR_COMPARE_LEXICOGRAPHICALLY)
+#    define V_CHAR_COMPARE_LEXICOGRAPHICALLY 1
+#  else
+#    define V_CHAR_COMPARE_LEXICOGRAPHICALLY 0
+#  endif
+#elif defined(ERWIN_COMPARE_LEXICOGRAPHICALLY)
+#  if ERWIN_BOOL_VALUE(ERWIN_COMPARE_LEXICOGRAPHICALLY)
+#    define V_CHAR_COMPARE_LEXICOGRAPHICALLY 1
+#  else
+#    define V_CHAR_COMPARE_LEXICOGRAPHICALLY 0
+#  endif
+#elif defined(ALL_ERWIN_COMPARE_LEXICOGRAPHICALLY)
+#  if ERWIN_BOOL_VALUE(ALL_ERWIN_COMPARE_LEXICOGRAPHICALLY)
+#    define V_CHAR_COMPARE_LEXICOGRAPHICALLY 1
+#  else
+#    define V_CHAR_COMPARE_LEXICOGRAPHICALLY 0
+#  endif
+#elif V_CHAR_INDEX_IS_CHAR
+#  define V_CHAR_COMPARE_LEXICOGRAPHICALLY 1
+#else
+#  define V_CHAR_COMPARE_LEXICOGRAPHICALLY 0
+#endif
+
+/* PRIORITY_COMPARE_LEXICOGRAPHICALLY */
+#if defined(V_CHAR_PRIORITY_COMPARE_LEXICOGRAPHICALLY)
+#  if ERWIN_BOOL_VALUE(V_CHAR_PRIORITY_COMPARE_LEXICOGRAPHICALLY)
+#    undef V_CHAR_PRIORITY_COMPARE_LEXICOGRAPHICALLY
+#    define V_CHAR_PRIORITY_COMPARE_LEXICOGRAPHICALLY 1
+#  else
+#    undef V_CHAR_PRIORITY_COMPARE_LEXICOGRAPHICALLY
+#    define V_CHAR_PRIORITY_COMPARE_LEXICOGRAPHICALLY 0
+#  endif
+#elif defined(VECTOR_PRIORITY_COMPARE_LEXICOGRAPHICALLY)
+#  if ERWIN_BOOL_VALUE(VECTOR_PRIORITY_COMPARE_LEXICOGRAPHICALLY)
+#    define V_CHAR_PRIORITY_COMPARE_LEXICOGRAPHICALLY 1
+#  else
+#    define V_CHAR_PRIORITY_COMPARE_LEXICOGRAPHICALLY 0
+#  endif
+#elif defined(ERWIN_PRIORITY_COMPARE_LEXICOGRAPHICALLY)
+#  if ERWIN_BOOL_VALUE(ERWIN_PRIORITY_COMPARE_LEXICOGRAPHICALLY)
+#    define V_CHAR_PRIORITY_COMPARE_LEXICOGRAPHICALLY 1
+#  else
+#    define V_CHAR_PRIORITY_COMPARE_LEXICOGRAPHICALLY 0
+#  endif
+#elif !defined(ALL_ERWIN_PRIORITY_COMPARE_LEXICOGRAPHICALLY)
+#  define V_CHAR_PRIORITY_COMPARE_LEXICOGRAPHICALLY 0
+#elif ERWIN_BOOL_VALUE(ALL_ERWIN_PRIORITY_COMPARE_LEXICOGRAPHICALLY)
+#  define V_CHAR_PRIORITY_COMPARE_LEXICOGRAPHICALLY 1
+#else
+#  define V_CHAR_PRIORITY_COMPARE_LEXICOGRAPHICALLY 0
+#endif
+
+/* DEBUG_EXPENSIVE_CHECKS */
+#if defined(NDEBUG)
+#  undef V_CHAR_DEBUG_EXPENSIVE_CHECKS
+#  define V_CHAR_DEBUG_EXPENSIVE_CHECKS 0
+#elif defined(V_CHAR_DEBUG_EXPENSIVE_CHECKS)
+#  if ERWIN_BOOL_VALUE(V_CHAR_DEBUG_EXPENSIVE_CHECKS)
+#    undef V_CHAR_DEBUG_EXPENSIVE_CHECKS
+#    define V_CHAR_DEBUG_EXPENSIVE_CHECKS 1
+#  else
+#    undef V_CHAR_DEBUG_EXPENSIVE_CHECKS
+#    define V_CHAR_DEBUG_EXPENSIVE_CHECKS 0
+#  endif
+#elif defined(VECTOR_DEBUG_EXPENSIVE_CHECKS)
+#  if ERWIN_BOOL_VALUE(VECTOR_DEBUG_EXPENSIVE_CHECKS)
+#    define V_CHAR_DEBUG_EXPENSIVE_CHECKS 1
+#  else
+#    define V_CHAR_DEBUG_EXPENSIVE_CHECKS 0
+#  endif
+#elif defined(ERWIN_DEBUG_EXPENSIVE_CHECKS)
+#  if ERWIN_BOOL_VALUE(ERWIN_DEBUG_EXPENSIVE_CHECKS)
+#    define V_CHAR_DEBUG_EXPENSIVE_CHECKS 1
+#  else
+#    define V_CHAR_DEBUG_EXPENSIVE_CHECKS 0
+#  endif
+#elif !defined(ALL_ERWIN_DEBUG_EXPENSIVE_CHECKS)
+#  define V_CHAR_DEBUG_EXPENSIVE_CHECKS 0
+#elif ERWIN_BOOL_VALUE(ALL_ERWIN_DEBUG_EXPENSIVE_CHECKS)
+#  define V_CHAR_DEBUG_EXPENSIVE_CHECKS 1
+#else
+#  define V_CHAR_DEBUG_EXPENSIVE_CHECKS 0
+#endif
+
+/* INITIAL_SIZE */
+#if defined(V_CHAR_INITIAL_SIZE)
+#elif defined(VECTOR_INITIAL_SIZE)
+#  define V_CHAR_INITIAL_SIZE VECTOR_INITIAL_SIZE
+#elif defined(ERWIN_INITIAL_SIZE)
+#  define V_CHAR_INITIAL_SIZE ERWIN_INITIAL_SIZE
+#elif defined(ALL_ERWIN_INITIAL_SIZE)
+#  define V_CHAR_INITIAL_SIZE ALL_ERWIN_INITIAL_SIZE
+#else
+#  define V_CHAR_INITIAL_SIZE 8
+#endif
+
+/* MINIMAL_SIZE */
+#if defined(V_CHAR_MINIMAL_SIZE)
+#elif defined(VECTOR_MINIMAL_SIZE)
+#  define V_CHAR_MINIMAL_SIZE VECTOR_MINIMAL_SIZE
+#elif defined(ERWIN_MINIMAL_SIZE)
+#  define V_CHAR_MINIMAL_SIZE ERWIN_MINIMAL_SIZE
+#elif defined(ALL_ERWIN_MINIMAL_SIZE)
+#  define V_CHAR_MINIMAL_SIZE ALL_ERWIN_MINIMAL_SIZE
+#else
+#  define V_CHAR_MINIMAL_SIZE 8
+#endif
+
+/* OUTOFRANGE_IS_FATAL */
+#if defined(V_CHAR_OUTOFRANGE_IS_FATAL)
+#  if ERWIN_BOOL_VALUE(V_CHAR_OUTOFRANGE_IS_FATAL)
+#    undef V_CHAR_OUTOFRANGE_IS_FATAL
+#    define V_CHAR_OUTOFRANGE_IS_FATAL 1
+#  else
+#    undef V_CHAR_OUTOFRANGE_IS_FATAL
+#    define V_CHAR_OUTOFRANGE_IS_FATAL 0
+#  endif
+#elif defined(VECTOR_OUTOFRANGE_IS_FATAL)
+#  if ERWIN_BOOL_VALUE(VECTOR_OUTOFRANGE_IS_FATAL)
+#    define V_CHAR_OUTOFRANGE_IS_FATAL 1
+#  else
+#    define V_CHAR_OUTOFRANGE_IS_FATAL 0
+#  endif
+#elif defined(ERWIN_OUTOFRANGE_IS_FATAL)
+#  if ERWIN_BOOL_VALUE(ERWIN_OUTOFRANGE_IS_FATAL)
+#    define V_CHAR_OUTOFRANGE_IS_FATAL 1
+#  else
+#    define V_CHAR_OUTOFRANGE_IS_FATAL 0
+#  endif
+#elif !defined(ALL_ERWIN_OUTOFRANGE_IS_FATAL)
+#  define V_CHAR_OUTOFRANGE_IS_FATAL 0
+#elif ERWIN_BOOL_VALUE(ALL_ERWIN_OUTOFRANGE_IS_FATAL)
+#  define V_CHAR_OUTOFRANGE_IS_FATAL 1
+#else
+#  define V_CHAR_OUTOFRANGE_IS_FATAL 0
+#endif
+
+/* OCOPY */
+#if defined(CHAR_OCOPY_PROVIDED)
+#elif defined(CHAR_OCOPY)
+#  define CHAR_OCOPY_PROVIDED 1
+#elif defined(CHAR_COPY)
+#  define CHAR_OCOPY_PROVIDED 1
+#  define CHAR_OCOPY(TO_BE_COPIED,ERR_P) CHAR_COPY(TO_BE_COPIED,ERR_P)
+#else
+#  define CHAR_OCOPY(TO_BE_COPIED,ERR_P) TO_BE_COPIED
+#  define CHAR_OCOPY_PROVIDED 0
+#endif
+#if defined(CHAR_OCOPY)
+#elif CHAR_OCOPY_PROVIDED
+#  error "Inconsistency: CHAR_OCOPY_PROVIDED is true but CHAR_OCOPY is undefined."
+#endif
+
+/* OFREE */
+#if defined(CHAR_OFREE_PROVIDED)
+#elif defined(CHAR_OFREE)
+#  define CHAR_OFREE_PROVIDED 1
+#elif defined(CHAR_FREE)
+#  define CHAR_OFREE_PROVIDED 1
+#  define CHAR_OFREE(TO_BE_DESTROYED) CHAR_FREE(TO_BE_DESTROYED)
+#else
+#  define CHAR_OFREE(TO_BE_DESTROYED)
+#  define CHAR_OFREE_PROVIDED 0
+#endif
+#if defined(CHAR_OFREE)
+#elif CHAR_OFREE_PROVIDED
+#  error "Inconsistency: CHAR_OFREE_PROVIDED is true but CHAR_OFREE is undefined."
+#endif
+
+/* ZERO */
+#if !defined(CHAR_ZERO)
+#  define CHAR_ZERO (char )0
+#endif
+
+/* HASH_RAW */
+#if defined(CHAR_HASH_RAW)
+#elif defined(CHAR_HASHVAL)
+#  define CHAR_HASH_RAW(X) CHAR_HASHVAL(X)
+#endif
+
+/* HASH */
+#if defined(CHAR_HASH)
+#elif defined(CHAR_HASH_RAW)
+#  define CHAR_HASH(X) hashval_t_hash((CHAR_HASH_RAW(X)))
+#endif
+
+/* CMP */
+#if defined(CHAR_CMP_PROVIDED)
+#elif defined(CHAR_CMP)
+#  define CHAR_CMP_PROVIDED 1
+#else
+#  define CHAR_CMP_PROVIDED 0
+#endif
+#if defined(CHAR_CMP)
+#elif CHAR_CMP_PROVIDED
+#  error "Inconsistency: CHAR_CMP_PROVIDED is true but CHAR_CMP is undefined."
+#endif
+
+/* PRIORITY_CMP */
+#if defined(CHAR_PRIORITY_CMP_PROVIDED)
+#elif defined(CHAR_PRIORITY_CMP)
+#  define CHAR_PRIORITY_CMP_PROVIDED 1
+#else
+#  if defined(CHAR_CMP)
+#    define CHAR_PRIORITY_CMP(A,B) CHAR_CMP(A,B)
+#  endif
+#  define CHAR_PRIORITY_CMP_PROVIDED 0
+#endif
+#if defined(CHAR_PRIORITY_CMP)
+#elif CHAR_PRIORITY_CMP_PROVIDED
+#  error "Inconsistency: CHAR_PRIORITY_CMP_PROVIDED is true but CHAR_PRIORITY_CMP is undefined."
+#endif
+
+/* EQUAL */
+#if defined(CHAR_EQUAL)
+#elif !CHAR_CMP_PROVIDED
+#  define CHAR_EQUAL(A,B) (A) == (B)
+#elif defined(CHAR_CMP)
+#  define CHAR_EQUAL(A,B) (CHAR_CMP(A,B)) == 0
+#endif
+
+/* UPDATE_POS */
+#if defined(V_CHAR_UPDATE_POS)
+#elif defined(VECTOR_UPDATE_POS)
+#  define V_CHAR_UPDATE_POS(SELF,ELEMENT,INDEX) VECTOR_UPDATE_POS(SELF,ELEMENT,INDEX)
+#elif defined(ERWIN_UPDATE_POS)
+#  define V_CHAR_UPDATE_POS(SELF,ELEMENT,INDEX) ERWIN_UPDATE_POS(SELF,ELEMENT,INDEX)
+#elif defined(ALL_ERWIN_UPDATE_POS)
+#  define V_CHAR_UPDATE_POS(SELF,ELEMENT,INDEX) ALL_ERWIN_UPDATE_POS(SELF,ELEMENT,INDEX)
+#endif
+
+/* UPDATE_POS2 */
+#if defined(V_CHAR_UPDATE_POS2)
+#elif defined(VECTOR_UPDATE_POS2)
+#  define V_CHAR_UPDATE_POS2(SELF,ELEMENT1,INDEX1,ELEMENT2,INDEX2) VECTOR_UPDATE_POS2(SELF,ELEMENT1,INDEX1,ELEMENT2,INDEX2)
+#elif defined(ERWIN_UPDATE_POS2)
+#  define V_CHAR_UPDATE_POS2(SELF,ELEMENT1,INDEX1,ELEMENT2,INDEX2) ERWIN_UPDATE_POS2(SELF,ELEMENT1,INDEX1,ELEMENT2,INDEX2)
+#elif defined(ALL_ERWIN_UPDATE_POS2)
+#  define V_CHAR_UPDATE_POS2(SELF,ELEMENT1,INDEX1,ELEMENT2,INDEX2) ALL_ERWIN_UPDATE_POS2(SELF,ELEMENT1,INDEX1,ELEMENT2,INDEX2)
+#endif
+
+/* MANUAL_POSITION */
+#if defined(V_CHAR_MANUAL_POSITION)
+#  if ERWIN_BOOL_VALUE(V_CHAR_MANUAL_POSITION)
+#    undef V_CHAR_MANUAL_POSITION
+#    define V_CHAR_MANUAL_POSITION 1
+#  else
+#    undef V_CHAR_MANUAL_POSITION
+#    define V_CHAR_MANUAL_POSITION 0
+#  endif
+#elif defined(VECTOR_MANUAL_POSITION)
+#  if ERWIN_BOOL_VALUE(VECTOR_MANUAL_POSITION)
+#    define V_CHAR_MANUAL_POSITION 1
+#  else
+#    define V_CHAR_MANUAL_POSITION 0
+#  endif
+#elif defined(ERWIN_MANUAL_POSITION)
+#  if ERWIN_BOOL_VALUE(ERWIN_MANUAL_POSITION)
+#    define V_CHAR_MANUAL_POSITION 1
+#  else
+#    define V_CHAR_MANUAL_POSITION 0
+#  endif
+#elif !defined(ALL_ERWIN_MANUAL_POSITION)
+#  define V_CHAR_MANUAL_POSITION 0
+#elif ERWIN_BOOL_VALUE(ALL_ERWIN_MANUAL_POSITION)
+#  define V_CHAR_MANUAL_POSITION 1
+#else
+#  define V_CHAR_MANUAL_POSITION 0
+#endif
+
+#endif /* V_CHAR_IMPLEMENTATION */
+#endif /* !defined(ERWIN_V_CHAR_D_h) */

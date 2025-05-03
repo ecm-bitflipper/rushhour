@@ -1,0 +1,681 @@
+
+#ifndef ERWIN_MAP_INT_CHAR_P_f_h
+#define ERWIN_MAP_INT_CHAR_P_f_h
+
+struct map_int_char_p_t;
+#ifndef __cplusplus
+typedef struct map_int_char_p_t map_int_char_p_t;
+#endif
+typedef struct map_int_char_p_t MapIntCharP;
+
+typedef map_int_char_p_t *map_int_char_p_t_p;
+
+typedef map_int_char_p_t const *map_int_char_p_t_const_p;
+
+#define MAP_INT_CHAR_P_SIG 139839952
+
+
+
+#ifdef MAP_INT_CHAR_P_TP_DEEP
+#  if MAP_INT_CHAR_P_TP_DEEP
+#    ifndef MAP_INT_CHAR_P_TP_DEEP_COPY
+#      define MAP_INT_CHAR_P_TP_DEEP_COPY 1
+#    endif
+#    ifndef MAP_INT_CHAR_P_TP_DEEP_COMPARE
+#      define MAP_INT_CHAR_P_TP_DEEP_COMPARE 1
+#    endif
+#  else
+#    ifndef MAP_INT_CHAR_P_TP_DEEP_COPY
+#      define MAP_INT_CHAR_P_TP_DEEP_COPY 0
+#    endif
+#    ifndef MAP_INT_CHAR_P_TP_DEEP_COMPARE
+#      define MAP_INT_CHAR_P_TP_DEEP_COMPARE 0
+#    endif
+#  endif
+#endif
+#ifndef MAP_INT_CHAR_P_TP_DEEP_COPY
+#define MAP_INT_CHAR_P_TP_DEEP_COPY 0
+#endif /* !defined MAP_INT_CHAR_P_TP_DEEP_COPY */
+
+#ifndef MAP_INT_CHAR_P_TP_DEEP_COMPARE
+#define MAP_INT_CHAR_P_TP_DEEP_COMPARE 0
+#endif /* !defined MAP_INT_CHAR_P_TP_DEEP_COMPARE */
+
+#ifdef MAP_INT_CHAR_P_T_CONSTP_DEEP
+#  if MAP_INT_CHAR_P_T_CONSTP_DEEP
+#    ifndef MAP_INT_CHAR_P_T_CONSTP_DEEP_COPY
+#      define MAP_INT_CHAR_P_T_CONSTP_DEEP_COPY 1
+#    endif
+#    ifndef MAP_INT_CHAR_P_T_CONSTP_DEEP_COMPARE
+#      define MAP_INT_CHAR_P_T_CONSTP_DEEP_COMPARE 1
+#    endif
+#  else
+#    ifndef MAP_INT_CHAR_P_T_CONSTP_DEEP_COPY
+#      define MAP_INT_CHAR_P_T_CONSTP_DEEP_COPY 0
+#    endif
+#    ifndef MAP_INT_CHAR_P_T_CONSTP_DEEP_COMPARE
+#      define MAP_INT_CHAR_P_T_CONSTP_DEEP_COMPARE 0
+#    endif
+#  endif
+#endif
+#ifndef MAP_INT_CHAR_P_T_CONSTP_DEEP_COPY
+#define MAP_INT_CHAR_P_T_CONSTP_DEEP_COPY 0
+#endif /* !defined MAP_INT_CHAR_P_T_CONSTP_DEEP_COPY */
+
+#ifndef MAP_INT_CHAR_P_T_CONSTP_DEEP_COMPARE
+#define MAP_INT_CHAR_P_T_CONSTP_DEEP_COMPARE 0
+#endif /* !defined MAP_INT_CHAR_P_T_CONSTP_DEEP_COMPARE */
+
+#ifdef CONST_MAP_INT_CHAR_P_TP_DEEP
+#  if CONST_MAP_INT_CHAR_P_TP_DEEP
+#    ifndef CONST_MAP_INT_CHAR_P_TP_DEEP_COPY
+#      define CONST_MAP_INT_CHAR_P_TP_DEEP_COPY 1
+#    endif
+#    ifndef CONST_MAP_INT_CHAR_P_TP_DEEP_COMPARE
+#      define CONST_MAP_INT_CHAR_P_TP_DEEP_COMPARE 1
+#    endif
+#  else
+#    ifndef CONST_MAP_INT_CHAR_P_TP_DEEP_COPY
+#      define CONST_MAP_INT_CHAR_P_TP_DEEP_COPY 0
+#    endif
+#    ifndef CONST_MAP_INT_CHAR_P_TP_DEEP_COMPARE
+#      define CONST_MAP_INT_CHAR_P_TP_DEEP_COMPARE 0
+#    endif
+#  endif
+#endif
+#ifndef CONST_MAP_INT_CHAR_P_TP_DEEP_COPY
+#define CONST_MAP_INT_CHAR_P_TP_DEEP_COPY 0
+#endif /* !defined CONST_MAP_INT_CHAR_P_TP_DEEP_COPY */
+
+#ifndef CONST_MAP_INT_CHAR_P_TP_DEEP_COMPARE
+#define CONST_MAP_INT_CHAR_P_TP_DEEP_COMPARE 0
+#endif /* !defined CONST_MAP_INT_CHAR_P_TP_DEEP_COMPARE */
+
+#ifdef MAPINTCHARPP_DEEP
+#  if MAPINTCHARPP_DEEP
+#    ifndef MAPINTCHARPP_DEEP_COPY
+#      define MAPINTCHARPP_DEEP_COPY 1
+#    endif
+#    ifndef MAPINTCHARPP_DEEP_COMPARE
+#      define MAPINTCHARPP_DEEP_COMPARE 1
+#    endif
+#  else
+#    ifndef MAPINTCHARPP_DEEP_COPY
+#      define MAPINTCHARPP_DEEP_COPY 0
+#    endif
+#    ifndef MAPINTCHARPP_DEEP_COMPARE
+#      define MAPINTCHARPP_DEEP_COMPARE 0
+#    endif
+#  endif
+#endif
+#ifndef MAPINTCHARPP_DEEP_COPY
+#define MAPINTCHARPP_DEEP_COPY 0
+#endif /* !defined MAPINTCHARPP_DEEP_COPY */
+
+#ifndef MAPINTCHARPP_DEEP_COMPARE
+#define MAPINTCHARPP_DEEP_COMPARE 0
+#endif /* !defined MAPINTCHARPP_DEEP_COMPARE */
+
+#ifdef MAPINTCHARP_CONSTP_DEEP
+#  if MAPINTCHARP_CONSTP_DEEP
+#    ifndef MAPINTCHARP_CONSTP_DEEP_COPY
+#      define MAPINTCHARP_CONSTP_DEEP_COPY 1
+#    endif
+#    ifndef MAPINTCHARP_CONSTP_DEEP_COMPARE
+#      define MAPINTCHARP_CONSTP_DEEP_COMPARE 1
+#    endif
+#  else
+#    ifndef MAPINTCHARP_CONSTP_DEEP_COPY
+#      define MAPINTCHARP_CONSTP_DEEP_COPY 0
+#    endif
+#    ifndef MAPINTCHARP_CONSTP_DEEP_COMPARE
+#      define MAPINTCHARP_CONSTP_DEEP_COMPARE 0
+#    endif
+#  endif
+#endif
+#ifndef MAPINTCHARP_CONSTP_DEEP_COPY
+#define MAPINTCHARP_CONSTP_DEEP_COPY 0
+#endif /* !defined MAPINTCHARP_CONSTP_DEEP_COPY */
+
+#ifndef MAPINTCHARP_CONSTP_DEEP_COMPARE
+#define MAPINTCHARP_CONSTP_DEEP_COMPARE 0
+#endif /* !defined MAPINTCHARP_CONSTP_DEEP_COMPARE */
+
+#ifdef CONST_MAPINTCHARPP_DEEP
+#  if CONST_MAPINTCHARPP_DEEP
+#    ifndef CONST_MAPINTCHARPP_DEEP_COPY
+#      define CONST_MAPINTCHARPP_DEEP_COPY 1
+#    endif
+#    ifndef CONST_MAPINTCHARPP_DEEP_COMPARE
+#      define CONST_MAPINTCHARPP_DEEP_COMPARE 1
+#    endif
+#  else
+#    ifndef CONST_MAPINTCHARPP_DEEP_COPY
+#      define CONST_MAPINTCHARPP_DEEP_COPY 0
+#    endif
+#    ifndef CONST_MAPINTCHARPP_DEEP_COMPARE
+#      define CONST_MAPINTCHARPP_DEEP_COMPARE 0
+#    endif
+#  endif
+#endif
+#ifndef CONST_MAPINTCHARPP_DEEP_COPY
+#define CONST_MAPINTCHARPP_DEEP_COPY 0
+#endif /* !defined CONST_MAPINTCHARPP_DEEP_COPY */
+
+#ifndef CONST_MAPINTCHARPP_DEEP_COMPARE
+#define CONST_MAPINTCHARPP_DEEP_COMPARE 0
+#endif /* !defined CONST_MAPINTCHARPP_DEEP_COMPARE */
+
+#ifdef MAP_INT_CHAR_P_T_P_DEEP
+#  if MAP_INT_CHAR_P_T_P_DEEP
+#    ifndef MAP_INT_CHAR_P_T_P_DEEP_COPY
+#      define MAP_INT_CHAR_P_T_P_DEEP_COPY 1
+#    endif
+#    ifndef MAP_INT_CHAR_P_T_P_DEEP_COMPARE
+#      define MAP_INT_CHAR_P_T_P_DEEP_COMPARE 1
+#    endif
+#  else
+#    ifndef MAP_INT_CHAR_P_T_P_DEEP_COPY
+#      define MAP_INT_CHAR_P_T_P_DEEP_COPY 0
+#    endif
+#    ifndef MAP_INT_CHAR_P_T_P_DEEP_COMPARE
+#      define MAP_INT_CHAR_P_T_P_DEEP_COMPARE 0
+#    endif
+#  endif
+#endif
+#ifndef MAP_INT_CHAR_P_T_P_DEEP_COPY
+#define MAP_INT_CHAR_P_T_P_DEEP_COPY 0
+#endif /* !defined MAP_INT_CHAR_P_T_P_DEEP_COPY */
+
+#ifndef MAP_INT_CHAR_P_T_P_DEEP_COMPARE
+#define MAP_INT_CHAR_P_T_P_DEEP_COMPARE 0
+#endif /* !defined MAP_INT_CHAR_P_T_P_DEEP_COMPARE */
+
+#ifdef MAP_INT_CHAR_P_T_CONST_P_DEEP
+#  if MAP_INT_CHAR_P_T_CONST_P_DEEP
+#    ifndef MAP_INT_CHAR_P_T_CONST_P_DEEP_COPY
+#      define MAP_INT_CHAR_P_T_CONST_P_DEEP_COPY 1
+#    endif
+#    ifndef MAP_INT_CHAR_P_T_CONST_P_DEEP_COMPARE
+#      define MAP_INT_CHAR_P_T_CONST_P_DEEP_COMPARE 1
+#    endif
+#  else
+#    ifndef MAP_INT_CHAR_P_T_CONST_P_DEEP_COPY
+#      define MAP_INT_CHAR_P_T_CONST_P_DEEP_COPY 0
+#    endif
+#    ifndef MAP_INT_CHAR_P_T_CONST_P_DEEP_COMPARE
+#      define MAP_INT_CHAR_P_T_CONST_P_DEEP_COMPARE 0
+#    endif
+#  endif
+#endif
+#ifndef MAP_INT_CHAR_P_T_CONST_P_DEEP_COPY
+#define MAP_INT_CHAR_P_T_CONST_P_DEEP_COPY 0
+#endif /* !defined MAP_INT_CHAR_P_T_CONST_P_DEEP_COPY */
+
+#ifndef MAP_INT_CHAR_P_T_CONST_P_DEEP_COMPARE
+#define MAP_INT_CHAR_P_T_CONST_P_DEEP_COMPARE 0
+#endif /* !defined MAP_INT_CHAR_P_T_CONST_P_DEEP_COMPARE */
+
+#ifdef CONST_MAP_INT_CHAR_P_T_P_DEEP
+#  if CONST_MAP_INT_CHAR_P_T_P_DEEP
+#    ifndef CONST_MAP_INT_CHAR_P_T_P_DEEP_COPY
+#      define CONST_MAP_INT_CHAR_P_T_P_DEEP_COPY 1
+#    endif
+#    ifndef CONST_MAP_INT_CHAR_P_T_P_DEEP_COMPARE
+#      define CONST_MAP_INT_CHAR_P_T_P_DEEP_COMPARE 1
+#    endif
+#  else
+#    ifndef CONST_MAP_INT_CHAR_P_T_P_DEEP_COPY
+#      define CONST_MAP_INT_CHAR_P_T_P_DEEP_COPY 0
+#    endif
+#    ifndef CONST_MAP_INT_CHAR_P_T_P_DEEP_COMPARE
+#      define CONST_MAP_INT_CHAR_P_T_P_DEEP_COMPARE 0
+#    endif
+#  endif
+#endif
+#ifndef CONST_MAP_INT_CHAR_P_T_P_DEEP_COPY
+#define CONST_MAP_INT_CHAR_P_T_P_DEEP_COPY 0
+#endif /* !defined CONST_MAP_INT_CHAR_P_T_P_DEEP_COPY */
+
+#ifndef CONST_MAP_INT_CHAR_P_T_P_DEEP_COMPARE
+#define CONST_MAP_INT_CHAR_P_T_P_DEEP_COMPARE 0
+#endif /* !defined CONST_MAP_INT_CHAR_P_T_P_DEEP_COMPARE */
+
+#ifdef MAPINTCHARP_P_DEEP
+#  if MAPINTCHARP_P_DEEP
+#    ifndef MAPINTCHARP_P_DEEP_COPY
+#      define MAPINTCHARP_P_DEEP_COPY 1
+#    endif
+#    ifndef MAPINTCHARP_P_DEEP_COMPARE
+#      define MAPINTCHARP_P_DEEP_COMPARE 1
+#    endif
+#  else
+#    ifndef MAPINTCHARP_P_DEEP_COPY
+#      define MAPINTCHARP_P_DEEP_COPY 0
+#    endif
+#    ifndef MAPINTCHARP_P_DEEP_COMPARE
+#      define MAPINTCHARP_P_DEEP_COMPARE 0
+#    endif
+#  endif
+#endif
+#ifndef MAPINTCHARP_P_DEEP_COPY
+#define MAPINTCHARP_P_DEEP_COPY 0
+#endif /* !defined MAPINTCHARP_P_DEEP_COPY */
+
+#ifndef MAPINTCHARP_P_DEEP_COMPARE
+#define MAPINTCHARP_P_DEEP_COMPARE 0
+#endif /* !defined MAPINTCHARP_P_DEEP_COMPARE */
+
+#ifdef MAPINTCHARP_CONST_P_DEEP
+#  if MAPINTCHARP_CONST_P_DEEP
+#    ifndef MAPINTCHARP_CONST_P_DEEP_COPY
+#      define MAPINTCHARP_CONST_P_DEEP_COPY 1
+#    endif
+#    ifndef MAPINTCHARP_CONST_P_DEEP_COMPARE
+#      define MAPINTCHARP_CONST_P_DEEP_COMPARE 1
+#    endif
+#  else
+#    ifndef MAPINTCHARP_CONST_P_DEEP_COPY
+#      define MAPINTCHARP_CONST_P_DEEP_COPY 0
+#    endif
+#    ifndef MAPINTCHARP_CONST_P_DEEP_COMPARE
+#      define MAPINTCHARP_CONST_P_DEEP_COMPARE 0
+#    endif
+#  endif
+#endif
+#ifndef MAPINTCHARP_CONST_P_DEEP_COPY
+#define MAPINTCHARP_CONST_P_DEEP_COPY 0
+#endif /* !defined MAPINTCHARP_CONST_P_DEEP_COPY */
+
+#ifndef MAPINTCHARP_CONST_P_DEEP_COMPARE
+#define MAPINTCHARP_CONST_P_DEEP_COMPARE 0
+#endif /* !defined MAPINTCHARP_CONST_P_DEEP_COMPARE */
+
+#ifdef CONST_MAPINTCHARP_P_DEEP
+#  if CONST_MAPINTCHARP_P_DEEP
+#    ifndef CONST_MAPINTCHARP_P_DEEP_COPY
+#      define CONST_MAPINTCHARP_P_DEEP_COPY 1
+#    endif
+#    ifndef CONST_MAPINTCHARP_P_DEEP_COMPARE
+#      define CONST_MAPINTCHARP_P_DEEP_COMPARE 1
+#    endif
+#  else
+#    ifndef CONST_MAPINTCHARP_P_DEEP_COPY
+#      define CONST_MAPINTCHARP_P_DEEP_COPY 0
+#    endif
+#    ifndef CONST_MAPINTCHARP_P_DEEP_COMPARE
+#      define CONST_MAPINTCHARP_P_DEEP_COMPARE 0
+#    endif
+#  endif
+#endif
+#ifndef CONST_MAPINTCHARP_P_DEEP_COPY
+#define CONST_MAPINTCHARP_P_DEEP_COPY 0
+#endif /* !defined CONST_MAPINTCHARP_P_DEEP_COPY */
+
+#ifndef CONST_MAPINTCHARP_P_DEEP_COMPARE
+#define CONST_MAPINTCHARP_P_DEEP_COMPARE 0
+#endif /* !defined CONST_MAPINTCHARP_P_DEEP_COMPARE */
+
+#if MAP_INT_CHAR_P_TP_DEEP_COMPARE && !defined(MAP_INT_CHAR_P_TP_HASH_RAW)
+#define MAP_INT_CHAR_P_TP_HASH_RAW(A1) map_int_char_p_hash_raw((A1))
+#endif
+
+#if MAP_INT_CHAR_P_T_CONSTP_DEEP_COMPARE && !defined(MAP_INT_CHAR_P_T_CONSTP_HASH_RAW)
+#define MAP_INT_CHAR_P_T_CONSTP_HASH_RAW(A1) map_int_char_p_hash_raw((A1))
+#endif
+
+#if CONST_MAP_INT_CHAR_P_TP_DEEP_COMPARE && !defined(CONST_MAP_INT_CHAR_P_TP_HASH_RAW)
+#define CONST_MAP_INT_CHAR_P_TP_HASH_RAW(A1) map_int_char_p_hash_raw((A1))
+#endif
+
+#if MAPINTCHARPP_DEEP_COMPARE && !defined(MAPINTCHARPP_HASH_RAW)
+#define MAPINTCHARPP_HASH_RAW(A1) ((A1)->hash_raw())
+#endif
+
+#if MAPINTCHARP_CONSTP_DEEP_COMPARE && !defined(MAPINTCHARP_CONSTP_HASH_RAW)
+#define MAPINTCHARP_CONSTP_HASH_RAW(A1) ((A1)->hash_raw())
+#endif
+
+#if CONST_MAPINTCHARPP_DEEP_COMPARE && !defined(CONST_MAPINTCHARPP_HASH_RAW)
+#define CONST_MAPINTCHARPP_HASH_RAW(A1) ((A1)->hash_raw())
+#endif
+
+#if MAP_INT_CHAR_P_T_P_DEEP_COMPARE && !defined(MAP_INT_CHAR_P_T_P_HASH_RAW)
+#define MAP_INT_CHAR_P_T_P_HASH_RAW(A1) map_int_char_p_hash_raw((A1))
+#endif
+
+#if MAP_INT_CHAR_P_T_CONST_P_DEEP_COMPARE && !defined(MAP_INT_CHAR_P_T_CONST_P_HASH_RAW)
+#define MAP_INT_CHAR_P_T_CONST_P_HASH_RAW(A1) map_int_char_p_hash_raw((A1))
+#endif
+
+#if CONST_MAP_INT_CHAR_P_T_P_DEEP_COMPARE && !defined(CONST_MAP_INT_CHAR_P_T_P_HASH_RAW)
+#define CONST_MAP_INT_CHAR_P_T_P_HASH_RAW(A1) map_int_char_p_hash_raw((A1))
+#endif
+
+#if MAPINTCHARP_P_DEEP_COMPARE && !defined(MAPINTCHARP_P_HASH_RAW)
+#define MAPINTCHARP_P_HASH_RAW(A1) ((A1)->hash_raw())
+#endif
+
+#if MAPINTCHARP_CONST_P_DEEP_COMPARE && !defined(MAPINTCHARP_CONST_P_HASH_RAW)
+#define MAPINTCHARP_CONST_P_HASH_RAW(A1) ((A1)->hash_raw())
+#endif
+
+#if CONST_MAPINTCHARP_P_DEEP_COMPARE && !defined(CONST_MAPINTCHARP_P_HASH_RAW)
+#define CONST_MAPINTCHARP_P_HASH_RAW(A1) ((A1)->hash_raw())
+#endif
+
+#ifndef MAPINTCHARP_HASH_RAW
+#define MAPINTCHARP_HASH_RAW(A1) ((A1).hash_raw())
+#endif
+
+#if MAP_INT_CHAR_P_TP_DEEP_COMPARE && !defined(MAP_INT_CHAR_P_TP_CMP)
+#define MAP_INT_CHAR_P_TP_CMP(A1,A2) map_int_char_p_cmp((A1),(A2))
+#endif
+
+#if MAP_INT_CHAR_P_T_CONSTP_DEEP_COMPARE && !defined(MAP_INT_CHAR_P_T_CONSTP_CMP)
+#define MAP_INT_CHAR_P_T_CONSTP_CMP(A1,A2) map_int_char_p_cmp((A1),(A2))
+#endif
+
+#if CONST_MAP_INT_CHAR_P_TP_DEEP_COMPARE && !defined(CONST_MAP_INT_CHAR_P_TP_CMP)
+#define CONST_MAP_INT_CHAR_P_TP_CMP(A1,A2) map_int_char_p_cmp((A1),(A2))
+#endif
+
+#if MAPINTCHARPP_DEEP_COMPARE && !defined(MAPINTCHARPP_CMP)
+#define MAPINTCHARPP_CMP(A1,A2) ((A1)->cmp((A2)))
+#endif
+
+#if MAPINTCHARP_CONSTP_DEEP_COMPARE && !defined(MAPINTCHARP_CONSTP_CMP)
+#define MAPINTCHARP_CONSTP_CMP(A1,A2) ((A1)->cmp((A2)))
+#endif
+
+#if CONST_MAPINTCHARPP_DEEP_COMPARE && !defined(CONST_MAPINTCHARPP_CMP)
+#define CONST_MAPINTCHARPP_CMP(A1,A2) ((A1)->cmp((A2)))
+#endif
+
+#if MAP_INT_CHAR_P_T_P_DEEP_COMPARE && !defined(MAP_INT_CHAR_P_T_P_CMP)
+#define MAP_INT_CHAR_P_T_P_CMP(A1,A2) map_int_char_p_cmp((A1),(A2))
+#endif
+
+#if MAP_INT_CHAR_P_T_CONST_P_DEEP_COMPARE && !defined(MAP_INT_CHAR_P_T_CONST_P_CMP)
+#define MAP_INT_CHAR_P_T_CONST_P_CMP(A1,A2) map_int_char_p_cmp((A1),(A2))
+#endif
+
+#if CONST_MAP_INT_CHAR_P_T_P_DEEP_COMPARE && !defined(CONST_MAP_INT_CHAR_P_T_P_CMP)
+#define CONST_MAP_INT_CHAR_P_T_P_CMP(A1,A2) map_int_char_p_cmp((A1),(A2))
+#endif
+
+#if MAPINTCHARP_P_DEEP_COMPARE && !defined(MAPINTCHARP_P_CMP)
+#define MAPINTCHARP_P_CMP(A1,A2) ((A1)->cmp((A2)))
+#endif
+
+#if MAPINTCHARP_CONST_P_DEEP_COMPARE && !defined(MAPINTCHARP_CONST_P_CMP)
+#define MAPINTCHARP_CONST_P_CMP(A1,A2) ((A1)->cmp((A2)))
+#endif
+
+#if CONST_MAPINTCHARP_P_DEEP_COMPARE && !defined(CONST_MAPINTCHARP_P_CMP)
+#define CONST_MAPINTCHARP_P_CMP(A1,A2) ((A1)->cmp((A2)))
+#endif
+
+#ifndef MAPINTCHARP_CMP
+#define MAPINTCHARP_CMP(A1,A2) ((A1).cmp((A2)))
+#endif
+
+#ifndef MAPINTCHARP_ZERO
+#define MAPINTCHARP_ZERO (MapIntCharP::static_zero())
+#endif
+
+#if MAP_INT_CHAR_P_TP_DEEP_COMPARE && !defined(MAP_INT_CHAR_P_TP_EQUAL)
+#define MAP_INT_CHAR_P_TP_EQUAL(A1,A2) map_int_char_p_equal((A1),(A2))
+#endif
+
+#if MAP_INT_CHAR_P_T_CONSTP_DEEP_COMPARE && !defined(MAP_INT_CHAR_P_T_CONSTP_EQUAL)
+#define MAP_INT_CHAR_P_T_CONSTP_EQUAL(A1,A2) map_int_char_p_equal((A1),(A2))
+#endif
+
+#if CONST_MAP_INT_CHAR_P_TP_DEEP_COMPARE && !defined(CONST_MAP_INT_CHAR_P_TP_EQUAL)
+#define CONST_MAP_INT_CHAR_P_TP_EQUAL(A1,A2) map_int_char_p_equal((A1),(A2))
+#endif
+
+#if MAPINTCHARPP_DEEP_COMPARE && !defined(MAPINTCHARPP_EQUAL)
+#define MAPINTCHARPP_EQUAL(A1,A2) ((A1)->equal((A2)))
+#endif
+
+#if MAPINTCHARP_CONSTP_DEEP_COMPARE && !defined(MAPINTCHARP_CONSTP_EQUAL)
+#define MAPINTCHARP_CONSTP_EQUAL(A1,A2) ((A1)->equal((A2)))
+#endif
+
+#if CONST_MAPINTCHARPP_DEEP_COMPARE && !defined(CONST_MAPINTCHARPP_EQUAL)
+#define CONST_MAPINTCHARPP_EQUAL(A1,A2) ((A1)->equal((A2)))
+#endif
+
+#if MAP_INT_CHAR_P_T_P_DEEP_COMPARE && !defined(MAP_INT_CHAR_P_T_P_EQUAL)
+#define MAP_INT_CHAR_P_T_P_EQUAL(A1,A2) map_int_char_p_equal((A1),(A2))
+#endif
+
+#if MAP_INT_CHAR_P_T_CONST_P_DEEP_COMPARE && !defined(MAP_INT_CHAR_P_T_CONST_P_EQUAL)
+#define MAP_INT_CHAR_P_T_CONST_P_EQUAL(A1,A2) map_int_char_p_equal((A1),(A2))
+#endif
+
+#if CONST_MAP_INT_CHAR_P_T_P_DEEP_COMPARE && !defined(CONST_MAP_INT_CHAR_P_T_P_EQUAL)
+#define CONST_MAP_INT_CHAR_P_T_P_EQUAL(A1,A2) map_int_char_p_equal((A1),(A2))
+#endif
+
+#if MAPINTCHARP_P_DEEP_COMPARE && !defined(MAPINTCHARP_P_EQUAL)
+#define MAPINTCHARP_P_EQUAL(A1,A2) ((A1)->equal((A2)))
+#endif
+
+#if MAPINTCHARP_CONST_P_DEEP_COMPARE && !defined(MAPINTCHARP_CONST_P_EQUAL)
+#define MAPINTCHARP_CONST_P_EQUAL(A1,A2) ((A1)->equal((A2)))
+#endif
+
+#if CONST_MAPINTCHARP_P_DEEP_COMPARE && !defined(CONST_MAPINTCHARP_P_EQUAL)
+#define CONST_MAPINTCHARP_P_EQUAL(A1,A2) ((A1)->equal((A2)))
+#endif
+
+#ifndef MAPINTCHARP_EQUAL
+#define MAPINTCHARP_EQUAL(A1,A2) ((A1).equal((A2)))
+#endif
+
+#if MAP_INT_CHAR_P_TP_DEEP_COPY && !defined(MAP_INT_CHAR_P_TP_ICOPY)
+#define MAP_INT_CHAR_P_TP_ICOPY(A1,A2) map_int_char_p_copy_err((A1),(A2))
+#endif
+
+#if MAP_INT_CHAR_P_T_CONSTP_DEEP_COPY && !defined(MAP_INT_CHAR_P_T_CONSTP_ICOPY)
+#define MAP_INT_CHAR_P_T_CONSTP_ICOPY(A1,A2) map_int_char_p_copy_err((A1),(A2))
+#endif
+
+#if CONST_MAP_INT_CHAR_P_TP_DEEP_COPY && !defined(CONST_MAP_INT_CHAR_P_TP_ICOPY)
+#define CONST_MAP_INT_CHAR_P_TP_ICOPY(A1,A2) map_int_char_p_copy_err((A1),(A2))
+#endif
+
+#if MAPINTCHARPP_DEEP_COPY && !defined(MAPINTCHARPP_ICOPY)
+#define MAPINTCHARPP_ICOPY(A1,A2) ((A1)->copy_err((A2)))
+#endif
+
+#if MAPINTCHARP_CONSTP_DEEP_COPY && !defined(MAPINTCHARP_CONSTP_ICOPY)
+#define MAPINTCHARP_CONSTP_ICOPY(A1,A2) ((A1)->copy_err((A2)))
+#endif
+
+#if CONST_MAPINTCHARPP_DEEP_COPY && !defined(CONST_MAPINTCHARPP_ICOPY)
+#define CONST_MAPINTCHARPP_ICOPY(A1,A2) ((A1)->copy_err((A2)))
+#endif
+
+#if MAP_INT_CHAR_P_T_P_DEEP_COPY && !defined(MAP_INT_CHAR_P_T_P_ICOPY)
+#define MAP_INT_CHAR_P_T_P_ICOPY(A1,A2) map_int_char_p_copy_err((A1),(A2))
+#endif
+
+#if MAP_INT_CHAR_P_T_CONST_P_DEEP_COPY && !defined(MAP_INT_CHAR_P_T_CONST_P_ICOPY)
+#define MAP_INT_CHAR_P_T_CONST_P_ICOPY(A1,A2) map_int_char_p_copy_err((A1),(A2))
+#endif
+
+#if CONST_MAP_INT_CHAR_P_T_P_DEEP_COPY && !defined(CONST_MAP_INT_CHAR_P_T_P_ICOPY)
+#define CONST_MAP_INT_CHAR_P_T_P_ICOPY(A1,A2) map_int_char_p_copy_err((A1),(A2))
+#endif
+
+#if MAPINTCHARP_P_DEEP_COPY && !defined(MAPINTCHARP_P_ICOPY)
+#define MAPINTCHARP_P_ICOPY(A1,A2) ((A1)->copy_err((A2)))
+#endif
+
+#if MAPINTCHARP_CONST_P_DEEP_COPY && !defined(MAPINTCHARP_CONST_P_ICOPY)
+#define MAPINTCHARP_CONST_P_ICOPY(A1,A2) ((A1)->copy_err((A2)))
+#endif
+
+#if CONST_MAPINTCHARP_P_DEEP_COPY && !defined(CONST_MAPINTCHARP_P_ICOPY)
+#define CONST_MAPINTCHARP_P_ICOPY(A1,A2) ((A1)->copy_err((A2)))
+#endif
+
+#if MAP_INT_CHAR_P_TP_DEEP_COPY && !defined(MAP_INT_CHAR_P_TP_OCOPY)
+#define MAP_INT_CHAR_P_TP_OCOPY(A1,A2) map_int_char_p_copy_err((A1),(A2))
+#endif
+
+#if MAP_INT_CHAR_P_T_CONSTP_DEEP_COPY && !defined(MAP_INT_CHAR_P_T_CONSTP_OCOPY)
+#define MAP_INT_CHAR_P_T_CONSTP_OCOPY(A1,A2) map_int_char_p_copy_err((A1),(A2))
+#endif
+
+#if CONST_MAP_INT_CHAR_P_TP_DEEP_COPY && !defined(CONST_MAP_INT_CHAR_P_TP_OCOPY)
+#define CONST_MAP_INT_CHAR_P_TP_OCOPY(A1,A2) map_int_char_p_copy_err((A1),(A2))
+#endif
+
+#if MAPINTCHARPP_DEEP_COPY && !defined(MAPINTCHARPP_OCOPY)
+#define MAPINTCHARPP_OCOPY(A1,A2) ((A1)->copy_err((A2)))
+#endif
+
+#if MAPINTCHARP_CONSTP_DEEP_COPY && !defined(MAPINTCHARP_CONSTP_OCOPY)
+#define MAPINTCHARP_CONSTP_OCOPY(A1,A2) ((A1)->copy_err((A2)))
+#endif
+
+#if CONST_MAPINTCHARPP_DEEP_COPY && !defined(CONST_MAPINTCHARPP_OCOPY)
+#define CONST_MAPINTCHARPP_OCOPY(A1,A2) ((A1)->copy_err((A2)))
+#endif
+
+#if MAP_INT_CHAR_P_T_P_DEEP_COPY && !defined(MAP_INT_CHAR_P_T_P_OCOPY)
+#define MAP_INT_CHAR_P_T_P_OCOPY(A1,A2) map_int_char_p_copy_err((A1),(A2))
+#endif
+
+#if MAP_INT_CHAR_P_T_CONST_P_DEEP_COPY && !defined(MAP_INT_CHAR_P_T_CONST_P_OCOPY)
+#define MAP_INT_CHAR_P_T_CONST_P_OCOPY(A1,A2) map_int_char_p_copy_err((A1),(A2))
+#endif
+
+#if CONST_MAP_INT_CHAR_P_T_P_DEEP_COPY && !defined(CONST_MAP_INT_CHAR_P_T_P_OCOPY)
+#define CONST_MAP_INT_CHAR_P_T_P_OCOPY(A1,A2) map_int_char_p_copy_err((A1),(A2))
+#endif
+
+#if MAPINTCHARP_P_DEEP_COPY && !defined(MAPINTCHARP_P_OCOPY)
+#define MAPINTCHARP_P_OCOPY(A1,A2) ((A1)->copy_err((A2)))
+#endif
+
+#if MAPINTCHARP_CONST_P_DEEP_COPY && !defined(MAPINTCHARP_CONST_P_OCOPY)
+#define MAPINTCHARP_CONST_P_OCOPY(A1,A2) ((A1)->copy_err((A2)))
+#endif
+
+#if CONST_MAPINTCHARP_P_DEEP_COPY && !defined(CONST_MAPINTCHARP_P_OCOPY)
+#define CONST_MAPINTCHARP_P_OCOPY(A1,A2) ((A1)->copy_err((A2)))
+#endif
+
+#if MAP_INT_CHAR_P_TP_DEEP_COPY && !defined(MAP_INT_CHAR_P_TP_IFREE)
+#define MAP_INT_CHAR_P_TP_IFREE(A1) map_int_char_p_delete((A1))
+#endif
+
+#if MAP_INT_CHAR_P_T_CONSTP_DEEP_COPY && !defined(MAP_INT_CHAR_P_T_CONSTP_IFREE)
+#define MAP_INT_CHAR_P_T_CONSTP_IFREE(A1) map_int_char_p_delete((A1))
+#endif
+
+#if CONST_MAP_INT_CHAR_P_TP_DEEP_COPY && !defined(CONST_MAP_INT_CHAR_P_TP_IFREE)
+#define CONST_MAP_INT_CHAR_P_TP_IFREE(A1) map_int_char_p_delete((A1))
+#endif
+
+#if MAPINTCHARPP_DEEP_COPY && !defined(MAPINTCHARPP_IFREE)
+#define MAPINTCHARPP_IFREE(A1) delete((A1))
+#endif
+
+#if MAPINTCHARP_CONSTP_DEEP_COPY && !defined(MAPINTCHARP_CONSTP_IFREE)
+#define MAPINTCHARP_CONSTP_IFREE(A1) delete((A1))
+#endif
+
+#if CONST_MAPINTCHARPP_DEEP_COPY && !defined(CONST_MAPINTCHARPP_IFREE)
+#define CONST_MAPINTCHARPP_IFREE(A1) delete((A1))
+#endif
+
+#if MAP_INT_CHAR_P_T_P_DEEP_COPY && !defined(MAP_INT_CHAR_P_T_P_IFREE)
+#define MAP_INT_CHAR_P_T_P_IFREE(A1) map_int_char_p_delete((A1))
+#endif
+
+#if MAP_INT_CHAR_P_T_CONST_P_DEEP_COPY && !defined(MAP_INT_CHAR_P_T_CONST_P_IFREE)
+#define MAP_INT_CHAR_P_T_CONST_P_IFREE(A1) map_int_char_p_delete((A1))
+#endif
+
+#if CONST_MAP_INT_CHAR_P_T_P_DEEP_COPY && !defined(CONST_MAP_INT_CHAR_P_T_P_IFREE)
+#define CONST_MAP_INT_CHAR_P_T_P_IFREE(A1) map_int_char_p_delete((A1))
+#endif
+
+#if MAPINTCHARP_P_DEEP_COPY && !defined(MAPINTCHARP_P_IFREE)
+#define MAPINTCHARP_P_IFREE(A1) delete((A1))
+#endif
+
+#if MAPINTCHARP_CONST_P_DEEP_COPY && !defined(MAPINTCHARP_CONST_P_IFREE)
+#define MAPINTCHARP_CONST_P_IFREE(A1) delete((A1))
+#endif
+
+#if CONST_MAPINTCHARP_P_DEEP_COPY && !defined(CONST_MAPINTCHARP_P_IFREE)
+#define CONST_MAPINTCHARP_P_IFREE(A1) delete((A1))
+#endif
+
+#if MAP_INT_CHAR_P_TP_DEEP_COPY && !defined(MAP_INT_CHAR_P_TP_OFREE)
+#define MAP_INT_CHAR_P_TP_OFREE(A1) map_int_char_p_delete((A1))
+#endif
+
+#if MAP_INT_CHAR_P_T_CONSTP_DEEP_COPY && !defined(MAP_INT_CHAR_P_T_CONSTP_OFREE)
+#define MAP_INT_CHAR_P_T_CONSTP_OFREE(A1) map_int_char_p_delete((A1))
+#endif
+
+#if CONST_MAP_INT_CHAR_P_TP_DEEP_COPY && !defined(CONST_MAP_INT_CHAR_P_TP_OFREE)
+#define CONST_MAP_INT_CHAR_P_TP_OFREE(A1) map_int_char_p_delete((A1))
+#endif
+
+#if MAPINTCHARPP_DEEP_COPY && !defined(MAPINTCHARPP_OFREE)
+#define MAPINTCHARPP_OFREE(A1) delete((A1))
+#endif
+
+#if MAPINTCHARP_CONSTP_DEEP_COPY && !defined(MAPINTCHARP_CONSTP_OFREE)
+#define MAPINTCHARP_CONSTP_OFREE(A1) delete((A1))
+#endif
+
+#if CONST_MAPINTCHARPP_DEEP_COPY && !defined(CONST_MAPINTCHARPP_OFREE)
+#define CONST_MAPINTCHARPP_OFREE(A1) delete((A1))
+#endif
+
+#if MAP_INT_CHAR_P_T_P_DEEP_COPY && !defined(MAP_INT_CHAR_P_T_P_OFREE)
+#define MAP_INT_CHAR_P_T_P_OFREE(A1) map_int_char_p_delete((A1))
+#endif
+
+#if MAP_INT_CHAR_P_T_CONST_P_DEEP_COPY && !defined(MAP_INT_CHAR_P_T_CONST_P_OFREE)
+#define MAP_INT_CHAR_P_T_CONST_P_OFREE(A1) map_int_char_p_delete((A1))
+#endif
+
+#if CONST_MAP_INT_CHAR_P_T_P_DEEP_COPY && !defined(CONST_MAP_INT_CHAR_P_T_P_OFREE)
+#define CONST_MAP_INT_CHAR_P_T_P_OFREE(A1) map_int_char_p_delete((A1))
+#endif
+
+#if MAPINTCHARP_P_DEEP_COPY && !defined(MAPINTCHARP_P_OFREE)
+#define MAPINTCHARP_P_OFREE(A1) delete((A1))
+#endif
+
+#if MAPINTCHARP_CONST_P_DEEP_COPY && !defined(MAPINTCHARP_CONST_P_OFREE)
+#define MAPINTCHARP_CONST_P_OFREE(A1) delete((A1))
+#endif
+
+#if CONST_MAPINTCHARP_P_DEEP_COPY && !defined(CONST_MAPINTCHARP_P_OFREE)
+#define CONST_MAPINTCHARP_P_OFREE(A1) delete((A1))
+#endif
+
+#ifndef MAPINTCHARP_CONSTRUCTOR
+#define MAPINTCHARP_CONSTRUCTOR(A1) ((A1)._constructor())
+#endif
+
+#ifndef MAPINTCHARP_DESTRUCTOR
+#define MAPINTCHARP_DESTRUCTOR(A1) ((A1)._destructor())
+#endif
+
+
+#endif /* defined ERWIN_MAP_INT_CHAR_P_f_h */
+

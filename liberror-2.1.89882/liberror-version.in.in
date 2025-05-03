@@ -1,0 +1,19 @@
+#! /bin/sh
+#
+# The main purpose of this program is to have a program in bindir so
+# that AC_PREFIX_PROGRAM works.
+#
+# Additionally, users have a program that tells them the version and
+# install path of the library. :-)
+#
+
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+includedir=@includedir@
+libdir=@libdir@
+
+echo "This is lib@PROGNAME@---VERSION--."
+echo "Copyright (c) Henrik Theiling and AbsInt Angewandte Informatik GmbH"
+echo "   using Erwin --ERWIN-VERSION--."
+echo "   includedir = ${includedir}"
+echo "   libdir     = ${libdir}"

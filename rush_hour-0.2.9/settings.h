@@ -1,0 +1,1 @@
+#define V_CHAR_MANY_CASTS 1

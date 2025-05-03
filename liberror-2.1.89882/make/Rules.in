@@ -1,0 +1,3073 @@
+# @MODE_FUNDAMENTAL@ -*- Mode: Makefile -*-
+# @configure_input@
+######################################################################
+#
+# Todo:
+#    - implement targets:
+#      TAGS, mostlyclean
+
+# Taken from automake:
+DEPS_MAGIC := $(shell mkdir .deps .list > /dev/null 2>&1 || :)
+
+# Remove spaces that typically confuse GNUMake and the people using it:
+PROG:=               $(shell echo '$(PROG)'               | sed 's@[ 	]@@g')
+LIBRARY:=            $(shell echo '$(LIBRARY)'            | sed 's@[ 	]@@g')
+USE_ERWIN:=          $(shell echo '$(USE_ERWIN)'          | sed 's@[ 	]@@g')
+USE_SYMBOL:=         $(shell echo '$(USE_SYMBOL)'         | sed 's@[ 	]@@g')
+COUNT_BUILD:=        $(shell echo '$(COUNT_BUILD)'        | sed 's@[ 	]@@g')
+ERR_SUBSYSTEM:=      $(shell echo '$(ERR_SUBSYSTEM)'      | sed 's@[ 	]@@g')
+ERWIN_MANUAL_FLAGS:= $(shell echo '$(ERWIN_MANUAL_FLAGS)' | sed 's@[ 	]@@g')
+LINK_CXX:=           $(shell echo '$(LINK_CXX)'           | sed 's@[ 	]@@g')
+INSTALL_ERWIN:=      $(shell echo '$(INSTALL_ERWIN)'      | sed 's@[ 	]@@g')
+INSTALL_SYMBOL:=     $(shell echo '$(INSTALL_SYMBOL)'     | sed 's@[ 	]@@g')
+INSTALL_FAILURE:=    $(shell echo '$(INSTALL_FAILURE)'    | sed 's@[ 	]@@g')
+INSTALL_VERSION:=    $(shell echo '$(INSTALL_VERSION)'    | sed 's@[ 	]@@g')
+GLOBAL_PREFIX:=      $(shell echo '$(GLOBAL_PREFIX)'      | sed 's@[ 	]@@g')
+
+ifeq ($(ARCHIVE_BASE),)
+ifeq ($(LIBRARY),)
+ARCHIVE_BASE=$(PROGNAME)
+else
+ARCHIVE_BASE=lib$(LIBRARY)
+endif
+endif
+ARCHIVE=$(ARCHIVE_BASE)-$(VERSION)$(ARCHIVE_SUFFIX)
+
+ARCHIVE_SRC=$(ARCHIVE)$(ARCHIVE_SUFFIX_SRC)
+ARCHIVE_BIN=$(ARCHIVE)$(ARCHIVE_SUFFIX_BIN)
+
+TARBALL_SRC=$(ARCHIVE_SRC)
+TARBALL_BIN=$(ARCHIVE_BIN)
+
+
+# tar defaults:
+ifeq ($(TARFLAGS),)
+TARFLAGS=$(DEFAULT_TARFLAGS)
+endif
+
+ifeq ($(TAREXT),)
+TAREXT=$(DEFAULT_TAREXT)
+endif
+ifeq ($(TAREXT),)
+TAREXT=.tar
+endif
+
+ifeq ($(TARFLAGS),)
+ifeq ($(TAREXT),.tar.gz)
+TARFLAGS = z
+endif
+ifeq ($(TAREXT),.tgz)
+TARFLAGS = z
+endif
+ifeq ($(TAREXT),.tar.bz2)
+TARFLAGS = j
+endif
+ifeq ($(TAREXT),.tbz2)
+TARFLAGS = j
+endif
+ifeq ($(TAREXT),.tbz)
+TARFLAGS = j
+endif
+endif
+
+# Editor:
+ifeq ($(EDITOR),)
+EDITOR = vi
+endif
+
+# Debian defaults:
+ifeq ($(DEB_SECTION),)
+DEB_SECTION = main
+endif
+
+DEB_CHECK = debian/rules
+FM_CHECK  = fm/project.spec
+
+# global prefix:
+ifeq ($(GLOBAL_PREFIX),)
+ifneq ($(PROG),)
+GLOBAL_PREFIX:= $(shell echo $(PROG) | tr - _)_
+else
+GLOBAL_PREFIX:= $(PROGNAME)_
+endif
+endif
+
+GLOBAL_PREFIX_DASH := $(shell echo $(GLOBAL_PREFIX) | tr _ -)
+
+ifndef PROG_EXE
+PROG_EXE= $(PROG)
+endif
+
+ifeq ($(INCLUDE_SUBDIR),)
+INCLUDE_SUBDIR=$(PROGNAME)
+endif
+
+# symbols:
+ifeq ($(USE_SYMBOL),1)
+USE_SYMBOL:=sym_
+endif
+
+ifneq ($(USE_SYMBOL),)
+ifeq ($(LIBRARY),)
+FILE_SYMBOL=symbol
+SUBDIR_SYMBOL=
+DIR_SYMBOL=
+DYN_SYMBOL=0
+PREFIX_SYMBOL=
+SYMBOL_H_LOCAL=/dev/null
+else
+PREFIX_SYMBOL=$(GLOBAL_PREFIX)
+ifneq ($(INSTALL_SYMBOL),1)
+FILE_SYMBOL=symbol
+SUBDIR_SYMBOL=
+DIR_SYMBOL=
+DYN_SYMBOL=0
+SYMBOL_H_LOCAL=/dev/null
+else
+FILE_SYMBOL=symbol
+SUBDIR_SYMBOL=$(INCLUDE_SUBDIR)/
+DIR_SYMBOL=include/$(SUBDIR_SYMBOL)
+DYN_SYMBOL=1
+SYMBOL_H_LOCAL=symbol.h
+$(SYMBOL_H_LOCAL): $(DIR_SYMBOL)$(FILE_SYMBOL).h
+endif
+endif
+endif
+
+LOCAL_FILES+= failure.h
+ifeq ($(LIBRARY),)
+FAILURE_H=failure.h
+FAILURE_H_LOCAL=failure.dummy
+else
+ifeq ($(INSTALL_FAILURE),0)
+FAILURE_H=failure.h
+FAILURE_H_LOCAL=failure.dummy
+else
+FAILURE_H_LOCAL=failure.h
+FAILURE_H=include/$(INCLUDE_SUBDIR)/failure.h
+LOCAL_FILES+= $(FAILURE_H)
+$(FAILURE_H_LOCAL): $(FAILURE_H)
+endif
+endif
+
+PATH_SYMBOL=$(DIR_SYMBOL)$(FILE_SYMBOL)
+
+ifneq ($(USE_SYMBOL),)
+LOCAL_FILES+= $(PATH_SYMBOL).inc $(PATH_SYMBOL).h symbol.h $(FILE_SYMBOL).$(CXX_EXT)
+ifeq ($(NO_SYMBOL_C),)
+GENCXXMODULES += symbol
+DEP_FILES     += .deps/symbol.P
+endif
+endif
+
+ifneq ($(MAKEFAILURE),)
+LOCAL_FILES += $(FAILURE_H)
+endif
+
+ifneq ($(USE_ERWIN),)
+ifeq (makeerwin,$(wildcard makeerwin))
+LOCAL_FILES += makeerwin
+else
+ifeq (makeerwin.sh,$(wildcard makeerwin.sh))
+LOCAL_FILES += makeerwin.sh
+endif
+endif
+endif
+
+# CXXMODULES:
+ifeq ($(CXX_EXT),cpp)
+GENCPPMODULES += $(GENCXXMODULES)
+else
+ifeq ($(CXX_EXT),c)
+GENCMODULES += $(GENCXXMODULES)
+else
+GENCCMODULES += $(GENCXXMODULES)
+endif
+endif
+
+VERSION_NUMERIC = "`$(VERSION_TOOL) -read $(BASE_VERSION_FILE) -read-suffix $(SUB_VERSION_FILE) || (cat .base-version .sub-version | xargs echo | sed 's@  *@.@g')`"
+REVISION        = "`cat .sub-version`"
+
+# build counter:
+ifeq ($(COUNT_BUILD),1)
+VERSION = "`$(VERSION_TOOL) -read $(BASE_VERSION_FILE) || echo '$(BASE_VERSION)'` (build $(SUB_VERSION))"
+else
+VERSION = $(VERSION_NUMERIC)
+endif
+
+WINDIR_PROGNAME = $(WINDIR)/$(ARCHIVE_BASE)
+
+ifeq ($(WINDOWS_SUBSYSTEM),)
+WINDOWS_SUBSYSTEM=console
+endif
+
+# PAG
+ifeq ($(PAG_ITERATOR),)
+	PAG_ITERATOR:= iterate1.t
+endif
+
+PAG_SPECDIR=spec
+PAG_MAKEDIR=.
+ifneq ($(PAG_ANALYSIS),)
+	SOURCES+=spec/$(PAG_ANALYSIS).set
+ifneq ($(PAG_OPTLA_USE_M4),)
+	SOURCES+=spec/$(PAG_ANALYSIS).optla.m4
+else
+	SOURCES+=spec/$(PAG_ANALYSIS).optla
+endif
+CPPFLAGS += -I./$(PAG_MAKEDIR)/src
+EXTRA_WINCPPFLAGS += -I$(PAG_MAKEDIR)\src
+endif
+
+GLOBAL_PREFIX_UC:= $(shell echo $(GLOBAL_PREFIX) | tr '[a-z]' '[A-Z]')
+
+ifeq ($(LIBRARY),)
+LIB_GLOBAL_PREFIX:=
+LIB_GLOBAL_PREFIX_UC:=
+else
+LIB_GLOBAL_PREFIX:=    $(GLOBAL_PREFIX)
+LIB_GLOBAL_PREFIX_UC:= $(GLOBAL_PREFIX_UC)
+endif
+
+
+ifeq ($(FAILURE_PREFIX),)
+FAILURE_PREFIX := $(LIB_GLOBAL_PREFIX)
+endif
+
+# For compatility reasons, we have USE_LIBERROR and ERROR_SUBSYSTEM, which are the same.
+ifneq ($(USE_LIBERROR),)
+  ERROR_SUBSYSTEM=$(USE_LIBERROR)
+endif
+
+ifeq ($(ERROR_SUBSYSTEM),)
+  ERR_SUBSYSTEM := 0
+else
+  ifeq ($(ERROR_SUBSYSTEM),1)
+    ifeq ($(LIBRARY),)
+      ERR_SUBSYSTEM := 0
+    else
+      ERR_SUBSYSTEM := $(GLOBAL_PREFIX)err_subsystem
+    endif
+  else
+    ERR_SUBSYSTEM := $(ERROR_SUBSYSTEM)err_subsystem
+  endif
+endif
+
+ifeq ($(PROG),)
+  ifneq ($(LIBRARY),)
+    ifeq ($(INSTALL_VERSION),0)
+      VERSION_H        = version.h
+      INC_VERSION_H    = version.h
+      VERSION_H_LOCAL  = version.dummy
+    else
+      VERSION_H        = include/$(INCLUDE_SUBDIR)/version.h
+      INC_VERSION_H    = $(INCLUDE_SUBDIR)/version.h
+      VERSION_H_LOCAL  = version.h
+      LOCAL_FILES      += include/$(INCLUDE_SUBDIR)/version.h
+    endif
+  else
+    VERSION_H       = version.h
+    INC_VERSION_H   = version.h
+    VERSION_H_LOCAL = version.dummy
+  endif
+else
+  VERSION_H       = version.h
+  INC_VERSION_H   = version.h
+  VERSION_H_LOCAL = version.dummy
+endif
+
+LOCAL_FILES+= version.$(CXX_EXT) version.h
+
+LOCAL_FILES+= .base-version \
+              .sub-version
+
+.PRECIOUS: $(VERSION_H) $(VERSION_H_LOCAL)
+
+ifeq ($(USE_ERWIN),)
+
+  LDFLAGS   = @LDFLAGS@ $(EXTRA_LDFLAGS)
+  LOADLIBES = $(EXTRA_LIBS) @LIBS@
+
+  ERWIN_LIB_INFIX      =
+  ERWIN_FILE_PREFIX    =
+  ERWIN_NAME_PREFIX    =
+  ERWIN_NAME_PREFIX_UC =
+
+else
+
+  # if erwin is used, infer prefix for libraries, but for programs, only
+  # use a prefix if defined explicitly by the user:
+  ifeq ($(PROG),)
+    ifeq ($(USE_ERWIN),1)
+      USE_ERWIN := $(GLOBAL_PREFIX)
+    endif
+  endif
+
+  ifeq ($(USE_ERWIN),1)
+    ERWIN_LIB_INFIX      =
+    ERWIN_FILE_PREFIX    =
+    ERWIN_NAME_PREFIX    =
+    ERWIN_NAME_PREFIX_UC =
+  else
+    ERWIN_LIB_INFIX      = $(shell echo $(USE_ERWIN) | tr '[A-Z]' '[a-z]' | sed 's@_@@g')
+    ERWIN_FILE_PREFIX    = $(INCLUDE_SUBDIR)/
+    ERWIN_NAME_PREFIX    = $(USE_ERWIN)
+    ERWIN_NAME_PREFIX_UC = $(shell echo $(USE_ERWIN) | tr '[a-z]' '[A-Z]')
+  endif
+
+  CPPFLAGS += -D$(ERWIN_NAME_PREFIX_UC)ERWIN_COMPILING
+
+  LDFLAGS   = @LDFLAGS@ $(EXTRA_LDFLAGS) -L$(srcdir)/erwin/lib -L$(top_srcdir)/erwin/lib
+  LOADLIBES = $(EXTRA_LIBS) -l$(ERWIN_LIB_INFIX)erwin @LIBS@
+
+endif
+
+ifneq ($(USE_PAG),)
+    CPPFLAGS += -I${PAGPATH}/include/pag \
+                -I${PAGPATH}/include/pag/analyzer \
+                -I${PAGPATH}/include/pag/frontend/${PAG_FRONTEND}
+    LDFLAGS  += -L${PAGPATH}/lib/pag
+endif
+
+ifeq (@WIN_LIBS@,$(subst %,@,%WIN_LIBS%))
+WIN_LIBS=
+else
+WIN_LIBS=@WIN_LIBS@
+endif
+
+ifeq (@WIN_INC@,$(subst %,@,%WIN_INC%))
+WIN_INC=
+else
+WIN_INC=@WIN_INC@
+endif
+
+ifeq (@WIN_LIBS_SYSTEM@,$(subst %,@,%WIN_LIBS_SYSTEM%))
+WIN_LIBS_SYSTEM=
+else
+WIN_LIBS_SYSTEM=@WIN_LIBS_SYSTEM@
+endif
+
+# Basic Debian files:
+ifeq ($(wildcard $(DEB_CHECK)),$(DEB_CHECK))
+LOCAL_FILES += debian/control \
+               debian/changelog \
+               debian/compat \
+               debian/rules \
+               debian/*.dirs \
+               debian/*.install
+endif
+
+# More standard files to include:
+
+ifeq ($(wildcard include/Makefile.in),include/Makefile.in)
+LOCAL_FILES += include/Makefile.in
+endif
+ifeq ($(wildcard include/$(INCLUDE_SUBDIR)/Makefile.in),include/$(INCLUDE_SUBDIR)/Makefile.in)
+LOCAL_FILES += include/$(INCLUDE_SUBDIR)/Makefile.in
+endif
+ifeq ($(wildcard doc/Makefile.in),doc/Makefile.in)
+LOCAL_FILES += doc/Makefile.in
+endif
+ifeq ($(wildcard lib$(LIBRARY)-version.in.in),lib$(LIBRARY)-version.in.in)
+LOCAL_FILES += lib$(LIBRARY)-version.in.in
+endif
+ifeq ($(wildcard include/$(INCLUDE_SUBDIR)/$(GLOBAL_PREFIX_DASH)config.h.in),include/$(INCLUDE_SUBDIR)/$(GLOBAL_PREFIX_DASH)config.h.in)
+LOCAL_FILES += include/$(INCLUDE_SUBDIR)/$(GLOBAL_PREFIX_DASH)config.h.in
+endif
+ifeq ($(wildcard include/$(INCLUDE_SUBDIR)/$(GLOBAL_PREFIX)config.h.in),include/$(INCLUDE_SUBDIR)/$(GLOBAL_PREFIX)config.h.in)
+LOCAL_FILES += include/$(INCLUDE_SUBDIR)/$(GLOBAL_PREFIX)config.h.in
+endif
+ifeq ($(wildcard README),README)
+LOCAL_FILES += README
+endif
+ifeq ($(wildcard Changes),Changes)
+LOCAL_FILES += Changes
+endif
+ifeq ($(wildcard COPYING),COPYING)
+LOCAL_FILES += COPYING
+endif
+
+ifneq ($(USE_ERWIN_CGEN),)
+DEP_FILES += .deps/gen-members.P
+DEP_FILES += .deps/gen-wrap-c.P
+ifeq ($(CGEN_ENUM2STR),1)
+DEP_FILES += .deps/gen-enum2str.P
+endif
+endif
+
+-include $(DEP_FILES)
+
+all: all-subdirs
+	$(MAKE) all-post-subdirs
+	$(MAKE) all-post-local
+
+help: dummy less-help
+	-@echo "Building:"
+	-@echo "    make depend        - builds dependency info for make"
+	-@echo "    make               - builds everything"
+	-@echo "Clean-Up:"
+	-@echo "    make clean         - removes everything made by 'make'"
+	-@echo "    make distclean     - removes everything made by 'configure && make'"
+	-@echo "    make develclean    - removes everything not in the CVS (you need a"
+	-@echo "                         ./cvscompile or equivalent after this)"
+	-@echo "    make sweep         - removes back-up files (*.bak, *~, etc.)"
+	-@echo "Tests:"
+	-@echo "    make run           - runs programs (probably needs 'make all')"
+	-@echo "    make test          - runs tests (probably needs 'make all')"
+	-@echo "Installation:"
+ifeq ($(RELEASE),1)
+	-@echo "    make install       - installs the package (honours DEST variable"
+	-@echo "                         as an additional prefix; strips executables)"
+	-@echo "    make install-no-strip"
+	-@echo "                       - same as install, but does not strip executables"
+else
+	-@echo "    make install       - installs the package (honours DEST variable"
+	-@echo "                         as an additional prefix)"
+	-@echo "    make install-strip - same as install, but strips the executables"
+endif
+	-@echo "    make uninstall     - uninstalls the package."
+	-@echo "    Note: 'prefix' is currently '$(prefix)'."
+	-@echo "Statistics:"
+	-@echo "    make list-sources  - creates a list of source files (in .list/sources)"
+	-@echo "    make list-files    - creates a list of some more source files (.list/files)"
+	-@echo "    make count         - counts source files with wc"
+	-@echo "Packages (the *gz targets exist as *bz2, too):"
+	-@echo "    make targz         - gzipped tarball archive of the distclean project"
+	-@echo "    make bin-targz     - gzipped tarball archive of the binary package"
+	-@echo "                         'MORE_PACKAGES': dirs of other pkgs to include"
+	-@echo "    make help-archive  - more options related to tarballs, ISO images, etc."
+	-@echo "    Note: 'ARCHIVE_SUFFIX' is currently '$(ARCHIVE_SUFFIX)'."
+	-@echo "       => 'ARCHIVE'        is currently '$(ARCHIVE)'."
+	-@echo "          'TAREXT'         is currently '$(TAREXT)'."
+ifeq ($(wildcard $(DEB_CHECK)),$(DEB_CHECK))
+	-@echo "    make deb           - creates Debian package files"
+else
+	-@echo "For Debian specific targets, you need a 'debian' subdirectory."
+	-@echo "    make init-deb      - creates an initial Debian sub directory. NEEDS EDIT!"
+endif
+ifneq ($(DEFAULT_DISTRO),)
+	-@echo "Releases:"
+	-@echo "    make release       - updates versions and Changes files, make packages"
+endif
+	-@echo "Announce release support:"
+	-@echo "    make announce-help - show make targets for Freshmeat/COLA releasing"
+	-@echo "Other OSs:"
+	-@echo "    make wincopyall    - copies the sources to be compiled under Win"
+	-@echo "    Note: 'WINDIR'    is currently '$(WINDIR)'."
+	-@echo "          'WINPREFIX' is currently '$(WINPREFIX)'."
+	@$(MAKE) more-help 2>/dev/null
+	-@echo "Note: 'make' is currently '$(MAKE)'."
+
+.PHONY: more-help less-help
+
+more-help: dummy
+
+less-help: dummy
+
+.PHONY: help-archive help-arch help-tar help-iso help-targz help-tarbz2
+help-archive:
+	-@echo "Source Code Trees:"
+	-@echo "    make archive       - prepares a directory with a source distro"
+	-@echo "Binary Trees:"
+	-@echo "    make bin-archive   - prepares a directory with a binary distro"
+	-@echo "Source Code Tarballs:"
+	-@echo "    make tar           - tarball archive of the distclean project"
+	-@echo "                         'TARFLAGS' sets additional options for 'tar'"
+	-@echo "                         'TAREXT'   sets the extension to use"
+	-@echo "    make targz        == make tar TARFLAGS=z TAREXT=.tar.gz"
+	-@echo "    make tgz          == make tar TARFLAGS=z TAREXT=.tgz"
+	-@echo "    make tarbz2       == make tar TARFLAGS=j TAREXT=.tar.bz2"
+	-@echo "    make tbz          == make tar TARFLAGS=j TAREXT=.tbz"
+	-@echo "Binary Tarballs:"
+	-@echo "    make bin-tar       - tarball archive of the binary package"
+	-@echo "                         'TARFLAGS' and 'TAREXT' as above"
+	-@echo "                         'MORE_PACKAGES': dirs of other pkgs to include"
+	-@echo "    make bin-{targz,tgz,tarbz2,tbz}"
+	-@echo "                       - analogous to the source code versions"
+	-@echo "Binary ISO Images"
+	-@echo "    make bin-iso       - uses mkisofs to make an ISO image"
+ifneq ($(DEFAULT_DISTRO),)
+	-@echo "Default distribution is '$(DEFAULT_DISTRO)':"
+	-@echo "    make release      == make $(DEFAULT_DISTRO)-release"
+ifeq ($(wildcard $(DEB_CHECK)),$(DEB_CHECK))
+	-@echo "    make deb          == make $(DEFAULT_DISTRO)-deb"
+endif
+	-@echo "    make iso          == make $(DEFAULT_DISTRO)-iso"
+	-@echo "    make tar          == make $(DEFAULT_DISTRO)-tar"
+	-@echo "    make targz        == make $(DEFAULT_DISTRO)-targz"
+	-@echo "    ..."
+endif
+	-@echo "Note: 'ARCHIVE_SUFFIX' is currently '$(ARCHIVE_SUFFIX)'."
+	-@echo "   => 'ARCHIVE'        is currently '$(ARCHIVE)'."
+ifeq ($(wildcard $(DEB_CHECK)),$(DEB_CHECK))
+	-@echo "      'DEB_VERSION'    is currently '"$(DEB_VERSION)"'."
+endif
+
+.PHONY: help-archives
+help-archives: help-archive
+
+.PHONY: help-arch
+help-arch: help-archive
+
+.PHONY: help-tar
+help-tar: help-archive
+
+.PHONY: help-iso
+help-iso: help-archive
+
+.PHONY: help-targz
+help-targz: help-archive
+
+.PHONY: help-tarbz2
+help-tarbz2: help-archive
+
+# Make init.  This is a bit tricky.  We need some files, but do not
+# want them to trigger regeneration of Makefile.  Further, it's
+# enough to create them when make is invoked for the first time.
+# We use an ifneq with wildcard for that.  Other parts of the file
+# use that techinique, too.
+
+ifeq ($(MAIN_H),)
+ifeq (include/$(PROGNAME).h, $(wildcard include/$(PROGNAME).h))
+MAIN_H = $(PROGNAME).h
+else
+ifeq (include/lib$(LIBRARY).h, $(wildcard include/lib$(LIBRARY).h))
+MAIN_H = lib$(LIBRARY).h
+else
+ifeq (include/$(INCLUDE_SUBDIR).h, $(wildcard include/$(INCLUDE_SUBDIR).h))
+MAIN_H = $(INCLUDE_SUBDIR).h
+endif
+endif
+endif
+endif
+
+ifneq ($(IS_EASY),1)
+
+ifneq ($(FAILURE_H),$(wildcard $(FAILURE_H)))
+Makefile: failure.h.stamp
+endif
+
+ifneq ($(FAILURE_H_LOCAL),$(wildcard $(FAILURE_H_LOCAL)))
+Makefile: failure.h.stamp
+endif
+
+ifneq ($(VERSION_H),$(wildcard $(VERSION_H)))
+Makefile: $(VERSION_H)
+endif
+
+ifneq (version.h,$(wildcard version.h))
+Makefile: version.h
+endif
+
+ifneq (version.$(CXX_EXT),$(wildcard version.$(CXX_EXT)))
+Makefile: version.$(CXX_EXT)
+endif
+
+endif
+
+all-post:
+
+all-post-local: doc
+
+# Erwin CGEN Support:
+
+ifneq ($(USE_ERWIN_CGEN),)
+
+EXTRA_GENHMODULES += include/$(INCLUDE_SUBDIR)/gen-wrap-c \
+                     include/$(INCLUDE_SUBDIR)/gen-ids \
+                     include/$(INCLUDE_SUBDIR)/gen-md5sum \
+                     include/$(INCLUDE_SUBDIR)/gen-forwards \
+                     include/$(INCLUDE_SUBDIR)/gen-local-class \
+                     include/$(INCLUDE_SUBDIR)/gen-announce
+
+EXTRA_GENCPPMODULES += gen-wrap-c \
+                       gen-members
+
+MAKE_WRAP_C_OPTIONS =
+
+ifeq ($(CGEN_ENUM2STR),1)
+
+EXTRA_GENHMODULES     += include/$(INCLUDE_SUBDIR)/gen-enum2str
+EXTRA_GENCPPMODULES   += gen-enum2str
+
+CGEN_MAKE_WRAP_C_OPTIONS   += --include='<$(MAIN_H)>' \
+                              --write-enum2str=gen-enum2str.cpp
+
+CGEN_MAKE_ANNOUNCE_OPTIONS += --write-enum-h=include/$(INCLUDE_SUBDIR)/gen-enum2str.h
+
+gen-enum2str.o: gen-enum2str.cpp include/$(INCLUDE_SUBDIR)/gen-enum2str.h
+
+endif
+
+gen-wrap-c.o: gen-wrap-c.cpp include/$(INCLUDE_SUBDIR)/gen-wrap-c.h
+
+GEN_DOC_FILES += html/*
+
+ifneq ($(IS_EASY),1)
+Makefile: include/$(INCLUDE_SUBDIR)/gen-forwards.h
+endif
+
+ifeq ($(CGEN_INPUT_FILES),)
+CGEN_INPUT_FILES = $(addsuffix .h,   $(HHEADERS)) \
+                   $(addsuffix .hh,  $(HHHEADERS)) \
+                   $(addsuffix .hpp, $(HPPHEADERS)) \
+                   $(addsuffix .cpp, $(CPPMODULES)) \
+                   $(addsuffix .cc,  $(CCMODULES))
+endif # CGEN_INPUT_FILES
+
+MAKE_WRAP_C = $(ERWIN_CGEN) \
+                  --global-prefix=$(GLOBAL_PREFIX) \
+                  --dir-prefix=$(INCLUDE_SUBDIR) \
+                  --erwin-typedefs \
+                  --use-failure=1 \
+                  --slot-trivial=1 \
+                  --wrap-c=1 \
+                  $(addprefix -D, $(DEFINES)) \
+                  -UIN_LIB$(PROGNAME_UC)_COMPILE
+
+include/$(INCLUDE_SUBDIR)/gen-announce.h:    gen-announce.stamp
+include/$(INCLUDE_SUBDIR)/gen-local-class.h: gen-announce.stamp
+
+gen-announce.stamp: $(CGEN_INPUT_FILES) $(PATH_ERWIN_CGEN) Makefile.in
+	$(MAKE_WRAP_C) --auto-announce $(CGEN_INPUT_FILES)                              \
+                --write-local-class=include/$(INCLUDE_SUBDIR)/gen-local-class.h.new \
+                --write-announce=include/$(INCLUDE_SUBDIR)/gen-announce.h.new       \
+                $(CGEN_MAKE_ANNOUNCE_OPTIONS)
+	$(MOVE) include/$(INCLUDE_SUBDIR)/gen-local-class.h
+	$(MOVE) include/$(INCLUDE_SUBDIR)/gen-announce.h
+	echo > $@
+
+gen-wrap-c.cpp:                        gen-wrap-c.stamp
+gen-members.cpp:                       gen-wrap-c.stamp
+include/$(INCLUDE_SUBDIR)/gen-wrap-c.h:    gen-wrap-c.stamp
+include/$(INCLUDE_SUBDIR)/gen-ids.h:       gen-wrap-c.stamp
+include/$(INCLUDE_SUBDIR)/gen-md5sum.h:    gen-wrap-c.stamp
+include/$(INCLUDE_SUBDIR)/gen-forwards.h:  gen-wrap-c.stamp
+
+gen-wrap-c.stamp: $(CGEN_INPUT_FILES) $(PATH_ERWIN_CGEN) Makefile.in gen-announce.stamp
+	$(MAKE_WRAP_C) $(CGEN_INPUT_FILES)                                           \
+                   --include='<$(MAIN_H)>'                                       \
+                   --include='<$(INCLUDE_SUBDIR)/gen-wrap-c.h>'                  \
+                   --include='"failure.h"'                                       \
+                   --write-cxx-defs=gen-members.cpp.new                          \
+                   --inherit                                                     \
+                   --write-c-casts,c-externs=include/$(INCLUDE_SUBDIR)/gen-wrap-c.h.new   \
+                   --write-forwards,c-defines,ids,c-typedefs,md5sum=include/$(INCLUDE_SUBDIR)/gen-forwards.h.new \
+                   --write-struct=gen-struct.h.new                               \
+                   $(CGEN_MAKE_WRAP_C_OPTIONS)                                        \
+                   --include='<$(MAIN_H)>'                                       \
+                   --include='<$(INCLUDE_SUBDIR)/gen-wrap-c.h>'                  \
+                   --include='"failure.h"'                                       \
+                   --write-c-defs=gen-wrap-c.cpp.new
+	$(MOVE) gen-members.cpp
+	$(MOVE) gen-struct.h
+	$(MOVE) include/$(INCLUDE_SUBDIR)/gen-wrap-c.h
+	$(MOVE) include/$(INCLUDE_SUBDIR)/gen-ids.h
+	$(MOVE) include/$(INCLUDE_SUBDIR)/gen-md5sum.h
+	$(MOVE) include/$(INCLUDE_SUBDIR)/gen-forwards.h
+	$(MOVE) gen-wrap-c.cpp
+	echo > $@
+
+doc/classes.gdl:     gen-doc.stamp
+doc/html/index.html: gen-doc.stamp
+
+ERWIN_CGEN_DOC_OPTIONS = $(MORE_ERWIN_CGEN_DOC_OPTIONS)
+ifeq ($(top_srcdir)/README, $(wildcard $(top_srcdir)/README))
+   ERWIN_CGEN_DOC_OPTIONS += --text-section:-100:"Read Me"=README
+endif
+ifeq ($(top_srcdir)/Changes, $(wildcard $(top_srcdir)/Changes))
+   ERWIN_CGEN_DOC_OPTIONS += --text-section:400:"Changes"=Changes
+endif
+ifeq ($(top_srcdir)/COPYING, $(wildcard $(top_srcdir)/COPYING))
+   ERWIN_CGEN_DOC_OPTIONS += --text-section:500:"Copyright"=COPYING
+endif
+ifneq ($(VENDOR_HTML),)
+   ERWIN_CGEN_DOC_OPTIONS += --copyright-html='$(VENDOR_HTML)'
+endif
+
+gen-doc.stamp: $(CGEN_INPUT_FILES) $(PATH_ERWIN_CGEN) Makefile.in gen-announce.stamp
+	-rm -rf doc/html.old
+	-rm -rf doc/html.new
+	-mkdir doc
+	$(MAKE_WRAP_C) $(CGEN_INPUT_FILES)             \
+                   --inherit                       \
+                   $(ERWIN_CGEN_DOC_OPTIONS)       \
+                   --write-gdl=doc/classes.gdl.new \
+                   --write-html=doc/html.new
+	$(MOVE) doc/classes.gdl
+	-mv     doc/html     doc/html.old
+	mv      doc/html.new doc/html
+	rm -rf  doc/html.old
+	echo > $@
+
+doc: gen-doc.stamp
+
+endif # USE_ERWIN_CGEN
+
+
+# GPERF:
+%.inc: %.gperf
+	$(TAB2SPACE) $<
+	( LINE="`grep -i 'Command-line:  *gperf' $< | sed 's@^.* gperf @@' | sed 's@ *\*/ *$$@@'`" ; \
+	  $(GPERF) $${LINE} $< > $@.new \
+    )
+	$(MOVE) $@
+
+# MAKELOOKUP:
+%.inc: %.ehash
+	$(TAB2SPACE) $<
+	( LINE="`grep -i 'Command-line:  *makelookup' $< | sed 's@^.* makelookup @@' | sed 's@ *\*/ *$$@@'`" ; \
+	  $(MAKELOOKUP) $${LINE} $< > $@.new \
+    )
+	$(MOVE) $@
+
+ifneq ($(MAKELOOKUPCXXMODULES),)
+$(addsuffix _parser.h, $(MAKELOOKUPCXXMODULES)):  $(addsuffix .$(CXX_EXT), $(MAKELOOKUPCXXMODULES))
+endif
+
+.PRECIOUS: Makefile configure
+
+# LaTeX:
+.PRECIOUS: $(addsuffix .dvi, $(ALLLATEXMODULES))
+%.dvi: %.tex
+	$(LATEX) $< < /dev/null || ( rm -f $@ ; false )
+
+%.ps: %.dvi
+	$(DVIPS) -o $@ $< || ( rm -f $@ ; false )
+
+# ...
+depend: depend-local depend-subdirs
+
+clean-depend: clean-depend-subdirs clean-depend-all-local clean-depend-local
+
+clean-sub: clean-sub-subdirs clean-all-local clean-local
+
+run-sub: run-sub-subdirs run-local
+
+test-sub: test-sub-subdirs test-local
+
+clean: clean-sub-top
+
+run: run-sub-top
+
+.PHONY: check
+check: test
+
+test:
+	$(MAKE) test-sub-top || (echo "***ERROR***: Test failed." ; false)
+
+distclean: distclean-subdirs
+	$(MAKE) sweep-local sweep-all-local \
+            clean-depend-local clean-depend-all-local \
+            clean-local clean-all-local \
+            distclean-local distclean-all-local
+
+sweep: sweep-all-local sweep-local sweep-subdirs
+
+develclean: develclean-subdirs
+	$(MAKE) sweep-local sweep-all-local \
+            clean-local clean-all-local \
+            clean-depend-local clean-depend-all-local \
+            distclean-local distclean-all-local \
+	        develclean-local develclean-all-local
+
+.PHONY: depend clean sweep distclean develclean clean-depend
+.PHONY: depend-local clean-local sweep-local distclean-local develclean-local clean-depend-local
+.PHONY: distclean-all-local sweep-all-local clean-all-local clean-depend-all-local
+.PHONY: develclean-all-local
+.PHONY: all-subdirs all-post-subdirs depend-subdirs clean-subdirs sweep-subdirs distclean-subdirs develclean-subdirs
+.PHONY: clean-depend-subdirs
+.PHONY: run-subdirs run-sub-subdirs run-top run-local run
+.PHONY: test-subdirs test-sub-subdirs test-top test-local test
+.PHONY: all-top all-post all-post-local depend-top all notall do-it-all count clean-sub-top clean-sub
+.PHONY: clean-sub-subdirs doc
+
+doc: dummy
+
+.PHONY: dep
+dep: depend
+
+# list-files
+.PHONY: list-files list-files-local list-files-subdirs \
+        list-files-topdir list-files-make list-files-erwin
+
+list-files: list-files-local list-files-subdirs list-files-topdir \
+            list-files-makesub list-files-erwin
+	cat .list/files.local .list/files.subdirs .list/files.erwin \
+        .list/files.topdir .list/files.makesub > .list/files
+	(echo "LIST_FILES:= \\" ; \
+       (cat .list/files.local .list/files.subdirs | perl -pe 'chomp; s@.*@    $$& \\\n@' ) ; \
+       echo ) > .list/files.make
+
+list-files-topdir: list-sources-topdir
+	( cat .list/sources.topdir && \
+      if test "x$(top_srcdir)" = "x$(srcdir)"; then \
+          for i in $(TOPDIR_FILES); do echo $$i; done; \
+      fi ) > .list/files.topdir
+
+list-files-makesub: list-sources-makesub
+	( cat .list/sources.makesub && \
+      if test "x$(top_srcdir)" = "x$(srcdir)"; then \
+          for i in $(MAKESUB_FILES); do echo $$i; done; \
+      fi ) > .list/files.makesub
+
+list-files-local: list-sources-local
+	(cat .list/sources.local && \
+         for i in $(LOCAL_FILES) $(EXTRA_FILES) $(EXTRA_GENFILES) $(EXTRA_MODULE_FILES); do echo $$i; done ) > .list/files.local
+
+list-files-erwin:
+ifeq ($(USE_ERWIN),)
+	cat /dev/null > .list/files.erwin
+else
+	cd erwin && $(MAKE) FILE_PREFIX=erwin/ listfiles
+	cat erwin/listfiles > .list/files.erwin
+endif
+
+# list-sources
+.PHONY: list-sources list-sources-local list-sources-subdirs \
+        list-sources-topdir list-sources-makesub
+
+# the Erwin sources and the make sources are completely generated or belong to another
+# project, so we will not take them into account for the sources list.
+list-sources: list-sources-local list-sources-subdirs list-sources-topdir
+	cat .list/sources.local .list/sources.subdirs .list/sources.topdir > .list/sources
+	(echo "LIST_SOURCES:= \\" ; \
+       (cat .list/sources.local .list/sources.subdirs | perl -pe 'chomp; s@.*@    $$& \\\n@' ) ; \
+       echo ) > .list/sources.make
+
+list-sources-topdir:
+	( if test "x$(top_srcdir)" = "x$(srcdir)"; then \
+          for i in $(TOPDIR_SOURCES); do echo $$i; done; \
+      fi ) > .list/sources.topdir
+
+list-sources-makesub:
+	( if test "x$(top_srcdir)" = "x$(srcdir)"; then \
+          for i in $(MAKESUB_SOURCES); do echo $$i; done; \
+      fi ) > .list/sources.makesub
+
+list-sources-local:
+	sources='$(SOURCES) $(HEADERS)'; for i in Makefile.in $$sources; do echo $$i; done > .list/sources.local
+
+# archives:
+
+# The second line, 'for ... ' makes sure that $$ARCHIVE_SRC is not empty, since
+# if it is, the shell will have a syntax error.  This hopefully protects the
+# rm -rf from doing rm -rf ./ by accident.  Speaking of which, the ./ protects
+# the rm -rf from easily escaping from this directory in case of a nasty bug.
+# It unfortunately prevents archive/$(ARCHIVE_SRC) to be outside this directory.
+.PHONY: clean-archive
+clean-archive: dummy
+	-rm -rf ./archive
+
+.PHONY: clean-tar
+clean-tar: dummy
+	-rm -rf ./packages
+
+# src:
+
+.PHONY: clean-src-archive
+clean-src-archive: clean-archive
+
+.PHONY: clean-src-tar
+clean-src-tar: clean-tar
+
+.PHONY: src-archive
+src-archive: list-files clean-archive nmakefile repair-version
+	test -n "$(ARCHIVE_SRC)"
+	mkdir ./archive
+	ARCHIVE_SRC=archive/$(ARCHIVE_SRC); \
+	mkdir ./$$ARCHIVE_SRC || exit 1 ; \
+	for i in `grep '/' .list/files | sed 's@/[^/]*$$@@' | sort -u`; do \
+	    $(MKINSTALLDIRS) ./$$ARCHIVE_SRC/$$i; \
+	done ; \
+	for i in `cat .list/files` nmakefile; do \
+	    cp $$i ./$$ARCHIVE_SRC/$$i; \
+	done
+
+.PHONY: src-tar
+src-tar: src-archive
+	-mkdir ./packages
+	ARCHIVE_SRC=$(ARCHIVE_SRC); \
+	TARBALL_SRC=$(TARBALL_SRC); \
+	echo $${ARCHIVE_SRC} ; \
+	echo $${TARBALL_SRC} ; \
+	cd archive && tar -$(TARFLAGS) -cvf ../packages/$${TARBALL_SRC}$(TAREXT) $${ARCHIVE_SRC}
+	$(MAKE) src-tar-md5sum
+
+.PHONY: src-targz    src-tgz    src-tarbz2    src-tbz
+.PHONY: upload-targz upload-tgz upload-tarbz2 upload-tbz
+src-targz: dummy
+	$(MAKE) src-tar TARFLAGS=z TAREXT=.tar.gz ARCHIVE_TAREXT=tgz ARCHIVE_TARFLAGS=z
+
+src-tgz: dummy
+	$(MAKE) src-tar TARFLAGS=z TAREXT=.tgz ARCHIVE_TAREXT=tgz ARCHIVE_TARFLAGS=z
+
+src-tarbz2: dummy
+	$(MAKE) src-tar TARFLAGS=j TAREXT=.tar.bz2 ARCHIVE_TAREXT=tbz ARCHIVE_TARFLAGS=j
+
+src-tbz: dummy
+	$(MAKE) src-tar TARFLAGS=j TAREXT=.tbz ARCHIVE_TAREXT=tbz ARCHIVE_TARFLAGS=j
+
+# binary:
+# Also double check that $$ARCHIVE_BIN is non-empty (which should generate a syntax error):
+.PHONY: clean-bin-archive
+clean-bin-archive: clean-archive
+
+.PHONY: clean-bin-tar
+clean-bin-tar: clean-tar
+
+.PHONY: bin-install-script
+bin-install-script: dummy
+	ARCHIVE_BIN=archive/$(ARCHIVE_BIN); \
+	    $(PERL_OR_ERR) $(top_srcdir)/make/mkbininstall.pl \
+	        exec_prefix='$${prefix}' \
+	        bindir='$${exec_prefix}/bin' \
+	        libdir='$${exec_prefix}/lib' \
+	        libexecdir='$${exec_prefix}/libexec' \
+	        datadir='$${prefix}/share' \
+	        includedir='$${prefix}/include' \
+	        sysconfdir='$${prefix}/etc' \
+	        localstatedir='$${prefix}/var' \
+	        sharedstatedir='$${prefix}/com' \
+	        packagedocdir='$${datadir}/doc/packages' \
+	        archive/$(ARCHIVE_BIN)/data/*$(ARCHIVE_TAREXT) \
+	        archive/$(ARCHIVE_BIN)-raw/bindir/*-version \
+	        VERSION=$(VERSION) \
+	        PROGNAME=$(PROGNAME) \
+	        SIZE_KB=`expr "x\`du -s $${ARCHIVE_BIN}-raw\`" : 'x\([1-9][0-9]*\)'` \
+	        COPYING=$${ARCHIVE_BIN}/COPYING \
+	        BARCAT=$(top_srcdir)/make/barcat.sh \
+	        > ./$${ARCHIVE_BIN}/install-sh
+	chmod 755 ./archive/$(ARCHIVE_BIN)/install-sh
+	( echo "This is $(ARCHIVE_BASE)-"$(VERSION)"." ; echo ; \
+	  echo "For installation of this binary package, please invoke 'sh ./install-sh'" ; \
+	  echo "You will be able to set the installation directories interactively." ) \
+	    > ./archive/$(ARCHIVE_BIN)/INSTALL
+
+.PHONY: bin-archive
+bin-archive: clean-bin-archive
+	test -n "$(ARCHIVE_BIN)"
+	mkdir ./archive
+	ARCHIVE_BIN=archive/$(ARCHIVE_BIN); \
+	    mkdir ./$${ARCHIVE_BIN} || exit 1 ; \
+	    mkdir ./$${ARCHIVE_BIN}-raw || exit 1 ; \
+	    mkdir ./$${ARCHIVE_BIN}/data || exit 1 ; \
+	    VARS=""; \
+	    for i in prefix exec_prefix bindir datadir includedir libdir libexecdir \
+                 sysconfdir localstatedir sharedstatedir packagedocdir ; do \
+	        mkdir ./$${ARCHIVE_BIN}-raw/$$i || exit 1 ; \
+	        VARS="$$VARS $$i=`pwd`/$${ARCHIVE_BIN}-raw/$$i"; \
+	    done; \
+	    for i in $(MORE_PACKAGES) . ; do ( cd $$i && $(MAKE) $$VARS install ) || exit 1; done; \
+	    for i in prefix exec_prefix bindir datadir includedir libdir libexecdir \
+                 sysconfdir localstatedir sharedstatedir packagedocdir ; do \
+	        echo $$i$(ARCHIVE_TAREXT) ; \
+	        rmdir ./$${ARCHIVE_BIN}-raw/$$i 2>/dev/null || \
+	            (cd ./$${ARCHIVE_BIN}-raw/$$i && \
+	                 tar -$(ARCHIVE_TARFLAGS) -cf \
+	                     ../../../$${ARCHIVE_BIN}/data/$$i$(ARCHIVE_TAREXT) . ) \
+	            || exit 1 ; \
+	    done ; \
+	    ( cd ./$${ARCHIVE_BIN}-raw && find . -type f ) > ./$${ARCHIVE_BIN}/FILES
+	-cp $(top_srcdir)/COPYING     ./archive/$(ARCHIVE_BIN)/COPYING 2>/dev/null
+	-cp $(top_srcdir)/COPYING-bin ./archive/$(ARCHIVE_BIN)/COPYING 2>/dev/null
+	-cp $(top_srcdir)/README      ./archive/$(ARCHIVE_BIN)/README 2>/dev/null
+	-cp $(top_srcdir)/README-bin  ./archive/$(ARCHIVE_BIN)/README 2>/dev/null
+	$(MAKE) bin-install-script
+
+.PHONY: bin-tar
+bin-tar: bin-archive
+	-mkdir ./packages
+	ARCHIVE_BIN=$(ARCHIVE_BIN); \
+	TARBALL_BIN=$(TARBALL_BIN); \
+	cd archive && tar -$(TARFLAGS) -cvf ../packages/$${TARBALL_BIN}$(TAREXT) ./$${ARCHIVE_BIN}
+
+# These are different from %-targz etc. targets, because only the outer hull is
+# switched, not the ARCHIVE_* flags for the archives inside the package file.
+# Binany Debian packages are generated with 'make bin-deb'.
+.PHONY: bin-targz
+bin-targz: dummy
+	$(MAKE) bin-tar TARFLAGS=z TAREXT=.tar.gz
+
+.PHONY: bin-tgz
+bin-tgz: dummy
+	$(MAKE) bin-tar TARFLAGS=z TAREXT=.tgz
+
+.PHONY: bin-tarbz2
+bin-tarbz2: dummy
+	$(MAKE) bin-tar TARFLAGS=j TAREXT=.tar.bz2
+
+.PHONY: bin-tbz
+bin-tbz: dummy
+	$(MAKE) bin-tar TARFLAGS=j TAREXT=.tbz
+
+.PHONY: bin-iso
+bin-iso: bin-archive
+	-mkdir ./packages
+	mkisofs \
+	    -A '$(PROGNAME)' \
+	    -copyright '$(COPYRIGHT)' \
+	    -P '$(VENDOR)' \
+	    -p '$(VENDOR)' \
+	    -r -J -pad \
+	    -o ./packages/$(TARBALL_BIN).iso \
+	    ./archive/$(ARCHIVE_BIN)
+
+ifneq ($(DEFAULT_DISTRO),)
+
+# bin or src:
+.PHONY: archive
+archive: $(DEFAULT_DISTRO)-archive
+
+.PHONY: tar
+tar: $(DEFAULT_DISTRO)-tar
+
+.PHONY: tar-md5sum
+tar-md5sum: $(DEFAULT_DISTRO)-tar-md5sum
+
+.PHONY: tar-sha1sum
+tar-sha1sum: $(DEFAULT_DISTRO)-tar-sha1sum
+
+.PHONY: targz
+targz: $(DEFAULT_DISTRO)-targz
+
+.PHONY: tgz
+tgz: $(DEFAULT_DISTRO)-tgz
+
+.PHONY: tarbz2
+tarbz2: $(DEFAULT_DISTRO)-tarbz2
+
+.PHONY: tbz
+tbz: $(DEFAULT_DISTRO)-tbz
+
+.PHONY: iso
+iso: $(DEFAULT_DISTRO)-iso
+
+.PHONY: release
+release: $(DEFAULT_DISTRO)-release
+
+.PHONY: deb
+deb: $(DEFAULT_DISTRO)-deb
+
+.PHONY: sf-upload
+sf-upload: $(DEFAULT_DISTRO)-upload-sf
+
+.PHONY: upload-sf
+upload-sf: sf-upload
+
+.PHONY: upload-deb
+upload-deb: $(DEFAULT_DISTRO)-upload-deb
+
+.PHONY: upload-debian
+upload-debian: upload-deb
+
+.PHONY: upload-tar
+upload-tar: $(DEFAULT_DISTRO)-upload-tar
+
+.PHONY: upload
+upload: $(DEFAULT_DISTRO)-upload
+
+endif
+
+.PHONY: src-tar-md5sum
+src-tar-md5sum: dummy
+	$(MD5SUM) packages/$(TARBALL_SRC)$(TAREXT) > packages/$(TARBALL_SRC)$(TAREXT).md5.new
+	$(MOVE) packages/$(TARBALL_SRC)$(TAREXT).md5
+
+.PHONY: src-tar-sha1sum
+src-tar-sha1sum: dummy
+	$(SHA1SUM) packages/$(TARBALL_SRC)$(TAREXT) > packages/$(TARBALL_SRC)$(TAREXT).sha1.new
+	$(MOVE) packages/$(TARBALL_SRC)$(TAREXT).sha1
+
+.PHONY: bin-tar-md5sum
+bin-tar-md5sum: dummy
+	$(MD5SUM) packages/$(TARBALL_BIN)$(TAREXT) > packages/$(TARBALL_BIN)$(TAREXT).md5.new
+	$(MOVE) packages/$(TARBALL_BIN)$(TAREXT).md5
+
+.PHONY: bin-tar-sha1sum
+bin-tar-sha1sum: dummy
+	$(SHA1SUM) packages/$(TARBALL_BIN)$(TAREXT) > packages/$(TARBALL_BIN)$(TAREXT).sha1.new
+	$(MOVE) packages/$(TARBALL_BIN)$(TAREXT).sha1
+
+# clean:
+clean-all-local: erwin-clean clean-archive clean-tar clean-bin-archive clean-bin-tar
+	-rm -f $(PROG) $(PROG_ALIASES) $(PROG_EXE) lib$(LIBRARY).a $(PROG).date.c
+	-rm -f *.a *.o *.so *.lo *.ii core *.stamp
+ifneq ($(USE_PAG),)
+	-rm -f .pag_timestamp
+endif
+ifneq ($(PAG_ANALYSIS),)
+	-rm -f .pag_timestamp
+	-rm -rf ./$(PAG_MAKEDIR)/src
+endif
+ifneq ($(GEN_DOC_FILES),)
+	-rm -f $(addprefix doc/,$(GEN_DOC_FILES))
+endif
+ifneq ($(GEN_SHARE_FILES),)
+	-rm -f $(GEN_SHARE_FILES)
+endif
+	-rm -f $(addsuffix .ii,$(ALLCXXMODULES))
+	-rm -f $(addsuffix .s,$(ALLCXXMODULES))
+	-rm -f $(addsuffix .o,$(ALLCXXMODULES))
+	-rm -f $(addsuffix .ii,$(ALLCMODULES))
+	-rm -f $(addsuffix .s,$(ALLCMODULES))
+	-rm -f $(addsuffix .o,$(ALLCMODULES))
+	-rm -f $(addsuffix .aux,$(ALLLATEXMODULES))
+	-rm -f $(addsuffix .dvi,$(ALLLATEXMODULES))
+	-rm -f $(addsuffix .ps,$(ALLLATEXMODULES))
+	-rm -f $(addsuffix .ps.gz,$(ALLLATEXMODULES))
+	-rm -f $(addsuffix .log,$(ALLLATEXMODULES))
+	-rm -f $(addsuffix .so,$(ALLCXXMODULES))
+	-rm -f $(addsuffix .so,$(ALLCMODULES))
+	-rm -f $(addsuffix .inc,$(GPERFMODULES))
+	-rm -f $(addsuffix .inc,$(MAKELOOKUPINCMODULES))
+	-rm -f $(addsuffix .$(CXX_EXT),$(MAKELOOKUPCXXMODULES))
+	-rm -f $(addsuffix _moc.$(CXX_EXT),$(MOCHEADERS))
+
+.PHONY: erwin-clean
+erwin-clean:
+
+ifneq ($(USE_ERWIN),)
+erwin-clean:
+	-cd erwin && $(MAKE) clean
+endif
+
+clean-depend-all-local:
+	-rm -rf .list
+	-rm -rf .deps .depend $(EXTRA_DEPFILES)
+
+clean-depend-subdirs: clean-depend-subdirs-pre
+
+.PHONY: clean-depend-subdirs-pre
+clean-depend-subdirs-pre:
+	-rm -f `find . -name "*.P"`
+
+sweep-all-local:
+	-rm -f *~ .desktop.el*
+
+distclean-all-local: clean-depend-all-local
+	-rm -f config.status config.log config.cache version.$(CXX_EXT)
+	-rm -f $(VERSION_H) $(VERSION_H_LOCAL)
+	-rm -f version.h.stamp version.h version.dummy version.o
+	-rm -f Makefile $(top_srcdir)/make/Rules $(top_srcdir)/make/Defs
+
+clean-local:
+clean-depend-local:
+distclean-local:
+sweep-local:
+develclean-local:
+
+develclean-all-local:
+	-rm -f $(FAILURE_H) failure.h failure.h.stamp $(FAILURE_H).new
+	-rm -rf autom4te.cache
+	-rm -f configure
+	-rm -f $(add_suffix .c,          $(GENCMODULES))
+	-rm -f $(add_suffix .cc,         $(GENCCMODULES))
+	-rm -f $(add_suffix .cpp,        $(GENCPPMODULES))
+	-rm -f $(add_suffix .$(CXX_EXT), $(GENCXXMODULES))
+	-rm -f $(add_suffix .hh,         $(GENHHMODULES))
+	-rm -f $(add_suffix .tex,        $(GENLATEXMODULES))
+	-rm -f $(add_suffix .h,          $(GENHMODULES))
+	-rm -f $(add_suffix .inc,        $(GENINCMODULES))
+	-rm -f $(EXTRA_GENFILES)
+ifneq ($(USE_SYMBOL),)
+ifeq ($(NO_SYMBOL_C),)
+	-rm -f $(PATH_SYMBOL).h symbol.h $(PATH_SYMBOL).h.stamp $(FILE_SYMBOL).$(CXX_EXT)
+endif
+endif
+ifneq ($(USE_SYMBOL),)
+	-rm -f $(PATH_SYMBOL).inc
+endif
+
+all-subdirs \
+all-post-subdirs \
+wincopy-subdirs \
+wincopyall-subdirs \
+run-subdirs \
+run-sub-subdirs \
+test-subdirs \
+test-sub-subdirs \
+clean-depend-subdirs \
+clean-subdirs \
+clean-sub-subdirs \
+depend-subdirs \
+develclean-subdirs \
+distclean-subdirs \
+sweep-subdirs:
+	target=`echo $@ | sed s/-subdirs//` ; \
+	    subdirs='$(SUBDIRS)' ; \
+            for i in $$subdirs; do \
+                (cd $$i && $(MAKE) $$target) || exit 1; done
+
+list-files-subdirs \
+list-sources-subdirs:
+	target=`echo $@ | sed s/-subdirs// | sed s/list-//` ; \
+	    subdirs='$(SUBDIRS)' ; \
+            for i in $$subdirs; do \
+                (cd $$i && $(MAKE) list-$$target) || exit 1; done ; \
+            (for i in $$subdirs; do \
+                (cat $$i/.list/$$target | \
+                    while read a; do echo $$i/$$a; done ); done) > .list/$$target.subdirs
+
+all-top \
+all-post-top \
+depend-top \
+clean-sub-top \
+run-sub-top \
+test-sub-top \
+list-files-top \
+wincopy-top \
+wincopyall-top \
+list-sources-top \
+run-top \
+test-top:
+	target=`echo $@ | sed s/-top//` ; \
+	   (cd $(top_srcdir) && $(MAKE) $$target)
+
+# We cannot depend on $(MAKEFAILURE): if it is not needed by the package, it
+# need not be in the path.
+failure.h.stamp: $(SOURCES) $(HEADERS)
+ifneq ($(MAKEFAILURE),)
+	-$(MAKEFAILURE) \
+          --err-subsystem=$(ERR_SUBSYSTEM) $(MAKEFAILURE_OPTIONS) \
+          --prefix=$(FAILURE_PREFIX) \
+          --internal-ifdef='IN_LIB$(PROGNAME_UC)_COMPILE' \
+          $(SOURCES) $(HEADERS) > $(FAILURE_H).new
+	$(MOVE) $(FAILURE_H)
+endif
+	echo > failure.h.stamp
+	echo '#include "$(INCLUDE_SUBDIR)/failure.h"' > $(FAILURE_H_LOCAL).new
+	$(MOVE) $(FAILURE_H_LOCAL)
+	-rm -f failure.dummy
+
+$(FAILURE_H): failure.h.stamp
+
+#
+# .SECONDARY: # NONONO!  This breaks the dependencies under Solaris (probably a bug in
+#                        GNU Make v3.78.1 we use there.
+
+.PRECIOUS: $(FAILURE_H_LOCAL) $(FAILURE_H) $(SYMBOL_H_LOCAL)
+
+
+%_parser.h %_parser.$(CXX_EXT): %.y
+	$(TAB2SPACE) $<
+	$(BISON) -v -p $*_ -b $* -d -t $<
+	$(MOVE) $*.tab.c $@
+	$(MOVE) $*.tab.h $*_parser.h
+
+# Note: The following rule is a bit complicated, since the final name of
+#       the C file must be the same as the one we gave to Flex since
+#       otherwise, some of the the #line directives are wrong.
+%_scanner.$(CXX_EXT): %.l
+	( mv $@ $@.old || true) 2> /dev/null
+	$(TAB2SPACE) $<
+	$(FLEX) -P$*_ -o$@ $<
+	echo "#define YY_NEVER_INTERACTIVE 1" > $@.new # some flex is broken under Win
+	echo '#line 1 "$@"' >> $@.new
+	cat $@ >> $@.new
+	-rm -f $@
+	( mv $@.old $@ || true )2> /dev/null
+	$(MOVE) $@
+
+.PRECIOUS: %_scanner.$(CXX_EXT)
+.PRECIOUS: %_parser.$(CXX_EXT)
+.PRECIOUS: %_parser.h
+
+# This is not really correct and maybe it breaks parallel compilation for more than
+# one scanner/parser.  But I don't know how to write a correct rule.
+ifneq ($(LMODULES),)
+$(addsuffix _scanner.o, $(LMODULES)): $(addsuffix _parser.h, $(YMODULES)) \
+                                      $(addsuffix _parser.$(CXX_EXT), $(YMODULES))
+endif
+
+ifneq ($(YMODULES),)
+$(addsuffix _parser.h, $(YMODULES)):  $(addsuffix _parser.$(CXX_EXT), $(YMODULES))
+endif
+
+
+# GPERF
+ifneq ($(IS_EASY),1)
+ifneq ($(GPERFMODULES),)
+#ifneq ($(addsuffix .inc,$(GPERFMODULES)),$(wildcard $(addsuffix .inc,$(GPERFMODULES))))
+#DUMMY:= $(shell $(MAKE) $(addsuffix .inc,$(GPERFMODULES)))
+Makefile: $(addsuffix .inc,$(GPERFMODULES))
+#endif
+endif
+endif
+
+# MAKELOOKUP
+ifneq ($(IS_EASY),1)
+ifneq ($(MAKELOOKUPINCMODULES),)
+Makefile: $(addsuffix .inc,$(MAKELOOKUPINCMODULES))
+endif
+endif
+
+
+# SYMBOLS
+ifneq ($(USE_SYMBOL),)
+
+# Erwin might be missing:
+ifneq ($(MAKESYMBOL),)
+$(PATH_SYMBOL).inc: $(SOURCES) $(HEADERS)
+	-$(MAKESYMBOL) --output=$(PATH_SYMBOL).inc.new \
+                  --library-prefix=$(PREFIX_SYMBOL) \
+                  --library-prefix-uc=$(PROGNAME_UC) \
+                  --prefix=$(USE_SYMBOL) $(SOURCES) $(HEADERS)
+	$(MOVE) $(PATH_SYMBOL).inc
+endif
+
+# We always have to remake the path symbols:
+
+ifneq ($(IS_EASY),1)
+#ifneq ($(MAKECMDGOALS), $(PATH_SYMBOL).inc)
+#DUMMY:= $(shell $(MAKE) $(PATH_SYMBOL).inc)
+#endif
+Makefile: $(PATH_SYMBOL).inc
+endif
+
+
+ifeq ($(NO_SYMBOL_C),)
+
+ifneq ($(IS_EASY),1)
+ifneq ($(PATH_SYMBOL).h,$(wildcard $(PATH_SYMBOL).h))
+Makefile: $(PATH_SYMBOL).h.stamp
+endif
+endif
+
+$(FILE_SYMBOL).$(CXX_EXT): $(top_srcdir)/make/symbol.c
+	cat $(top_srcdir)/make/symbol.c \
+       | sed 's@_UPREFIX_SYMBOL_DYNAMIC_TABLE_DEFAULT@$(DYN_SYMBOL)@g' \
+       | sed 's@_EDPREFIX_@$(SUBDIR_SYMBOL)@g' \
+       | sed 's@_EPREFIX_@$(ERWIN_FILE_PREFIX)@g' \
+       | sed 's@_PREFIX_@$(ERWIN_NAME_PREFIX)@g' \
+       | sed 's@_UPREFIX_@$(ERWIN_NAME_PREFIX_UC)@g' \
+       | sed 's@_ULPREFIX_@$(PROGNAME_UC)@g' \
+       | sed 's@_AUTO_MSG_@Automatically generated, do not edit.@g' \
+       > $(FILE_SYMBOL).$(CXX_EXT).new
+	$(MOVE) $(FILE_SYMBOL).$(CXX_EXT)
+
+# Manual deps for the implementation, since it is deleted by DEP_FILTER
+# for all files.  However, for *this* file, we need it:
+$(FILE_SYMBOL).o: $(FILE_SYMBOL).$(CXX_EXT) $(PATH_SYMBOL).h $(PATH_SYMBOL).inc
+
+$(PATH_SYMBOL).h.stamp: $(top_srcdir)/make/symbol.h
+	cat $(top_srcdir)/make/symbol.h \
+       | sed 's@_UPREFIX_SYMBOL_DYNAMIC_TABLE_DEFAULT@$(DYN_SYMBOL)@g' \
+       | sed 's@_EDPREFIX_@$(SUBDIR_SYMBOL)@g' \
+       | sed 's@_EPREFIX_@$(ERWIN_FILE_PREFIX)@g' \
+       | sed 's@_PREFIX_@$(ERWIN_NAME_PREFIX)@g' \
+       | sed 's@_UPREFIX_@$(ERWIN_NAME_PREFIX_UC)@g' \
+       | sed 's@_ULPREFIX_@$(PROGNAME_UC)@g' \
+       | sed 's@_AUTO_MSG_@Automatically generated, do not edit.@g' \
+       > $(PATH_SYMBOL).h.new
+	$(MOVE) $(PATH_SYMBOL).h
+	echo '#include "$(SUBDIR_SYMBOL)symbol.h"' > $(SYMBOL_H_LOCAL)
+	>$(PATH_SYMBOL).h.stamp
+
+$(PATH_SYMBOL).h: $(PATH_SYMBOL).h.stamp
+
+endif
+
+endif
+# END SYMBOLS
+
+EXTRA_OPTIONS_GXX_CMD= \
+    @GNUG_TRUE@ grep -- '--extra-options-gcc:' | sed 's@.*--extra-options-gcc:@@' | sed 's@\*\/ *$$@@'
+EXTRA_OPTIONS_NO_GXX_CMD= @GNUG_FALSE@ :
+EXTRA_OPTIONS_CXX_CMD= $(EXTRA_OPTIONS_GXX_CMD) \
+                       $(EXTRA_OPTIONS_NO_GXX_CMD)
+
+EXTRA_OPTIONS_GCC_CMD= \
+    @GNUC_TRUE@ grep -- '--extra-options-gcc:' | sed 's@.*--extra-options-gcc:@@' | sed 's@\*\/ *$$@@'
+EXTRA_OPTIONS_NO_GCC_CMD= @GNUC_FALSE@ :
+EXTRA_OPTIONS_C_CMD= $(EXTRA_OPTIONS_GCC_CMD) \
+                     $(EXTRA_OPTIONS_NO_GCC_CMD)
+
+# The DEP_FILTER removes dependencies to generated files that are derived
+# from the source files and thus may change without the source files needing
+# new compilation.  Since very often, virtually the whole project depends
+# on these, it's worth removing the deps.
+DEP_FILTER=sed -e 's@$$@ @' | \
+           sed -e 's@ \($(FAILURE_H)\|$(FAILURE_H_LOCAL)\) @ @g' | \
+           sed -e 's@ \($(PATH_SYMBOL).h\|$(PATH_SYMBOL).inc\|$(SYMBOL_H_LOCAL)\) @ @g' | \
+           sed -e 's@ *$$@@'
+
+%_moc.$(CXX_EXT): %.h
+	$(QTDIR)/bin/moc -o $@ $<
+
+%.s: %.cc
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `cat $< | $(EXTRA_OPTIONS_CXX_CMD)` -S $< -o $@ $(ERR_LIMIT)
+
+%.ii: %.cc
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -E $< -o $@ $(ERR_LIMIT)
+
+%.s: %.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `cat $< | $(EXTRA_OPTIONS_CXX_CMD)` -S $< -o $@ $(ERR_LIMIT)
+
+%.ii: %.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -E $< -o $@ $(ERR_LIMIT)
+
+%.s: %.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) `cat $< | $(EXTRA_OPTIONS_C_CMD)` -S $< -o $@ $(ERR_LIMIT)
+
+%.i: %.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) -E $< -o $@ $(ERR_LIMIT)
+
+%.o: %.c
+	$(TAB2SPACE) $<
+	$(CC) $(CPPFLAGS) $(CFLAGS) `cat $< | $(EXTRA_OPTIONS_C_CMD)`  -Wp,-MD,.deps/$(*F).pp -c $< -o $@ $(ERR_LIMIT)
+	@-sed -e 's@^\([^:]*\)\.o[      ]*:@$@:@' < .deps/$(*F).pp | \
+      sed -e 's/^\([^:]*\)\.o[      ]*:/\1.so \1.lo \1.o:/' | \
+      $(DEP_FILTER) > .deps/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*F).pp \
+		| sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+		>> .deps/$(*F).P; \
+	rm .deps/$(*F).pp
+
+%.so: %.c
+	$(TAB2SPACE) $<
+	$(CC) $(CPPFLAGS) $(CFLAGS) `cat $< | $(EXTRA_OPTIONS_C_CMD)` -Wl,-shared -Wp,-MD,.deps/$(*F).pp $< -o $@ $(ERR_LIMIT)
+	chmod 0755 $@
+	@-sed -e 's@^\([^:]*\)\.o[      ]*:@$@:@' < .deps/$(*F).pp | \
+      sed -e 's/^\([^:]*\)\.so[      ]*:/\1.so \1.lo \1.o:/' | \
+      $(DEP_FILTER) > .deps/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*F).pp \
+		| sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+		>> .deps/$(*F).P; \
+	rm -f .deps/$(*F).pp
+
+%.o: %.cc
+	$(TAB2SPACE) $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `cat $< | $(EXTRA_OPTIONS_CXX_CMD)`  -Wp,-MD,.deps/$(*F).pp -c $< $(ERR_LIMIT)
+	@-sed -e 's@^\([^:]*\)\.o[      ]*:@$@:@' < .deps/$(*F).pp | \
+      sed -e 's/^\([^:]*\)\.o[      ]*:/\1.so \1.lo \1.o:/' | \
+      $(DEP_FILTER) > .deps/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*F).pp \
+		| sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+		>> .deps/$(*F).P; \
+	rm .deps/$(*F).pp
+
+%.so: %.cc
+	$(TAB2SPACE) $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `cat $< | $(EXTRA_OPTIONS_CXX_CMD)` -Wl,-shared -Wp,-MD,.deps/$(*F).pp $< -o $@ $(ERR_LIMIT)
+	chmod 0755 $@
+	@-sed -e 's@^\([^:]*\)\.o[      ]*:@$@:@' < .deps/$(*F).pp | \
+      sed -e 's/^\([^:]*\)\.so[      ]*:/\1.so \1.lo \1.o:/' | \
+      $(DEP_FILTER) > .deps/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*F).pp \
+		| sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+		>> .deps/$(*F).P; \
+	rm -f .deps/$(*F).pp
+
+%.o: %.cpp
+	$(TAB2SPACE) $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `cat $< | $(EXTRA_OPTIONS_CXX_CMD)`  -Wp,-MD,.deps/$(*F).pp -c $< $(ERR_LIMIT)
+	@-sed -e 's@^\([^:]*\)\.o[      ]*:@$@:@' < .deps/$(*F).pp | \
+      sed -e 's/^\([^:]*\)\.o[      ]*:/\1.so \1.lo \1.o:/' | \
+      $(DEP_FILTER) > .deps/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*F).pp \
+		| sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+		>> .deps/$(*F).P; \
+	rm .deps/$(*F).pp
+
+%.so: %.cpp
+	$(TAB2SPACE) $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) `cat $< | $(EXTRA_OPTIONS_CXX_CMD)` -Wl,-shared -Wp,-MD,.deps/$(*F).pp $< -o $@ $(ERR_LIMIT)
+	chmod 0755 $@
+	@-sed -e 's@^\([^:]*\)\.o[      ]*:@$@:@' < .deps/$(*F).pp | \
+      sed -e 's/^\([^:]*\)\.so[      ]*:/\1.so \1.lo \1.o:/' | \
+      $(DEP_FILTER) > .deps/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*F).pp \
+		| sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+		>> .deps/$(*F).P; \
+	rm -f .deps/$(*F).pp
+
+
+.PRECIOUS: $(addsuffix .$(CXX_EXT),$(PCCMODULES))
+# don't you bl**dy dare to delete the .cc files!
+
+.PHONY: clean-pcc
+clean-pcc:
+	rm -f $(addsuffix .cc,  $(PCCMODULES))
+	rm -f $(addsuffix .cpp, $(PCCMODULES))
+
+%.$(CXX_EXT): %.pcc # $(PCC2CC)    # no, with this, all .pcc controllers are compiled after config.status
+	$(TAB2SPACE) $<
+	$(PCC2CC) $<
+
+$(PCC2CC): $(PCC2CC).in
+	cd $(top_srcdir) && ./config.status
+
+.PHONY: erwinsub
+erwinsub:
+
+# Using ERWIN_MANUAL_FLAGS is deprecated!
+ifeq ($(USE_ERWIN),)
+
+LIBERWIN:=
+
+else
+
+LIBERWIN:= erwin/lib/lib$(ERWIN_LIB_INFIX)erwin.a
+
+.PHONE: erwin-make
+
+$(LIBERWIN): erwin-make dummy
+
+erwinsub: $(LIBERWIN)
+
+erwin-make: dummy
+ifeq ($(ERWIN_MANUAL_FLAGS),1)
+	cd erwin && $(MAKE) MORE_CPPFLAGS="$(ERWIN_MORE_CPPFLAGS)" \
+                        LESS_CPPFLAGS="$(ERWIN_LESS_CPPFLAGS)" \
+                        MORE_CFLAGS="$(ERWIN_MORE_CFLAGS)" \
+                        LESS_CFLAGS="$(ERWIN_LESS_CFLAGS)" \
+                        MORE_CXXFLAGS="$(ERWIN_MORE_CXXFLAGS)" \
+                        LESS_CXXFLAGS="$(ERWIN_LESS_CXXFLAGS)"
+else
+	cd erwin && $(MAKE) MORE_CPPFLAGS="$(CPPFLAGS)" \
+                        MORE_CFLAGS="$(CFLAGS)" \
+                        MORE_CXXFLAGS="$(CXXFLAGS)"
+endif
+endif
+
+PHONY: erwin-lib
+erwin-lib: erwinsub
+
+# how to build a PAG analyzer
+ifneq ($(USE_PAG),)
+ifneq ($(PAG_ANALYSIS),)
+
+ifneq ($(PAG_OPTLA_USE_M4),)
+$(PAG_SPECDIR)/${PAG_ANALYSIS}.optla: $(PAG_SPECDIR)/${PAG_ANALYSIS}.optla.m4
+	$(M4) $< > $@
+endif
+
+.pag_timestamp: $(PAG_SPECDIR)/${PAG_ANALYSIS}.optla $(PAG_SPECDIR)/${PAG_ANALYSIS}.set
+	-$(top_srcdir)/make/mkinstalldirs ./$(PAG_MAKEDIR)
+	${PAGPATH}/bin/pag $(PAG_FRONTEND) $(PAG_ITERATOR) \
+                       $(PAG_SPECDIR)/${PAG_ANALYSIS} ./$(PAG_MAKEDIR)
+	echo > .pag_timestamp
+
+CFLAGS_NO_UNUSED=$(CFLAGS) @GNUC_TRUE@ -Wno-unused
+
+./$(PAG_MAKEDIR)/src/${PAG_ANALYSIS}.a: .pag_timestamp
+	cd ./$(PAG_MAKEDIR)/src && \
+       $(MAKE) CC="$(CC)" CPPFLAGS="$(CPPFLAGS)" CFLAGS="$(CFLAGS_NO_UNUSED)"
+
+PAG_LIB_USER:=./$(PAG_MAKEDIR)/src/${PAG_ANALYSIS}.a
+PAG_TARGET:=./$(PAG_MAKEDIR)/src/${PAG_ANALYSIS}.a
+else
+PAG_LIB_USER:=
+PAG_TARGET:=
+endif
+
+ifneq ($(PAG_FRONTEND),)
+PAG_LIB := -l$(PAG_FRONTEND)f
+endif
+endif
+
+
+# how to build a program:
+ifneq ($(PROG),)
+
+ifneq ($(CPPMODULES),)
+LINK_CXX:=1
+endif
+
+ifeq ($(LINK_CXX),0)
+DO_LINK= $(LD) $(OBJS) $(LDFLAGS) $(CFLAGS) $(PAG_LIB_USER) $(PAG_LIB) $(LOADLIBES) $(PAG_LIB_USER) -o $(PROG_EXE) $(ERR_LIMIT)
+else
+DO_LINK= $(LDXX) $(OBJS) $(LDFLAGS) $(CXXFLAGS) $(PAG_LIB_USER) $(PAG_LIB) $(LOADLIBES) $(PAG_LIB_USER) -o $(PROG_EXE) $(ERR_LIMIT)
+endif
+
+.PHONY: link
+link: link-prog
+
+.PHONY: link-prog
+link-prog:
+	$(MAKE) version
+	$(MAKE) version.o
+	$(DO_LINK)
+	echo > $(PROG_EXE).stamp
+	$(MAKE) prog-aliases
+
+ifeq ($(USE_ERWIN),)
+
+$(PROG_EXE): $(PAG_TARGET) $(OBJS) $(SUBLIBS)
+	$(MAKE) link-prog
+
+$(PROG_EXE).stamp: $(PROG_EXE)
+
+else
+
+$(PROG_EXE).stamp: $(PAG_TARGET) $(OBJS) $(SUBLIBS) $(LIBERWIN)
+	$(MAKE) link-prog
+
+$(PROG_EXE): $(PAG_TARGET) $(OBJS) $(SUBLIBS) $(LIBERWIN) dummy
+	$(MAKE) $(PROG_EXE).stamp
+
+endif
+
+.PHONY: prog-aliases
+prog-aliases: $(PROG_ALIASES)
+
+$(PROG_ALIASES): dummy
+	rm -f $@ && $(LN_S) $(PROG_EXE) $@
+
+endif
+
+# how to build a library:
+ifneq ($(LIBRARY),)
+
+all: lib$(LIBRARY).a
+
+.PHONY:link
+link: link-library
+
+ifeq ($(USE_ERWIN),)
+
+lib$(LIBRARY).a: $(OBJS)
+	$(MAKE) link-library
+
+.PHONY:link-library
+link-library:
+	$(MAKE) version
+	$(MAKE) version.o
+	$(LINK_LIB) lib$(LIBRARY).a $(OBJS)
+	$(RANLIB) lib$(LIBRARY).a
+
+else
+
+lib$(LIBRARY).a: $(OBJS) $(LIBERWIN) dummy
+	$(MAKE) lib$(LIBRARY).a.stamp
+
+lib$(LIBRARY).a.stamp: $(OBJS) $(LIBERWIN)
+	$(MAKE) link-library
+
+.PHONY:link-library
+link-library:
+	$(MAKE) version
+	$(MAKE) version.o
+	cd erwin && $(MAKE) FILE_PREFIX=erwin/ linkobjs
+	$(LINK_LIB) lib$(LIBRARY).a $(OBJS) `cat erwin/linkobjs`
+	$(RANLIB) lib$(LIBRARY).a
+	echo > lib$(LIBRARY).a.stamp
+
+endif
+
+endif
+
+# flex scanners need a bison generated header file:
+%_scanner.o: %_parser.h
+
+#NO: every object depends in failure.h:
+#NO: $(OBJS): $(FAILURE_H)
+
+ifneq ($(PATTERN),)
+
+%_pat.$(CXX_EXT): %.pat
+	$(PATTERN) $< $@
+
+%_pat.h: %.pat
+	$(PATTERN) -proto=extern $< $@
+
+endif
+
+
+# auto-regenerate Makefile and others:
+Makefile: $(top_srcdir)/Makefile.in \
+          Makefile.in \
+          $(top_srcdir)/make/Rules.in \
+          $(top_srcdir)/make/Defs.in \
+          $(top_srcdir)/config.status
+	cd $(top_srcdir) && CONFIG_HEADERS= ./config.status 1>&2
+    # Note: It is quite impossible to re-generate sub-directory Makefiles
+    #       correctly by a more specific rule that also involves
+    #       CONFIG_FILES.  config.status is only in $(top_srcdir),
+    #       but how to tell it in which sub-dir we want the Makefile
+    #       to be regenerated.
+    #       (It is easy for Rules and Defs, though.)
+
+# Different config.status, shoot!
+#ifneq ($(USE_ERWIN),)
+#erwin/Makefile: Makefile
+#endif
+
+$(top_srcdir)/make/Rules: Makefile
+	:
+
+$(top_srcdir)/make/Defs: Makefile
+	:
+
+# #################################################################### #
+
+.PHONY: count
+count: list-sources
+	wc `cat .list/sources`
+
+# #################################################################### #
+# #################################################################### #
+# Standard Things for Version control
+
+version.o: version.$(CXX_EXT) $(VERSION_H)
+
+.PHONY: sub-version
+sub-version: repair-version
+
+version.h.stamp: repair-version
+	VERSION=$(VERSION_NUMERIC) \
+	 PREFIX=$(GLOBAL_PREFIX) \
+	 PREFIX_UC=$(GLOBAL_PREFIX_UC) \
+	 PROGNAME_UC=$(PROGNAME_UC) \
+	     $(SHELL) ${top_srcdir}/make/mkversion_h.sh > $(VERSION_H).new
+	$(MOVE) $(VERSION_H)
+	echo '#include "$(INC_VERSION_H)"' > $(VERSION_H_LOCAL).new
+	$(MOVE) $(VERSION_H_LOCAL)
+	-rm -f version.dummy
+	echo > version.h.stamp
+
+.PHONY: echo-version
+echo-version: repair-version
+	echo $(VERSION_NUMERIC)
+
+$(VERSION_H): version.h.stamp
+
+$(VERSION_H_LOCAL): version.h.stamp
+
+# When changing this, edit the Windows version.cpp, too!
+.PHONY: version
+version: version-script
+	$(MAKE) sub-version
+	echo '/* Automatically generated */' > version.$(CXX_EXT)
+	@echo '#include "$(INC_VERSION_H)"' >> version.$(CXX_EXT)
+	@echo 'char const *$(GLOBAL_PREFIX)version="'$(VERSION)'";' >> version.$(CXX_EXT)
+	@echo 'int $(GLOBAL_PREFIX)revision='$(REVISION)';' >> version.$(CXX_EXT)
+	@echo 'char const *$(GLOBAL_PREFIX)branch_id="@branch:'"$(BRANCH)"'@";' >> version.$(CXX_EXT)
+	@echo 'char const *$(GLOBAL_PREFIX)config_prog_docdir=         "$(mydocdir)";'         >> version.$(CXX_EXT)
+	@echo 'char const *$(GLOBAL_PREFIX)config_prog_sysconfdir=     "$(mysysconfdir)";'     >> version.$(CXX_EXT)
+	@echo 'char const *$(GLOBAL_PREFIX)config_prog_datadir=        "$(mydatadir)";'        >> version.$(CXX_EXT)
+	@echo 'char const *$(GLOBAL_PREFIX)config_prog_libexecdir=     "$(mylibexecdir)";'     >> version.$(CXX_EXT)
+	@echo 'char const *$(GLOBAL_PREFIX)config_prog_localstatedir=  "$(mylocalstatedir)";'  >> version.$(CXX_EXT)
+	@echo 'char const *$(GLOBAL_PREFIX)config_prog_sharedstatedir= "$(mysharedstatedir)";' >> version.$(CXX_EXT)
+
+.PHONY: base-version-change
+base-version-change:
+
+# The following first checks for a major version change, which will reset
+# the sub-version counter, the tries to repair the sub-version file, and
+# then increments the sub-version.
+#
+# This now prefers the environment variable BUILD which the AbsInt makefactory
+# exports to ensure a uniform built number.
+.PHONY: repair-version
+repair-version: dummy
+	echo ${BASE_VERSION} > $(BASE_VERSION_FILE).new
+	if test -f $(BASE_VERSION_FILE); then :; else \
+	    echo ${BASE_VERSION} > $(BASE_VERSION_FILE) ; \
+	fi
+	if diff $(BASE_VERSION_FILE) $(BASE_VERSION_FILE).new >/dev/null 2>&1 ; then :; else \
+	    ${VERSION_TOOL} --read $(BASE_VERSION_FILE) > $(BASE_VERSION_FILE).repaired && \
+        $(MOVE) $(BASE_VERSION_FILE).repaired $(BASE_VERSION_FILE); \
+	fi
+	if diff $(BASE_VERSION_FILE) $(BASE_VERSION_FILE).new >/dev/null 2>&1 ; then :; else \
+	  	$(MOVE) $(BASE_VERSION_FILE) ; \
+	    $(MAKE) base-version-change; \
+	fi
+	-if test -n "$(BUILD)"; then \
+	    echo "$(BUILD)" > \
+	         $(SUB_VERSION_FILE).new && \
+	    $(MOVE) $(SUB_VERSION_FILE) ; \
+	elif test -d .svn && test -n "$(SVN)"; then \
+	    expr "`$(SVN_INFO) . | grep 'Revision:'`" : '.*: *\([0-9][0-9]*\) *$$' > \
+	         $(SUB_VERSION_FILE).new && \
+	    $(MOVE) $(SUB_VERSION_FILE) ; \
+	fi
+	test -s $(SUB_VERSION_FILE)
+	-rm -f $(BASE_VERSION_FILE).new
+
+.PHONY: version-script
+
+ifeq ($(LIBRARY),)
+
+version-script:
+	:
+
+else
+
+version-script: repair-version
+	-cat lib$(LIBRARY)-version.in | \
+	    sed 's@^prefix=.*@prefix='$(prefix)'@g' | \
+	    sed 's@^exec_prefix=.*@exec_prefix='$(exec_prefix)'@g' | \
+	    sed 's@^includedir=.*@includedir='$(includedir)'@g' | \
+	    sed 's@^libdir=.*@libdir='$(libdir)'@g' | \
+	    sed 's@^datadir=.*@datadir='$(datadir)'@g' | \
+	    sed 's@^docdir=.*@docdir='$(docdir)'@g' | \
+	    sed 's@--VERSION--@'$(VERSION)'@g' | \
+	    sed 's@--ERWIN-VERSION--@'"`cat erwin/version`"'@g' \
+	    > lib$(LIBRARY)-version.sh
+	-chmod a+x lib$(LIBRARY)-version.sh
+
+endif
+
+lib$(LIBRARY)-version.sh: version-script
+
+version.$(CXX_EXT):
+	$(MAKE) IS_EASY=1 version
+
+# #################################################################### #
+# #################################################################### #
+
+.PHONY: installdirs
+installdirs:
+ifneq ($(LIBRARY),)
+	$(MKINSTALLDIRS) \
+        "$(DESTDIR)$(libdir)" \
+        "$(DESTDIR)$(includedir)"
+	if test -d include/$(INCLUDE_SUBDIR); then $(MKINSTALLDIRS) \
+        "$(DESTDIR)$(includedir)/$(INCLUDE_SUBDIR)" ; \
+    fi
+ifneq ($(USE_ERWIN),)
+ifneq ($(INSTALL_ERWIN),0)
+	if test -d erwin/include/$(INCLUDE_SUBDIR); then $(MKINSTALLDIRS) \
+        "$(DESTDIR)$(includedir)/$(INCLUDE_SUBDIR)" \
+        "$(DESTDIR)$(includedir)/$(INCLUDE_SUBDIR)/erwin" ; \
+    fi
+endif
+endif
+endif
+ifneq ($(TOP_DOC_FILES),)
+	$(MKINSTALLDIRS) \
+        "$(DESTDIR)$(datadir)" \
+        "$(DESTDIR)$(mydocdir)"
+	for i in . `echo $(TOP_DOC_FILES)`; do \
+		if test "x$$i" != "x." && \
+           test "x`dirname $$i`" != "x" && \
+           test "x`dirname $$i`" != "x." ; then \
+			$(MKINSTALLDIRS) "$(DESTDIR)$(mydocdir)/`dirname $$i`"; \
+		fi \
+	done
+endif
+ifneq ($(DOC_FILES),)
+	$(MKINSTALLDIRS) \
+        "$(DESTDIR)$(datadir)" \
+        "$(DESTDIR)$(mydocdir)"
+	for i in . `cd doc && echo $(DOC_FILES)`; do \
+		if test "x$$i" != "x." && \
+           test "x`dirname $$i`" != "x" && \
+           test "x`dirname $$i`" != "x." ; then \
+			$(MKINSTALLDIRS) "$(DESTDIR)$(mydocdir)/`dirname $$i`"; \
+		fi \
+	done
+endif
+ifneq ($(GEN_DOC_FILES),)
+	$(MKINSTALLDIRS) \
+        "$(DESTDIR)$(datadir)" \
+        "$(DESTDIR)$(mydocdir)"
+	for i in . `cd doc && echo $(GEN_DOC_FILES)`; do \
+		if test "x$$i" != "x." && \
+           test "x`dirname $$i`" != "x" && \
+           test "x`dirname $$i`" != "x." ; then \
+			$(MKINSTALLDIRS) "$(DESTDIR)$(mydocdir)/`dirname $$i`"; \
+		fi \
+	done
+endif
+ifneq ($(SHARE_FILES),)
+	$(MKINSTALLDIRS) \
+        $(DESTDIR)$(datadir) \
+        $(DESTDIR)$(mydatadir)
+	for i in . $(SHARE_FILES); do \
+		if test "x$$i" != "x." && \
+           test "x`dirname $$i`" != "x" && \
+           test "x`dirname $$i`" != "x." ; then \
+			$(MKINSTALLDIRS) "$(DESTDIR)$(mydatadir)/`dirname $$i`"; \
+		fi \
+	done
+endif
+ifneq ($(GEN_SHARE_FILES),)
+	$(MKINSTALLDIRS) \
+        $(DESTDIR)$(datadir) \
+        $(DESTDIR)$(mydatadir)
+	for i in . $(GEN_SHARE_FILES); do \
+		if test "x$$i" != "x." && \
+           test "x`dirname $$i`" != "x" && \
+           test "x`dirname $$i`" != "x." ; then \
+			$(MKINSTALLDIRS) "$(DESTDIR)$(mydatadir)/`dirname $$i`"; \
+		fi \
+	done
+endif
+	$(MKINSTALLDIRS) \
+        "$(DESTDIR)$(bindir)"
+
+.PHONY: install-subdirs
+install-subdirs: dummy
+
+.PHONY: install-local
+install-local: dummy
+
+.PHONY: install-all-local
+install-all-local: installdirs
+ifneq ($(LIBRARY),)
+	if test -f "include/$(MAIN_H)"; then \
+        $(INSTALL_DATA) "include/$(MAIN_H)" "$(DESTDIR)$(includedir)/$(MAIN_H)"; \
+    fi
+	if test -f "include/$(PROGNAME).h"; then \
+        $(INSTALL_DATA) "include/$(PROGNAME).h" "$(DESTDIR)$(includedir)/$(PROGNAME).h"; \
+    fi
+	if test -f "include/lib$(LIBRARY).h"; then \
+        $(INSTALL_DATA) "include/lib$(LIBRARY).h" "$(DESTDIR)$(includedir)/lib$(LIBRARY).h"; \
+    fi
+	if test -f "include/$(INCLUDE_SUBDIR).h"; then \
+        $(INSTALL_DATA) "include/$(INCLUDE_SUBDIR).h" "$(DESTDIR)$(includedir)/$(INCLUDE_SUBDIR).h"; \
+    fi
+	if test -d include/$(INCLUDE_SUBDIR); then \
+	    for dir_i in include/$(INCLUDE_SUBDIR)/*.h \
+                     include/$(INCLUDE_SUBDIR)/*.hpp \
+                     include/$(INCLUDE_SUBDIR)/*.inc; do \
+            i="`basename $$dir_i`"; \
+            case "$$i" in \**) ;; \
+                *) $(INSTALL_DATA) "include/$(INCLUDE_SUBDIR)/$$i" \
+                                   "$(DESTDIR)$(includedir)/$(INCLUDE_SUBDIR)/$$i" ;; \
+            esac; \
+        done; \
+    fi
+ifneq ($(USE_ERWIN),)
+ifneq ($(INSTALL_ERWIN),0)
+	if test -d erwin/include/$(INCLUDE_SUBDIR); then \
+        for dir_i in erwin/include/$(INCLUDE_SUBDIR)/*.hpp \
+                     erwin/include/$(INCLUDE_SUBDIR)/*.h ; do \
+            i="`basename $$dir_i`"; \
+            case "$$i" in \**) ;; \
+                *) $(INSTALL_DATA) "erwin/include/$(INCLUDE_SUBDIR)/$$i" \
+                                   "$(DESTDIR)$(includedir)/$(INCLUDE_SUBDIR)/$$i" ;; \
+            esac; \
+        done; \
+    fi
+	if test -d erwin/include/$(INCLUDE_SUBDIR); then \
+	    for i in `cd erwin/include/$(INCLUDE_SUBDIR)/erwin && echo *.h`; do \
+		    $(INSTALL_DATA) "erwin/include/$(INCLUDE_SUBDIR)/erwin/$$i" "$(DESTDIR)$(includedir)/$(INCLUDE_SUBDIR)/erwin/$$i"; \
+        done; \
+    fi
+endif
+endif
+	$(INSTALL_DATA) "lib$(LIBRARY).a" "$(DESTDIR)$(libdir)/`echo lib$(LIBRARY).a | sed '$(transform)'`"
+	if test x"`uname`" = xDarwin; then \
+        $(RANLIB) "$(DESTDIR)$(libdir)/`echo lib$(LIBRARY).a | sed '$(transform)'`"; \
+    fi
+	$(INSTALL_SCRIPT) "lib$(LIBRARY)-version.sh" "$(DESTDIR)$(bindir)/lib$(LIBRARY)-version"
+endif
+ifneq ($(PROG),)
+	$(INSTALL_PROGRAM) "$(PROG_EXE)" "$(DESTDIR)$(bindir)/`echo $(PROG_EXE) | sed '$(transform)'`"
+	for i in . $(PROG_ALIASES); do \
+	    if test "x$$i" != "x."; then \
+	        rm -f "$(DESTDIR)$(bindir)/`echo $$i | sed '$(transform)'`" ; \
+	        (cd "$(DESTDIR)$(bindir)" && \
+	            $(LN_S) "`echo $(PROG_EXE) | sed '$(transform)'`" \
+	                    "`echo $$i | sed '$(transform)'`" \
+            ) ; \
+	    fi \
+	done
+endif
+	for i in . $(EXTRA_PROG); do \
+		if test "x$$i" != "x."; then \
+			$(INSTALL_PROGRAM) "$$i" "$(DESTDIR)$(bindir)/`echo $$i|sed '$(transform)'`"; \
+		fi \
+	done
+	for i in . $(EXTRA_SCRIPT); do \
+		if test "x$$i" != "x."; then \
+			$(INSTALL_SCRIPT) "$$i" "$(DESTDIR)$(bindir)/`echo $$i|sed '$(transform)'`"; \
+		fi \
+	done
+	for i in . `echo $(TOP_DOC_FILES)`; do \
+		if test "x$$i" != "x."; then \
+			$(INSTALL_DATA) "$$i" "$(DESTDIR)$(mydocdir)/$$i"; \
+		fi \
+	done
+	for i in . `cd doc && echo $(DOC_FILES)`; do \
+		if test "x$$i" != "x."; then \
+			$(INSTALL_DATA) "doc/$$i" "$(DESTDIR)$(mydocdir)/$$i"; \
+		fi \
+	done
+	for i in . `cd doc && echo $(GEN_DOC_FILES)`; do \
+		if test "x$$i" != "x."; then \
+			$(INSTALL_DATA) "doc/$$i" "$(DESTDIR)$(mydocdir)/$$i"; \
+		fi \
+	done
+	for i in . $(SHARE_FILES); do \
+		if test "x$$i" != "x."; then \
+			$(INSTALL_DATA) "share/$$i" "$(DESTDIR)$(mydatadir)/$$i"; \
+		fi \
+	done
+	for i in . $(GEN_SHARE_FILES); do \
+		if test "x$$i" != "x."; then \
+			$(INSTALL_DATA) "share/$$i" "$(DESTDIR)$(mydatadir)/$$i"; \
+		fi \
+	done
+	$(MAKE) install-local
+	$(MAKE) install-subdirs
+
+.PHONY: install-no-strip
+install-no-strip:
+	$(MAKE) install-all-local
+
+.PHONY: install-strip
+install-strip:
+	$(MAKE) INSTALL_PROGRAM='$(INSTALL_PROGRAM) -s' install-all-local
+
+.PHONY: install
+ifeq ($(RELEASE),1)
+install: install-strip
+else
+install: install-no-strip
+endif
+
+.PHONY: uninstall-subdirs
+uninstall-subdirs: dummy
+
+.PHONY: uninstall-local
+uninstall-local: dummy
+
+.PHONY: uninstall
+uninstall:
+	$(MAKE) uninstall-subdirs
+	$(MAKE) uninstall-local
+	$(MAKE) uninstall-all-local
+
+.PHONY: uninstall-all-local
+uninstall-all-local:
+ifneq ($(LIBRARY),)
+	-rm -f  "$(DESTDIR)$(bindir)/lib$(LIBRARY)-version"
+	-if test -d include/$(INCLUDE_SUBDIR);  then rm -rf "$(DESTDIR)$(includedir)/$(INCLUDE_SUBDIR)"; fi
+	-if test -f "include/$(MAIN_H)"; then \
+        rm -f  "$(DESTDIR)$(includedir)/$(MAIN_H)"; \
+    fi
+	-if test -f "include/$(PROGNAME).h"; then \
+        rm -f  "$(DESTDIR)$(includedir)/$(PROGNAME).h"; \
+    fi
+	-if test -f "include/lib$(LIBRARY).h"; then \
+        rm -f  "$(DESTDIR)$(includedir)/lib$(LIBRARY).h"; \
+    fi
+	-if test -f "include/$(INCLUDE_SUBDIR).h"; then \
+        rm -f  "$(DESTDIR)$(includedir)/$(INCLUDE_SUBDIR).h"; \
+    fi
+	-rm -f  "$(DESTDIR)$(libdir)/lib$(LIBRARY).a"
+endif
+ifneq ($(PROG),)
+	-rm -f "$(DESTDIR)$(bindir)/`echo $(PROG_EXE) | sed '$(transform)'`"
+	for i in . $(PROG_ALIASES); do \
+		if test "x$$i" != "x."; then \
+			rm -f "$(DESTDIR)$(bindir)/`echo $$i|sed '$(transform)'`"; \
+		fi \
+	done
+endif
+	for i in . $(EXTRA_PROG); do \
+		if test "x$$i" != "x."; then \
+			rm -f "$(DESTDIR)$(bindir)/`echo $$i|sed '$(transform)'`"; \
+		fi \
+	done
+	for i in . $(EXTRA_SCRIPT); do \
+		if test "x$$i" != "x."; then \
+			rm -f "$(DESTDIR)$(bindir)/`echo $$i|sed '$(transform)'`"; \
+		fi \
+	done
+ifneq ($(TOP_DOC_FILES),)
+	-rm -rf "$(DESTDIR)$(mydocdir)"
+endif
+ifneq ($(DOC_FILES),)
+	-rm -rf "$(DESTDIR)$(mydocdir)"
+endif
+ifneq ($(GEN_DOC_FILES),)
+	-rm -rf "$(DESTDIR)$(mydocdir)"
+endif
+ifneq ($(SHARE_FILES),)
+	-rm -rf "$(DESTDIR)$(mydatadir)"
+endif
+ifneq ($(GEN_SHARE_FILES),)
+	-rm -rf "$(DESTDIR)$(mydatadir)"
+endif
+
+# dummy as usual
+.PHONY: dummy
+dummy:
+
+######################################################################
+# nmakefile creation
+
+# ONE UNIFIED PAG FOR CRL1 AND CRL2
+WIN_PAG_INCLUDE=$$(includedir)\pag
+WIN_PAG_LIB=$$(libdir)\pag
+
+SCRIPT_O_TO_OBJ := \
+    'BEGIN { print "ERWIN_OBJS=" } \
+     END { print "\n" }            \
+     chomp;                        \
+     s@/@\\@g;                     \
+     s@\.o@.obj@;                  \
+     print " $$_";'
+
+N=$(srcdir)/nmakefile
+$(N): Makefile dummy
+	echo > $(N)
+	echo 'CC=cl $(WIN_NOLOGO)' >> $(N)
+	echo 'CXX=cl $(WIN_NOLOGO)' >> $(N)
+	echo 'LD=link $(WIN_NOLOGO)' >> $(N)
+	echo 'AR=lib $(WIN_NOLOGO)' >> $(N)
+	echo 'MT=mt $(WIN_NOLOGO)' >> $(N)
+	echo 'NMAKE=nmake $(WIN_NOLOGO) /f nmakefile' >> $(N)
+	echo '' >> $(N)
+	echo 'WINCXXFLAGS=$(ALLWINCXXFLAGS) $(EXTRA_WINCXXFLAGS)' >> $(N)
+	echo 'WINCFLAGS=$(ALLWINCFLAGS) $(EXTRA_WINCFLAGS)' >> $(N)
+	echo 'WINCPPFLAGS=$(ALLWINCPPFLAGS) $(EXTRA_WINCPPFLAGS)' >> $(N)
+	echo 'WINLDFLAGS=$(ALLWINLDFLAGS) $(EXTRA_WINLDFLAGS)' >> $(N)
+	echo '' >> $(N)
+	echo 'WINPREFIX=$(WINPREFIX)' >> $(N)
+	echo 'prefix=$$(WINPREFIX)' >> $(N)
+	echo 'exec_prefix=$$(prefix)' >> $(N)
+	echo 'includedir=$$(prefix)\include' >> $(N)
+	echo 'bindir=$$(exec_prefix)\bin' >> $(N)
+	echo 'libdir=$$(exec_prefix)\lib' >> $(N)
+	echo 'datadir=$$(prefix)\share' >> $(N)
+	echo 'sharedir=$$(datadir)\$(PROGNAME)' >> $(N)
+	echo 'docdir=$$(datadir)\doc\packages\$(PROGNAME)' >> $(N)
+	echo '' >> $(N)
+	echo 'MORE_CPPFLAGS=/DERWIN_DOS=1 /DWINDOWS=1 /DERWIN_MSVC=1 /DMSDOS=1 /DDOS=1 /D_CRT_SECURE_NO_DEPRECATE /D_CRT_NONSTDC_NO_DEPRECATE '"\\"  >> $(N)
+	echo '      /D_POSIX_ '"\\" >> $(N)
+ifneq ($(ERROR_SUBSYSTEM),) # under Windows, we always use liberror if we have a subsystem. Under Unix, this is decided by configure.in
+	echo '      /DHAVE_LIBERROR '"\\" >> $(N)
+endif
+	echo '      /DPROGNAME_TOKEN=$(PROGNAME) '"\\" >> $(N)
+ifneq ($(EXTRA_WIN_DEFS),)
+	echo '      $(EXTRA_WIN_DEFS) '"\\" >> $(N)
+endif
+	echo '      /I. /Ierwin\include /Iinclude '"\\" >> $(N)
+ifneq ($(USE_PAG),)
+	echo '      /I$(WIN_PAG_INCLUDE)\analyzer '"\\" >> $(N)
+	echo '      /I$(WIN_PAG_INCLUDE)\frontend\$(PAG_FRONTEND) '"\\" >> $(N)
+	echo '      /I$(WIN_PAG_INCLUDE) '"\\" >> $(N)
+endif
+	echo '      /I$$(includedir) $(WIN_INC)' >> $(N)
+	echo 'LESS_CPPFLAGS=$$(WINCPPFLAGS)'  >> $(N)
+	echo 'CPPFLAGS=$$(LESS_CPPFLAGS) $$(MORE_CPPFLAGS)'  >> $(N)
+	echo 'COMMON_CFLAGS=/Zm1000' >> $(N)
+	echo 'CXXFLAGS=$$(COMMON_CFLAGS) $$(WINCXXFLAGS)' >> $(N)
+	echo 'CFLAGS=$$(COMMON_CLFAGS) $$(WINCFLAGS)' >> $(N)
+ifneq ($(PROG),)
+	echo 'LDFLAGS= $$(WINLDFLAGS) '"\\" >>$(N)
+ifneq ($(USE_PAG),)
+ifneq ($(PAG_ANALYSIS),)
+	echo '      .\$(PAG_MAKEDIR)\src\${PAG_ANALYSIS}.lib '"\\" >> $(N)
+endif
+ifneq ($(PAG_FRONTEND),)
+	echo '      $(WIN_PAG_LIB)\$(PAG_FRONTEND)f.lib '"\\" >> $(N)
+endif
+endif
+	for i in . $(LESS_WIN_LIBS) $(WIN_LIBS) $(EXTRA_WIN_LIBS) $(MORE_WIN_LIBS); do \
+		if test "x$$i" = "xpag" ; then \
+			echo '      $(WIN_PAG_LIB)\pag.lib '"\\" >> $(N); \
+		else \
+		    if test "x$$i" != "x." ; then \
+	            echo '      $$(libdir)'"\\`echo $$i | $(PERL) -pe 's@/@\\\\@'`"'.lib '"\\" >> $(N) ; \
+		    fi ; \
+		fi ; \
+	done
+	for i in . $(LESS_WIN_LIBS_SYSTEM) $(WIN_LIBS_SYSTEM) $(EXTRA_WIN_LIBS_SYSTEM) $(MORE_WIN_LIBS_SYSTEM); do \
+		if test "x$$i" != "x." ; then \
+			echo '      '"`echo $$i | $(PERL) -pe 's@/@\\\\@'`"'.lib '"\\" >> $(N) ; \
+		fi ; \
+	done
+	echo '      /SUBSYSTEM:$(WINDOWS_SUBSYSTEM)' >> $(N)
+endif
+	echo '' >> $(N)
+ifneq ($(USE_ERWIN),)
+	cd erwin && $(MAKE) FILE_PREFIX=erwin/ linkobjs
+	$(PERL) -ne $(SCRIPT_O_TO_OBJ) erwin/linkobjs >> $(N)
+	echo '' >> $(N)
+endif
+	echo 'MKDIR=mkdir' >> $(N)
+	echo 'RM=del' >> $(N)
+	echo 'CP=copy' >> $(N)
+	echo '' >> $(N)
+	echo 'all: program library'  >> $(N)
+	echo '' >> $(N)
+ifneq ($(PAG_ANALYSIS),)
+	echo '.\$(PAG_MAKEDIR)\src\${PAG_ANALYSIS}.lib: .\$(PAG_MAKEDIR)\src\${PAG_ANALYSIS}.c' >> $(N)
+	echo '        cd .\$(PAG_MAKEDIR)\src' >> $(N)
+	echo '        $$(NMAKE) @<<tmpmake' >> $(N)
+	echo ' INCLDIR="$$(includedir)"' >> $(N)
+	echo ' ANALYINCLDIR="$$(includedir)\analyzer"' >> $(N)
+	echo ' FRONTDIR_H="$$(includedir)\frontend\${PAG_FRONTEND}"' >> $(N)
+	echo ' FRONTDIR_C="$$(datadir)\frontend\${PAG_FRONTEND}"' >> $(N)
+	echo ' DEBUGSRCDIR="$$(datadir)\debugger"' >> $(N)
+	echo ' CFLAGS="$$(WINCFLAGS) $$(WINCPPFLAGS)"' >> $(N)
+	echo ' CPPFLAGS="$(WINCPPFLAGS)"' >> $(N)
+	echo '<<' >> $(N)
+	echo '        cd ..' >> $(N)
+	echo '' >> $(N)
+endif
+ifeq ($(PROG),)
+	echo 'program:'  >> $(N)
+else
+	echo 'program: $(PROG_EXE).exe' $(addsuffix .exe,$(PROG_ALIASES)) >> $(N)
+	for i in . $(PROG_ALIASES); do \
+	    if test "x$$i" != "x."; then \
+	        echo "$$i"'.exe: $(PROG_EXE).exe' >> $(N) ; \
+	        echo '	$$(CP) $(PROG_EXE).exe '"$$i"'.exe' >> $(N) ; \
+	    fi \
+	done
+	echo '' >> $(N)
+ifneq ($(PAG_ANALYSIS),)
+	echo '$(PROG_EXE).exe: $(WIN_OBJS) .\$(PAG_MAKEDIR)\src\${PAG_ANALYSIS}.lib erwin-lib' >> $(N)
+else
+	echo '$(PROG_EXE).exe: $(WIN_OBJS) erwin-lib' >> $(N)
+endif
+	echo '	$$(LD) @<<tmpmake' >> $(N)
+	echo '/out:$(PROG_EXE).exe $(WIN_OBJS)' >> $(N)
+ifneq ($(USE_ERWIN),)
+	echo 'erwin/lib/$(ERWIN_LIB_INFIX)erwin.lib' >> $(N)
+endif
+	echo '$$(LDFLAGS) $$(LIBS)' >> $(N)
+	echo '<<' >> $(N)
+	echo '	-$$(MT) -manifest $(PROG_EXE).exe.manifest /outputresource:$(PROG_EXE).exe;1' >> $(N)
+	echo '' >> $(N)
+endif
+	echo '' >> $(N)
+	echo 'erwin-lib:' >> $(N)
+ifneq ($(USE_ERWIN),)
+	echo '	cd erwin' >> $(N)
+	echo '	$$(NMAKE) @<<tmpmake' >> $(N)
+	echo 'MORE_CXXFLAGS="$$(CXXFLAGS)"' >> $(N)
+	echo 'MORE_CFLAGS="$$(CFLAGS)"' >> $(N)
+	echo 'LESS_CPPFLAGS="$$(LESS_CPPFLAGS)"' >> $(N)
+	echo 'MORE_CPPFLAGS="$$(MORE_CPPFLAGS)"' >> $(N)
+	echo '<<' >> $(N)
+	echo '	cd ..' >> $(N)
+endif
+	echo '' >> $(N)
+ifeq ($(LIBRARY),)
+	echo 'library:'  >> $(N)
+else
+	echo 'library: $(LIBRARY).lib' >> $(N)
+	echo '' >> $(N)
+	echo '$(LIBRARY).lib: $(WIN_OBJS) erwin-lib' >> $(N)
+	echo '	$$(AR) @<<tmpmake' >> $(N)
+	echo '/out:$(LIBRARY).lib $(WIN_OBJS)' >> $(N)
+ifneq ($(USE_ERWIN),)
+	echo '$$(ERWIN_OBJS)' >> $(N)
+endif
+	echo '<<' >> $(N)
+endif
+	echo '' >> $(N)
+	for obj in . $(ALLCCMODULES); do \
+		if test "x$$obj" != x. ; then \
+		    echo "$$obj.obj: $$obj.cc" >> $(N) ; \
+		    echo "  copy $$obj.cc $$obj.cpp" >> $(N) ; \
+		    echo '	$$(CXX) @<<tmpmake' >> $(N) ; \
+		    echo "$$obj"'.cpp $$(CPPFLAGS) /TP $$(CXXFLAGS) /c' >> $(N) ; \
+		    echo '<<' >> $(N) ; \
+		    echo '' >> $(N) ; \
+		fi ; \
+	done
+	for obj in . $(ALLCPPMODULES); do \
+		if test "x$$obj" != x. ; then \
+		    echo "$$obj.obj: $$obj.cpp" >> $(N) ; \
+		    echo '	$$(CXX) @<<tmpmake' >> $(N) ; \
+		    echo "$$obj"'.cpp $$(CPPFLAGS) /TP $$(CXXFLAGS) /c' >> $(N) ; \
+		    echo '<<' >> $(N) ; \
+		    echo '' >> $(N) ; \
+		fi ; \
+	done
+	for obj in . $(ALLCMODULES); do \
+		if test "x$$obj" != x. ; then \
+		    echo "$$obj.obj: $$obj.c" >> $(N) ; \
+		    echo '	$$(CC) @<<tmpmake' >> $(N) ; \
+		    echo "$$obj"'.c $$(CPPFLAGS) /TC $$(CFLAGS) /c' >> $(N) ; \
+		    echo '<<' >> $(N) ; \
+		    echo '' >> $(N) ; \
+		fi ; \
+	done
+	echo '' >> $(N)
+	echo 'clean:' >> $(N)
+ifneq ($(USE_ERWIN),)
+	echo '	cd erwin' >> $(N)
+	echo '	- $$(NMAKE)  clean' >> $(N)
+	echo '	cd ..' >> $(N)
+endif
+	echo '	- $$(RM) $(WIN_OBJS) $$(ERWIN_OBJS)' >> $(N)
+ifneq ($(LIBRARY),)
+	echo '	- $$(RM) $(LIBRARY).lib' >> $(N)
+endif
+ifneq ($(PROG),)
+	echo '	- $$(RM) $(PROG_EXE).exe' >> $(N)
+	for i in . $(PROG_ALIASES); do \
+	    if test "x$$i" != "x."; then \
+	        echo '	- $$(RM) '"$$i"'.exe' >> $(N) ; \
+	    fi \
+	done
+endif
+	echo '	- $$(RM) *.o' >> $(N)
+	echo '	- $$(RM) *.obj' >> $(N)
+	echo '	- $$(RM) *.lib' >> $(N)
+	echo '	- $$(RM) *.ext' >> $(N)
+	echo '' >> $(N)
+	echo 'installdirs:' >> $(N)
+ifneq ($(LIBRARY),)
+	echo '	- $$(MKDIR) $$(WINPREFIX)' >> $(N)
+	echo '	- $$(MKDIR) $$(includedir)' >> $(N)
+	echo '	- $$(MKDIR) $$(includedir)\$(INCLUDE_SUBDIR)' >> $(N)
+	echo '	- $$(MKDIR) $$(libdir)' >> $(N)
+ifneq ($(USE_ERWIN),)
+ifneq ($(INSTALL_ERWIN),0)
+	echo '	- $$(MKDIR) $$(includedir)\$(INCLUDE_SUBDIR)\erwin' >> $(N)
+endif
+endif
+endif
+	echo '	- $$(MKDIR) $$(bindir)' >> $(N)
+ifneq ($(TOP_DOC_FILES),)
+	echo '	- $$(MKDIR) $$(datadir)' >> $(N)
+	echo '	- $$(MKDIR) $$(datadir)\doc' >> $(N)
+	echo '	- $$(MKDIR) $$(datadir)\doc\packages' >> $(N)
+	echo '	- $$(MKDIR) $$(docdir)' >> $(N)
+	for i in . `echo $(TOP_DOC_FILES)`; do \
+		if test "x$$i" != "x." && \
+           test "x`dirname $$i`" != "x" && \
+           test "x`dirname $$i`" != "x." ; then \
+			echo '	- $$(MKDIR) $$(docdir)'"\\`dirname $$i | sed 's@/@\\\\@g'`" >> $(N) ; \
+		fi \
+	done
+endif
+ifneq ($(DOC_FILES),)
+	echo '	- $$(MKDIR) $$(datadir)' >> $(N)
+	echo '	- $$(MKDIR) $$(datadir)\doc' >> $(N)
+	echo '	- $$(MKDIR) $$(datadir)\doc\packages' >> $(N)
+	echo '	- $$(MKDIR) $$(docdir)' >> $(N)
+	for i in . `cd doc && echo $(DOC_FILES)`; do \
+		if test "x$$i" != "x." && \
+           test "x`dirname $$i`" != "x" && \
+           test "x`dirname $$i`" != "x." ; then \
+			echo '	- $$(MKDIR) $$(docdir)'"\\`dirname $$i | sed 's@/@\\\\@g'`" >> $(N) ; \
+		fi \
+	done
+endif
+ifneq ($(GEN_DOC_FILES),)
+	echo '	- $$(MKDIR) $$(datadir)' >> $(N)
+	echo '	- $$(MKDIR) $$(datadir)\doc' >> $(N)
+	echo '	- $$(MKDIR) $$(datadir)\doc\packages' >> $(N)
+	echo '	- $$(MKDIR) $$(docdir)' >> $(N)
+	for i in . `cd doc && echo $(GEN_DOC_FILES)`; do \
+		if test "x$$i" != "x." && \
+           test "x`dirname $$i`" != "x" && \
+           test "x`dirname $$i`" != "x." ; then \
+			echo '	- $$(MKDIR) $$(docdir)'"\\`dirname $$i | sed 's@/@\\\\@g'`" >> $(N) ; \
+		fi \
+	done
+endif
+ifneq ($(SHARE_FILES),)
+	echo '	- $$(MKDIR) $$(datadir)' >> $(N)
+	echo '	- $$(MKDIR) $$(sharedir)' >> $(N)
+	for i in . $(SHARE_FILES); do \
+		if test "x$$i" != "x." && \
+           test "x`dirname $$i`" != "x" && \
+           test "x`dirname $$i`" != "x." ; then \
+			echo '	- $$(MKDIR) $$(sharedir)'"\\`dirname $$i | 'sed s@/@\\\\@g'`" >> $(N) ; \
+		fi \
+	done
+endif
+ifneq ($(GEN_SHARE_FILES),)
+	echo '	- $$(MKDIR) $$(datadir)' >> $(N)
+	echo '	- $$(MKDIR) $$(sharedir)' >> $(N)
+	for i in . $(GEN_SHARE_FILES); do \
+		if test "x$$i" != "x." && \
+           test "x`dirname $$i`" != "x" && \
+           test "x`dirname $$i`" != "x." ; then \
+			echo '	- $$(MKDIR) $$(sharedir)'"\\`dirname $$i | 'sed s@/@\\\\@g'`" >> $(N) ; \
+		fi \
+	done
+endif
+	echo '' >> $(N)
+	echo 'install: installdirs' >> $(N)
+ifneq ($(PROG),)
+	echo '	- $$(CP) $(PROG_EXE).exe $$(bindir)' >> $(N)
+	for i in . $(PROG_ALIASES); do \
+	    if test "x$$i" != "x."; then \
+	        echo '	- $$(CP) '"$$i"'.exe $$(bindir)' >> $(N) ; \
+	    fi \
+	done
+endif
+ifneq ($(LIBRARY),)
+	echo '	- $$(CP) $(LIBRARY).lib $$(libdir)' >> $(N)
+	if test -f "include/$(MAIN_H)"; then \
+	    echo '	- $$(CP) include\$(MAIN_H) $$(includedir)' >> $(N) ; \
+	fi
+	if test -f "include/$(PROGNAME).h"; then \
+	    echo '	- $$(CP) include\$(PROGNAME).h $$(includedir)' >> $(N) ; \
+	fi
+	if test -f "include/lib$(LIBRARY).h"; then \
+	    echo '	- $$(CP) include\lib$(LIBRARY).h $$(includedir)' >> $(N) ; \
+	fi
+	if test -f "include/$(INCLUDE_SUBDIR).h"; then \
+	    echo '	- $$(CP) include\$(INCLUDE_SUBDIR).h $$(includedir)' >> $(N) ; \
+	fi
+	echo '	- $$(CP) include\$(INCLUDE_SUBDIR)\*.h* $$(includedir)\$(INCLUDE_SUBDIR)' >> $(N)
+	echo '	- $$(CP) include\$(INCLUDE_SUBDIR)\*.inc $$(includedir)\$(INCLUDE_SUBDIR)' >> $(N)
+ifneq ($(USE_ERWIN),)
+ifneq ($(INSTALL_ERWIN),0)
+	echo '	- $$(CP) erwin\include\$(INCLUDE_SUBDIR)\*.h* $$(includedir)\$(INCLUDE_SUBDIR)' >> $(N)
+	echo '	- $$(CP) erwin\include\$(INCLUDE_SUBDIR)\erwin\*.h* $$(includedir)\$(INCLUDE_SUBDIR)\erwin' >> $(N)
+endif
+endif
+endif
+	for i in . `echo $(TOP_DOC_FILES)`; do \
+		if test "x$$i" != "x."; then \
+			echo '	- $$(CP) '"`echo $$i | sed 's@/@\\\\@g'`"' $$(docdir)'"\\`echo $$i | sed 's@/@\\\\@g'`" >> $(N); \
+		fi \
+	done
+	for i in . `cd doc && echo $(DOC_FILES)`; do \
+		if test "x$$i" != "x."; then \
+			echo '	- $$(CP) doc'"\\`echo $$i | sed 's@/@\\\\@g'`"' $$(docdir)'"\\`echo $$i | sed 's@/@\\\\@g'`" >> $(N); \
+		fi \
+	done
+	for i in . `cd doc && echo $(GEN_DOC_FILES)`; do \
+		if test "x$$i" != "x."; then \
+			echo '	- $$(CP) doc'"\\`echo $$i | sed 's@/@\\\\@g'`"' $$(docdir)'"\\`echo $$i | sed 's@/@\\\\@g'`" >> $(N); \
+		fi \
+	done
+	for i in . $(SHARE_FILES); do \
+		if test "x$$i" != "x."; then \
+			echo '	- $$(CP) share'"\\`echo $$i | sed 's@/@\\\\@g'`"' $$(sharedir)'"\\`echo $$i | sed 's@/@\\\\@g'`" >> $(N); \
+		fi \
+	done
+	for i in . $(GEN_SHARE_FILES); do \
+		if test "x$$i" != "x."; then \
+			echo '	- $$(CP) share'"\\`echo $$i | sed 's@/@\\\\@g'`"' $$(sharedir)'"\\`echo $$i | sed 's@/@\\\\@g'`" >> $(N); \
+		fi \
+	done
+
+######################################################################
+# - Uploads
+
+# Needs upload script:
+.PHONY: src-upload-sf
+src-upload-sf: dummy
+	test -s packages/$(TARBALL_SRC)$(TAREXT) || $(MAKE) src-tar
+	sf-upload packages/$(TARBALL_SRC)$(TAREXT)
+
+ifneq ($(UPLOAD_HOST),)
+
+.PHONY: upload-doc
+upload-doc: dummy
+	$(MAKE) doc RELEASE_DOC=1
+	if test "$(INCARN)" != 1; then \
+	    if test -f doc/Makefile; then \
+	        cd doc && $(MAKE) INCARN=1 upload UPLOAD_ROOT=$(UPLOAD_ROOT) && $(MAKE) clean-local; \
+	    fi; \
+	fi
+
+.PHONY: src-upload
+src-upload: src-upload-deb upload-doc src-upload-tar
+	@$(IF_HT) echo "*** Remember to run 'make activate' and 'make activate-debian' in www directory."
+
+.PHONY: bin-upload
+bin-upload: bin-upload-deb upload-doc bin-upload-tar
+	@$(IF_HT) echo "*** Remember to run 'make activate' and 'make activate-debian' in www directory."
+
+.PHONY: src-upload-tar
+src-upload-tar: dummy
+	test -f packages/$(TARBALL_SRC)$(TAREXT)
+	test -f packages/$(TARBALL_SRC)$(TAREXT).md5
+	$(RCP) packages/$(TARBALL_SRC)$(TAREXT)* $(UPLOAD_ROOT)/downloads/
+	@$(IF_HT) echo "*** Remember to run 'make get-md5' in www directory."
+
+.PHONY: bin-upload-tar
+bin-upload-tar: dummy
+	test -f packages/$(TARBALL_BIN)$(TAREXT)
+	test -f packages/$(TARBALL_BIN)$(TAREXT).md5
+	$(RCP) packages/$(TARBALL_BIN)$(TAREXT)* $(UPLOAD_ROOT)/downloads/
+	@$(IF_HT) echo "*** Remember to run 'make get-md5' in www source directory."
+
+.PHONY: src-upload-deb
+src-upload-deb:
+ifeq ($(wildcard $(DEB_CHECK)),$(DEB_CHECK))
+
+DEB_POOL_SUBDIR1 = $(DEB_UPLOAD_PATH)/pool/$(DEB_SECTION)/"`expr '$(ARCHIVE_BASE)' : '\(.\)'`"
+
+src-upload-deb: dummy
+	$(RSH) $(UPLOAD_HOST) test -d $(DEB_POOL_SUBDIR1) '||' mkdir $(DEB_POOL_SUBDIR1)
+	$(RCP) \
+	    "packages/$(ARCHIVE_BASE)-doc_$(DEB_VERSION)"_all.deb \
+	    "packages/$(ARCHIVE_BASE)_$(DEB_VERSION)"_*.deb \
+	    "packages/$(ARCHIVE_BASE)_$(DEB_VERSION)"_*.changes \
+	    "packages/$(ARCHIVE_BASE)_$(DEB_VERSION)"*.dsc \
+	    "packages/$(ARCHIVE_BASE)_$(DEB_VERSION)"*.tar.gz \
+	        $(DEB_UPLOAD_HOST):$(DEB_POOL_SUBDIR1)/$(ARCHIVE_BASE)
+	$(RSH) $(UPLOAD_HOST) update-www-debian
+
+bin-upload-deb: dummy
+	$(RCP) \
+	    "packages/$(ARCHIVE_BASE)-doc_$(DEB_VERSION)"_all.deb \
+	    "packages/$(ARCHIVE_BASE)_$(DEB_VERSION)"_*.deb \
+	    "packages/$(ARCHIVE_BASE)_$(DEB_VERSION)"_*.changes
+	        $(DEB_UPLOAD_HOST):$(DEB_POOL_SUBDIR1)/$(ARCHIVE_BASE)
+	$(RSH) $(UPLOAD_HOST) update-www-debian
+
+endif
+
+endif
+
+######################################################################
+# - Release Management
+# - Debian Packaging
+
+.PHONY: src-deb
+.PHONY: init-deb init-debian
+
+init-debian: init-deb
+
+.PHONY: src-deb-perhaps
+src-deb-perhaps:
+
+ifeq ($(wildcard $(DEB_CHECK)),$(DEB_CHECK))
+src-deb: dummy
+	test -s packages/$(TARBALL_SRC)$(TAREXT) || $(MAKE) src-tar
+	rm -f  ./debian/files
+	rm -rf ./debian/compile
+	mkdir -p ./debian/compile
+	tar -$(TARFLAGS) -xp -C debian/compile -f packages/$(TARBALL_SRC)$(TAREXT)
+	cd debian/compile/$(ARCHIVE) && \
+	    dpkg-buildpackage -rfakeroot -us -uc
+	cd debian/compile && \
+	    for i in $(ARCHIVE_BASE)*.*; do \
+	        if test -f "$$i"; then cp "$$i" ../../packages/"$$i" ; fi ; \
+	    done
+
+init-deb: dummy
+	@echo "Error: 'debian' subdirectory already exists."
+	false
+
+src-deb-perhaps: src-deb
+
+else
+
+src-deb: dummy
+	@echo "Error: You need to set up a 'debian' subdirectory first."
+	@echo "       Try 'make init-deb' and edit debian/* then."
+	false
+
+ifneq ($(USE_ERWIN),)
+DEB_SOURCE_SUGGEST = echo "Suggests: erwin"
+DEB_BIN_SUGGEST    = echo "Suggests: $(ARCHIVE_BASE)-doc, erwin"
+else
+DEB_SOURCE_SUGGEST = true
+DEB_BIN_SUGGEST    = echo "Suggests: $(ARCHIVE_BASE)-doc"
+endif
+
+DEB_FILTER_INSTALL_MIN = \
+	    $(PERL) $(top_srcdir)/make/filter-install -min \
+            $(addprefix $(DESTDIR),$(DOC_INSTALL_DIRS))
+
+DEB_FILTER_INSTALL_MAX = \
+	    $(PERL) $(top_srcdir)/make/filter-install -max \
+            $(DOC_INSTALL_DIRS)
+
+DEB_SET_INSTALLDIRS = \
+	    prefix=/usr \
+	    exec_prefix=/usr \
+	    execprefix=/usr \
+	    packagedocdir=/usr/share/doc \
+	    mydocdir='$${packagedocdir}/$${PROGNAME}-doc' \
+	    bindir='$${exec_prefix}/bin' \
+	    datadir='$${prefix}/share' \
+	    includedir='$${prefix}/include' \
+	    libdir='$${exec_prefix}/lib' \
+	    libexecdir='$${exec_prefix}/libexec' \
+	    sysconfdir='$${prefix}/etc' \
+	    localstatedir='$${prefix}/var' \
+	    sharedstatedir='$${prefix}/com' \
+	    mydatadir='$${datadir}/$${PROGNAME}' \
+	    mysysconfdir='$${sysconfdir}/$${PROGNAME}' \
+	    mylibexecdir='$${libexecdir}/$${PROGNAME}' \
+	    mylocalstatedir='$${localstatedir}/$${PROGNAME}' \
+	    mysharedstatedir='$${sharedstatedir}/$${PROGNAME}'
+
+.PHONY: init-deb-dirs
+init-deb-dirs: dummy
+	test -n "$(DESTDIR)"
+	find $(DESTDIR)             | $(DEB_FILTER_INSTALL_MIN) -neg > debian/$(PROGNAME).install
+	find $(DESTDIR)             | $(DEB_FILTER_INSTALL_MIN) -pos > debian/$(PROGNAME)-doc.install
+	( cd $(DESTDIR) && find . ) | $(DEB_FILTER_INSTALL_MAX) -neg > debian/$(PROGNAME).dirs
+	( cd $(DESTDIR) && find . ) | $(DEB_FILTER_INSTALL_MAX) -pos > debian/$(PROGNAME)-doc.dirs
+
+# Note the changed installation path for the documentation (packagedocdir && mydocdir):
+init-deb: dummy
+	-mkdir debian
+	-rm -rf debian/tmp
+	-mkdir debian/tmp
+	$(MAKE) installdirs    DESTDIR=debian/tmp $(DEB_SET_INSTALLDIRS)
+	$(MAKE) init-deb-dirs  DESTDIR=debian/tmp $(DEB_SET_INSTALLDIRS)
+	$(UPDATECHANGES) --init
+	echo 4 > debian/compat.new
+	$(MOVE) debian/compat
+	( echo "Source: $(ARCHIVE_BASE)" ; \
+	  echo "Section: devel" ; \
+	  echo "Priority: optional" ; \
+	  echo "Maintainer: $(VENDOR) <$(VENDOR_EMAIL)>" ; \
+	  echo "Build-Depends: cdbs, debhelper (>= 4.1.0)" ; \
+	  $(DEB_SOURCE_SUGGEST) ; \
+	  echo "Standards-Version: 3.6.2" ; \
+	  echo "" ; \
+	  echo "Package: $(ARCHIVE_BASE)" ; \
+	  echo "Architecture: any" ; \
+	  echo "Depends: perl (>= 5.6.1), m4 (>= 1.4)" ; \
+	  $(DEB_BIN_SUGGEST) ; \
+	  echo "Description: EDIT: A short one-line description" ; \
+	  echo " EDIT: A longer, even multi-paragraph description of this package." ; \
+	  echo " ." ; \
+	  echo " EDIT: This is a another paragraph." ; \
+	  echo "" ; \
+	  echo "Package: $(ARCHIVE_BASE)-doc" ; \
+	  echo "Architecture: all" ; \
+	  echo "Description: Documentation for the $(ARCHIVE_BASE) package" ; \
+	  echo " This package contains additional documentation for $(ARCHIVE_BASE)." \
+	) > debian/control.new
+	$(MOVE) debian/control
+	( echo "#!/usr/bin/make -f" ; \
+	  echo "" ; \
+	  echo "include /usr/share/cdbs/1/rules/debhelper.mk" ; \
+	  echo "include /usr/share/cdbs/1/class/autotools.mk" ; \
+	  echo "" ; \
+	  echo "DEB_CONFIGURE_EXTRA_FLAGS := \\" ; \
+	  echo "    packagedocdir=/usr/share/doc \\" ; \
+	  echo "    mydocdir=/usr/share/doc/$(PROGNAME)-doc \\" ; \
+	  echo "    CFLAGS=-O2 \\" ; \
+	  echo "    CXXFLAGS=-O2 \\" ; \
+	  echo "    CPPFLAGS='-DNDEBUG -DRELEASE' \\" ; \
+	  echo "    --enable-release \\" ; \
+	  echo "    --enable-ndebug" ; \
+	  echo "" ; \
+	  echo "build/$(ARCHIVE_BASE)-doc::" ; \
+	  echo "	\$$(MAKE) doc FORCE_DOC=1" ; \
+	  echo "" \
+	) > debian/rules.new
+	chmod +x debian/rules.new
+	$(MOVE) debian/rules
+	cd debian && $(EDITOR) control
+	@echo "NOTE: Remember to have a look at all files in debian subdir."
+#	cd debian && $(EDITOR) rules
+#	cd debian && $(EDITOR) $(PROGNAME).install
+#	cd debian && $(EDITOR) $(PROGNAME)-doc.install
+
+endif
+
+.PHONY: src-release
+src-release: repair-version
+	$(SVN_COMMIT) -m '$(RELEASE_MSG_PREFIX)prerelease-'$(VERSION_NUMERIC)
+	$(SVN_COMMIT) -m '$(RELEASE_MSG_PREFIX)prerelease-'$(VERSION_NUMERIC) make
+	$(SVN_UPDATE) .
+	$(SVN_UPDATE) make
+	$(MAKE) repair-version
+	$(MAKE) changes-close
+	$(SVN_COMMIT) -m '$(RELEASE_MSG_PREFIX)release-'$(VERSION_NUMERIC)
+	$(MAKE) src-tar
+	$(MAKE) src-deb-perhaps
+	$(MAKE) prepare-announce
+	$(MAKE) changes-new
+	@echo "***"
+	@echo "*** Now consider 'make upload', 'make upload-doc', 'make sf-upload', 'make announce-now'"
+	@echo "***"
+
+FAKE_FLAGS = SVN_COMMIT=: SVN_UPDATE=: UPDATECHANGES=:
+
+.PHONY: fake-release
+fake-release: dummy
+	$(MAKE) $(FAKE_FLAGS) release
+
+.PHONY: src-fake-release
+src-fake-release: dummy
+	$(MAKE) $(FAKE_FLAGS) src-release
+
+.PHONY: bin-fake-release
+bin-fake-release: dummy
+	$(MAKE) $(FAKE_FLAGS) bin-release
+
+.PHONY: changes-new
+changes-new: dummy
+	$(UPDATECHANGES)
+
+.PHONY: changes-close
+changes-close: dummy
+	$(UPDATECHANGES) $(VERSION_NUMERIC)
+
+######################################################################
+# Freshmeat:
+
+.PHONY: announce-help
+announce-help: dummy
+	@echo "Announce information is stored in the 'fm' subdirectory."
+ifeq ($(wildcard $(FM_CHECK)),$(FM_CHECK))
+	@echo "   make edit-project        - edit (or create) project record"
+	@echo "   make edit-announce       - edit (or create) release file"
+	@echo "   make fm-announce-now     - announce release on Freshmeat"
+ifeq ($(wildcard $(DEB_CHECK)),$(DEB_CHECK))
+	@echo "   make cola-mail           - generate the mail message to COLA"
+	@echo "   make cola-announce-now   - announce release on comp.os.linux.announce"
+else
+	@echo "comp.os.linux.announce support requires a Debian control file which can"
+	@echo "be generated with 'make init-deb'."
+endif
+	@echo "   make prepare-announce    = edit-announce + cola-mail"
+	@echo "   make announce-now        = all *-announce-now targets listed above"
+else
+	@echo "   make fm-init             - create the initial project record"
+endif
+	@echo "All edit targets invoke the 'editform' executable."
+	@echo "All targets communicating with Freshmeat invoke the 'fm-xmlrpc' executable."
+
+.PHONY: edit-announce-perhaps
+edit-announce-perhaps:
+
+.PHONY: cola-mail-perhaps
+cola-mail-perhaps:
+
+.PHONY: fm-announce-now-perhaps
+fm-announce-now-perhaps:
+
+.PHONY: cola-announce-now-perhaps
+cola-announce-now-perhaps:
+
+ifeq ($(wildcard $(FM_CHECK)),$(FM_CHECK))
+
+.PHONY: edit-project
+edit-project: dummy
+	$(EDITFORM) \
+	    -H version \
+	    -H release_focus \
+	    -H changes \
+	    -H hide_from_frontpage \
+	    -i -d fm/project.spec
+
+.PHONY: edit-announce
+edit-announce: dummy
+	$(EDITFORM) -i -d -Dversion=$(VERSION) \
+	    -R project_name \
+	    fm/project.spec \
+	    fm/release-$(VERSION).spec
+
+.PHONY: fm-announce
+fm-announce: dummy
+	$(MAKE) edit-announce
+	$(MAKE) fm-announce-now
+
+.PHONY: full-announce
+full-announce: dummy
+	test -n "$(OUTFILE)"
+	if ! test -f fm/release-$(VERSION).spec; then $(MAKE) edit-announce; fi
+	$(EDITFORM) -b -m fm/project.spec fm/release-$(VERSION).spec > $(OUTFILE).new
+	$(MOVE) $(OUTFILE)
+
+.PHONY: fm-announce-now
+fm-announce-now: dummy
+	$(MAKE) OUTFILE=/tmp/announce-$$$$ full-announce && \
+	    $(FM_XMLRPC) -n addrelease < /tmp/announce-$$$$ ; \
+	    rm -f /tmp/announce-$$$$
+
+edit-announce-perhaps:   edit-announce
+fm-announce-now-perhaps: fm-announce-now
+
+ifeq ($(wildcard $(DEB_CHECK)),$(DEB_CHECK))
+
+.PHONY: cola-mail
+cola-mail: dummy
+	$(MAKE) OUTFILE=/tmp/announce-$$$$ full-announce && \
+	    $(PERL) $(top_srcdir)/make/mkcolamail debian/control /tmp/announce-$$$$ \
+	        fm/release-$(VERSION).cola ; \
+	    rm -f /tmp/announce-$$$$
+
+cola-mail-perhaps: cola-mail
+
+.PHONY: cola-announce
+cola-announce: dummy
+	$(MAKE) edit-announce
+	$(MAKE) cola-mail
+	$(MAKE) cola-announce-now
+
+.PHONY: cola-announce-now
+cola-announce-now: dummy
+	test -s fm/release-$(VERSION).cola
+	cat fm/release-$(VERSION).cola | $(SEND_MAIL)
+
+cola-announce-now-perhaps: cola-announce-now
+
+endif
+
+else
+
+.PHONY: fm-init
+fm-init: dummy
+	mkdir -p fm
+	$(EDITFORM) -f freshmeat/release -b -d -i -Dproject_name=$(ARCHIVE_BASE) fm/project.spec
+	$(MAKE) edit-project
+
+endif
+
+.PHONY: announce-now
+announce-now: dummy
+	$(MAKE) fm-announce-now-perhaps
+	$(MAKE) cola-announce-now-perhaps
+
+.PHONY: prepare-announce
+prepare-announce: dummy
+	$(MAKE) edit-announce-perhaps
+	$(MAKE) cola-mail-perhaps
+
+######################################################################
+# wincopy
+
+WIN_CP=cp
+
+WIN_COPY_FILES=                            \
+	$(addsuffix .cc, $(ALLCCMODULES))  \
+	$(addsuffix .cpp,$(ALLCPPMODULES)) \
+	$(addsuffix .inc,$(ALLINCMODULES)) \
+	$(addsuffix .c,  $(ALLCMODULES))   \
+	$(EXTRA_SOURCES)                   \
+	$(EXTRA_HEADERS)                   \
+	$(AUTO_EXTRA_SOURCES)              \
+	*.hpp                              \
+	*.h
+
+.PHONY: wincopyall wincopyall-local # wincopyall-subdirs
+wincopyall: wincopyall-local # wincopyall-subdirs
+
+.PHONY: wincopy-all
+wincopy-all: wincopyall
+
+wincopyall-local: wincopy-local wincopy-erwin
+
+.PHONY: wincopy-erwin
+wincopy-erwin: wincopy-dir
+ifneq ($(USE_ERWIN),)
+	MAKEDIR="`cd $(top_srcdir)/make && pwd`" ; \
+        cd erwin && \
+            $(MAKE) TARGETDIR="$(WINDIR_PROGNAME)/erwin" \
+                 INSTALL_DATA="$(WIN_CP)" \
+                 MKDIR="$${MAKEDIR}/mkinstalldirs" copy-files
+endif
+
+wincopy: wincopy-local # wincopy-subdirs
+
+.PHONY: wincopy wincopy-local # wincopy-subdirs
+wincopy-local: wincopy-sources wincopy-makefile wincopy-make.bat
+	echo "**** I hope the project was compiled. ****"
+
+.PHONY: wincopy-dir
+wincopy-dir:
+	$(MKINSTALLDIRS) \
+		"$(WINDIR)" \
+		"$(WINDIR_PROGNAME)/include" \
+		"$(WINDIR_PROGNAME)/include/$(INCLUDE_SUBDIR)"
+ifneq ($(USE_ERWIN),)
+	$(MKINSTALLDIRS) \
+		"$(WINDIR_PROGNAME)/erwin"
+endif
+ifneq ($(WIN_COPY_FILES),)
+	cd $(srcdir) && (for i in . `echo $(WIN_COPY_FILES)`; do \
+		if test "x$$i" != "x." && \
+           test "x`dirname $$i`" != "x" && \
+           test "x`dirname $$i`" != "x." ; then \
+			$(MKINSTALLDIRS) "$(WINDIR_PROGNAME)/`dirname $$i`"; \
+		fi \
+	done)
+endif
+ifneq ($(TOP_DOC_FILES),)
+	for i in . `echo $(TOP_DOC_FILES)`; do \
+		if test "x$$i" != "x." && \
+           test "x`dirname $$i`" != "x" && \
+           test "x`dirname $$i`" != "x." ; then \
+			$(MKINSTALLDIRS) "$(WINDIR_PROGNAME)/`dirname $$i`"; \
+		fi \
+	done
+endif
+ifneq ($(DOC_FILES),)
+	$(MKINSTALLDIRS) "$(WINDIR_PROGNAME)/doc"
+	for i in . `cd doc && echo $(DOC_FILES)`; do \
+		if test "x$$i" != "x." && \
+           test "x`dirname $$i`" != "x" && \
+           test "x`dirname $$i`" != "x." ; then \
+			$(MKINSTALLDIRS) "$(WINDIR_PROGNAME)/doc/`dirname $$i`"; \
+		fi \
+	done
+endif
+ifneq ($(GEN_DOC_FILES),)
+	$(MKINSTALLDIRS) "$(WINDIR_PROGNAME)/doc"
+	for i in . `cd doc && echo $(GEN_DOC_FILES)`; do \
+		if test "x$$i" != "x." && \
+           test "x`dirname $$i`" != "x" && \
+           test "x`dirname $$i`" != "x." ; then \
+			$(MKINSTALLDIRS) "$(WINDIR_PROGNAME)/doc/`dirname $$i`"; \
+		fi \
+	done
+endif
+ifneq ($(SHARE_FILES),)
+	$(MKINSTALLDIRS) "$(WINDIR_PROGNAME)/share"
+	for i in . $(SHARE_FILES); do \
+		if test "x$$i" != "x." && \
+           test "x`dirname $$i`" != "x" && \
+           test "x`dirname $$i`" != "x." ; then \
+			$(MKINSTALLDIRS) "$(WINDIR_PROGNAME)/share/`dirname $$i`"; \
+		fi \
+	done
+endif
+ifneq ($(GEN_SHARE_FILES),)
+	$(MKINSTALLDIRS) "$(WINDIR_PROGNAME)/share"
+	for i in . $(GEN_SHARE_FILES); do \
+		if test "x$$i" != "x." && \
+           test "x`dirname $$i`" != "x" && \
+           test "x`dirname $$i`" != "x." ; then \
+			$(MKINSTALLDIRS) "$(WINDIR_PROGNAME)/share/`dirname $$i`"; \
+		fi \
+	done
+endif
+ifneq ($(EXTRA_FILES),)
+	$(MKINSTALLDIRS) "$(WINDIR_PROGNAME)"
+	for i in . $(EXTRA_FILES); do \
+		if test "x$$i" != "x." && \
+           test "x`dirname $$i`" != "x" && \
+           test "x`dirname $$i`" != "x." ; then \
+			$(MKINSTALLDIRS) "$(WINDIR_PROGNAME)/`dirname $$i`"; \
+		fi \
+	done
+endif
+ifneq ($(EXTRA_GENFILES),)
+	$(MKINSTALLDIRS) "$(WINDIR_PROGNAME)"
+	for i in . $(EXTRA_GENFILES); do \
+		if test "x$$i" != "x." && \
+           test "x`dirname $$i`" != "x" && \
+           test "x`dirname $$i`" != "x." ; then \
+			$(MKINSTALLDIRS) "$(WINDIR_PROGNAME)/`dirname $$i`"; \
+		fi \
+	done
+endif
+
+echo-cc: dummy
+	@echo $(CC)
+
+more-config.h.msvc: dummy
+	-echo "" > $@
+	-echo '#ifndef SUBSYSTEM' >> $@
+	-echo '#define SUBSYSTEM "'"$(WINDOWS_SUBSYSTEM)"'"' >> $@
+	-echo '#endif' >> $@
+	-echo "" >> $@
+	-echo '#ifndef SUBSYSTEM_'"`echo $(WINDOWS_SUBSYSTEM) | tr '[a-z]' '[A-Z]'`"     >> $@
+	-echo '#define SUBSYSTEM_'"`echo $(WINDOWS_SUBSYSTEM) | tr '[a-z]' '[A-Z]'`"' 1' >> $@
+	-echo '#endif' >> $@
+	-cat user-config.h.msvc >> $@
+
+.PHONY: wincopy-sources
+wincopy-sources: wincopy-dir more-config.h.msvc repair-version
+ifneq ($(WIN_COPY_FILES),)
+	cd $(srcdir) && (for i in $(WIN_COPY_FILES); do \
+	    if test -f "$$i"; then \
+	        $(WIN_CP) "$$i" "$(WINDIR_PROGNAME)/`dirname \"$$i\"`"; \
+	    fi; \
+	done)
+endif
+	if test -f config.h; then \
+	    $(WIN_CP) $(top_srcdir)/make/config.h.msvc "$(WINDIR_PROGNAME)/config.h"; \
+	fi
+	-$(WIN_CP) $(srcdir)/$(PATH_SYMBOL).inc  "$(WINDIR_PROGNAME)/$(DIR_SYMBOL)"
+	-$(WIN_CP) $(srcdir)/include/*.hpp "$(WINDIR_PROGNAME)/include/"
+	-$(WIN_CP) $(srcdir)/include/*.h   "$(WINDIR_PROGNAME)/include/"
+	-$(WIN_CP) $(srcdir)/include/*.inc "$(WINDIR_PROGNAME)/include/"
+	-$(WIN_CP) $(srcdir)/include/$(INCLUDE_SUBDIR)/*.hpp "$(WINDIR_PROGNAME)/include/$(INCLUDE_SUBDIR)/"
+	-$(WIN_CP) $(srcdir)/include/$(INCLUDE_SUBDIR)/*.h   "$(WINDIR_PROGNAME)/include/$(INCLUDE_SUBDIR)/"
+	if test -f $(srcdir)/include/$(INCLUDE_SUBDIR)/config.h; then \
+	    $(WIN_CP) $(top_srcdir)/make/config.h.msvc \
+           "$(WINDIR_PROGNAME)/include/$(INCLUDE_SUBDIR)/config.h"; \
+	fi
+	-for i in . include include/$(INCLUDE_SUBDIR); do \
+		$(WIN_CP) $(srcdir)/$$i/config.h.msvc   "$(WINDIR_PROGNAME)/$$i/config.h" ; \
+		$(WIN_CP) $(srcdir)/$$i/config.hpp.msvc "$(WINDIR_PROGNAME)/$$i/config.hpp" ; \
+	done
+	-for i in . include include/$(INCLUDE_SUBDIR); do \
+		test -f "$(WINDIR_PROGNAME)/$$i/config.h" && \
+               cat more-config.h.msvc >> "$(WINDIR_PROGNAME)/$$i/config.h" ; \
+		test -f "$(WINDIR_PROGNAME)/$$i/config.hpp" && \
+               cat more-config.h.msvc >> "$(WINDIR_PROGNAME)/$$i/config.hpp" ; \
+	done
+	-perl -i -pe 's@unistd\.h@io\.h@' "$(WINDIR_PROGNAME)"/*_scanner*.$(CXX_EXT)
+	for i in . $(SUBST_UNISTD_IO); do \
+		if test "x$$i" != x. ; then \
+			perl -i -pe 's@unistd\.h@io\.h@' "$(WINDIR_PROGNAME)"/$$i ; \
+		fi ; \
+	done
+	-echo '#include "$(INC_VERSION_H)"' \
+		> "$(WINDIR_PROGNAME)"/version.$(CXX_EXT)
+	-@echo 'char const *$(GLOBAL_PREFIX)version="'$(VERSION)$(WIN_VERSION_SUFFIX)'";' >> "$(WINDIR_PROGNAME)"/version.$(CXX_EXT)
+	-@echo 'int $(GLOBAL_PREFIX)revision='$(REVISION)';' >> "$(WINDIR_PROGNAME)"/version.$(CXX_EXT)
+	-@echo 'char const *$(GLOBAL_PREFIX)branch_id="@branch:'"$(BRANCH)"'@";' >> "$(WINDIR_PROGNAME)"/version.$(CXX_EXT)
+	-@echo 'char const *$(GLOBAL_PREFIX)config_prog_docdir=         0;'   >> "$(WINDIR_PROGNAME)"/version.$(CXX_EXT)
+	-@echo 'char const *$(GLOBAL_PREFIX)config_prog_sysconfdir=     0;'   >> "$(WINDIR_PROGNAME)"/version.$(CXX_EXT)
+	-@echo 'char const *$(GLOBAL_PREFIX)config_prog_datadir=        0;'   >> "$(WINDIR_PROGNAME)"/version.$(CXX_EXT)
+	-@echo 'char const *$(GLOBAL_PREFIX)config_prog_libexecdir=     0;'   >> "$(WINDIR_PROGNAME)"/version.$(CXX_EXT)
+	-@echo 'char const *$(GLOBAL_PREFIX)config_prog_localstatedir=  0;'   >> "$(WINDIR_PROGNAME)"/version.$(CXX_EXT)
+	-@echo 'char const *$(GLOBAL_PREFIX)config_prog_sharedstatedir= 0;'   >> "$(WINDIR_PROGNAME)"/version.$(CXX_EXT)
+ifneq ($(PAG_ANALYSIS),)
+	-$(WIN_CP) -r ./$(PAG_MAKEDIR)/src/ "$(WINDIR_PROGNAME)/"
+endif
+ifneq ($(EXTRA_FILES),)
+	for i in . `echo $(EXTRA_FILES)`; do \
+		if test "x$$i" != "x." ; then \
+			$(WIN_CP) "$$i" "$(WINDIR_PROGNAME)/$$i"; \
+		fi \
+	done
+endif
+ifneq ($(EXTRA_GENFILES),)
+	for i in . `echo $(EXTRA_GENFILES)`; do \
+		if test "x$$i" != "x." ; then \
+			$(WIN_CP) "$$i" "$(WINDIR_PROGNAME)/$$i"; \
+		fi \
+	done
+endif
+ifneq ($(TOP_DOC_FILES),)
+	for i in . `echo $(TOP_DOC_FILES)`; do \
+		if test "x$$i" != "x." ; then \
+			$(WIN_CP) "$$i" "$(WINDIR_PROGNAME)/$$i"; \
+		fi \
+	done
+endif
+ifneq ($(DOC_FILES),)
+	for i in . `cd doc && echo $(DOC_FILES)`; do \
+		if test "x$$i" != "x." ; then \
+			$(WIN_CP) "doc/$$i" "$(WINDIR_PROGNAME)/doc/$$i"; \
+		fi \
+	done
+endif
+ifneq ($(GEN_DOC_FILES),)
+	for i in . `cd doc && echo $(GEN_DOC_FILES)`; do \
+		if test "x$$i" != "x." ; then \
+			$(WIN_CP) "doc/$$i" "$(WINDIR_PROGNAME)/doc/$$i"; \
+		fi \
+	done
+endif
+ifneq ($(SHARE_FILES),)
+	for i in . $(SHARE_FILES); do \
+		if test "x$$i" != "x." ; then \
+			$(WIN_CP) share/$$i "$(WINDIR_PROGNAME)/share/$$i"; \
+		fi \
+	done
+endif
+ifneq ($(GEN_SHARE_FILES),)
+	for i in . $(GEN_SHARE_FILES); do \
+		if test "x$$i" != "x." ; then \
+			$(WIN_CP) share/$$i "$(WINDIR_PROGNAME)/share/$$i"; \
+		fi \
+	done
+endif
+
+.PHONY: wincopy-makefile
+wincopy-makefile: wincopy-dir nmakefile
+	-$(WIN_CP) $(srcdir)/nmakefile "$(WINDIR_PROGNAME)"
+
+.PHONY: wincopy-make.bat
+wincopy-make.bat: wincopy-dir
+	echo "nmake $(WIN_NOLOGO) /f nmakefile %1%" > "$(WINDIR_PROGNAME)/make.bat"
+

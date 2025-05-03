@@ -1,0 +1,292 @@
+
+CC=cl 
+CXX=cl 
+LD=link 
+AR=lib 
+MT=mt 
+NMAKE=nmake  /f nmakefile
+
+WINCXXFLAGS=/O2 /MD  
+WINCFLAGS=/O2 /MD  
+WINCPPFLAGS=/D_CRT_SECURE_NO_DEPRECATE /D_CRT_NONSTDC_NO_DEPRECATE /DPROGNAME_AUX=error /DIN_LIBERROR_COMPILE  
+WINLDFLAGS=  
+
+WINPREFIX=E:\WINNT
+prefix=$(WINPREFIX)
+exec_prefix=$(prefix)
+includedir=$(prefix)\include
+bindir=$(exec_prefix)\bin
+libdir=$(exec_prefix)\lib
+datadir=$(prefix)\share
+sharedir=$(datadir)\error
+docdir=$(datadir)\doc\packages\error
+
+MORE_CPPFLAGS=/DERWIN_DOS=1 /DWINDOWS=1 /DERWIN_MSVC=1 /DMSDOS=1 /DDOS=1 /D_CRT_SECURE_NO_DEPRECATE /D_CRT_NONSTDC_NO_DEPRECATE \
+      /D_POSIX_ \
+      /DHAVE_LIBERROR \
+      /DPROGNAME_TOKEN=error \
+      /I. /Ierwin\include /Iinclude \
+      /I$(includedir) 
+LESS_CPPFLAGS=$(WINCPPFLAGS)
+CPPFLAGS=$(LESS_CPPFLAGS) $(MORE_CPPFLAGS)
+COMMON_CFLAGS=/Zm1000
+CXXFLAGS=$(COMMON_CFLAGS) $(WINCXXFLAGS)
+CFLAGS=$(COMMON_CLFAGS) $(WINCFLAGS)
+
+ERWIN_OBJS= erwin\lib\err_map_file_stream.obj erwin\lib\err_map_int_bool.obj erwin\lib\err_map_int_callback.obj erwin\lib\err_map_int_int.obj erwin\lib\err_map_int_map_int_v_callback.obj erwin\lib\err_map_int_symbol.obj erwin\lib\err_map_int_v_callback.obj erwin\lib\err_map_int_v_stream.obj erwin\lib\err_map_symbol_int.obj erwin\lib\err_map_symbol_stream.obj erwin\lib\err_map_symbol_string.obj erwin\lib\err_symtab.obj erwin\lib\err_v_buffer.obj erwin\lib\err_v_callback.obj erwin\lib\err_v_char.obj erwin\lib\err_v_char_const_p.obj erwin\lib\err_v_int.obj erwin\lib\err_v_message.obj erwin\lib\err_v_stream.obj erwin\lib\init.obj erwin\lib\list.obj erwin\lib\err_map_int_char_p.obj erwin\lib\err_map_char_p_char_p.obj erwin\lib\vector.obj erwin\lib\map.obj erwin\lib\base.obj
+
+MKDIR=mkdir
+RM=del
+CP=copy
+
+all: program library
+
+program:
+
+erwin-lib:
+	cd erwin
+	$(NMAKE) @<<tmpmake
+MORE_CXXFLAGS="$(CXXFLAGS)"
+MORE_CFLAGS="$(CFLAGS)"
+LESS_CPPFLAGS="$(LESS_CPPFLAGS)"
+MORE_CPPFLAGS="$(MORE_CPPFLAGS)"
+<<
+	cd ..
+
+library: error.lib
+
+error.lib: check_compile.obj init.obj error.obj count.obj location.obj buffer.obj filter.obj callback.obj parseargs.obj printf.obj printf-gen.obj style.obj style-none.obj style-simple.obj style-plain.obj style-colon.obj style-quotes.obj style-qt.obj style-qt3.obj style-default.obj version.obj symbol.obj  erwin-lib
+	$(AR) @<<tmpmake
+/out:error.lib check_compile.obj init.obj error.obj count.obj location.obj buffer.obj filter.obj callback.obj parseargs.obj printf.obj printf-gen.obj style.obj style-none.obj style-simple.obj style-plain.obj style-colon.obj style-quotes.obj style-qt.obj style-qt3.obj style-default.obj version.obj symbol.obj 
+$(ERWIN_OBJS)
+<<
+
+init.obj: init.cpp
+	$(CXX) @<<tmpmake
+init.cpp $(CPPFLAGS) /TP $(CXXFLAGS) /c
+<<
+
+error.obj: error.cpp
+	$(CXX) @<<tmpmake
+error.cpp $(CPPFLAGS) /TP $(CXXFLAGS) /c
+<<
+
+count.obj: count.cpp
+	$(CXX) @<<tmpmake
+count.cpp $(CPPFLAGS) /TP $(CXXFLAGS) /c
+<<
+
+location.obj: location.cpp
+	$(CXX) @<<tmpmake
+location.cpp $(CPPFLAGS) /TP $(CXXFLAGS) /c
+<<
+
+buffer.obj: buffer.cpp
+	$(CXX) @<<tmpmake
+buffer.cpp $(CPPFLAGS) /TP $(CXXFLAGS) /c
+<<
+
+filter.obj: filter.cpp
+	$(CXX) @<<tmpmake
+filter.cpp $(CPPFLAGS) /TP $(CXXFLAGS) /c
+<<
+
+callback.obj: callback.cpp
+	$(CXX) @<<tmpmake
+callback.cpp $(CPPFLAGS) /TP $(CXXFLAGS) /c
+<<
+
+parseargs.obj: parseargs.cpp
+	$(CXX) @<<tmpmake
+parseargs.cpp $(CPPFLAGS) /TP $(CXXFLAGS) /c
+<<
+
+printf.obj: printf.cpp
+	$(CXX) @<<tmpmake
+printf.cpp $(CPPFLAGS) /TP $(CXXFLAGS) /c
+<<
+
+printf-gen.obj: printf-gen.cpp
+	$(CXX) @<<tmpmake
+printf-gen.cpp $(CPPFLAGS) /TP $(CXXFLAGS) /c
+<<
+
+style.obj: style.cpp
+	$(CXX) @<<tmpmake
+style.cpp $(CPPFLAGS) /TP $(CXXFLAGS) /c
+<<
+
+style-none.obj: style-none.cpp
+	$(CXX) @<<tmpmake
+style-none.cpp $(CPPFLAGS) /TP $(CXXFLAGS) /c
+<<
+
+style-simple.obj: style-simple.cpp
+	$(CXX) @<<tmpmake
+style-simple.cpp $(CPPFLAGS) /TP $(CXXFLAGS) /c
+<<
+
+style-plain.obj: style-plain.cpp
+	$(CXX) @<<tmpmake
+style-plain.cpp $(CPPFLAGS) /TP $(CXXFLAGS) /c
+<<
+
+style-colon.obj: style-colon.cpp
+	$(CXX) @<<tmpmake
+style-colon.cpp $(CPPFLAGS) /TP $(CXXFLAGS) /c
+<<
+
+style-quotes.obj: style-quotes.cpp
+	$(CXX) @<<tmpmake
+style-quotes.cpp $(CPPFLAGS) /TP $(CXXFLAGS) /c
+<<
+
+style-qt.obj: style-qt.cpp
+	$(CXX) @<<tmpmake
+style-qt.cpp $(CPPFLAGS) /TP $(CXXFLAGS) /c
+<<
+
+style-qt3.obj: style-qt3.cpp
+	$(CXX) @<<tmpmake
+style-qt3.cpp $(CPPFLAGS) /TP $(CXXFLAGS) /c
+<<
+
+style-default.obj: style-default.cpp
+	$(CXX) @<<tmpmake
+style-default.cpp $(CPPFLAGS) /TP $(CXXFLAGS) /c
+<<
+
+version.obj: version.cpp
+	$(CXX) @<<tmpmake
+version.cpp $(CPPFLAGS) /TP $(CXXFLAGS) /c
+<<
+
+symbol.obj: symbol.cpp
+	$(CXX) @<<tmpmake
+symbol.cpp $(CPPFLAGS) /TP $(CXXFLAGS) /c
+<<
+
+check_compile.obj: check_compile.c
+	$(CC) @<<tmpmake
+check_compile.c $(CPPFLAGS) /TC $(CFLAGS) /c
+<<
+
+
+clean:
+	cd erwin
+	- $(NMAKE)  clean
+	cd ..
+	- $(RM) check_compile.obj init.obj error.obj count.obj location.obj buffer.obj filter.obj callback.obj parseargs.obj printf.obj printf-gen.obj style.obj style-none.obj style-simple.obj style-plain.obj style-colon.obj style-quotes.obj style-qt.obj style-qt3.obj style-default.obj version.obj symbol.obj  $(ERWIN_OBJS)
+	- $(RM) error.lib
+	- $(RM) *.o
+	- $(RM) *.obj
+	- $(RM) *.lib
+	- $(RM) *.ext
+
+installdirs:
+	- $(MKDIR) $(WINPREFIX)
+	- $(MKDIR) $(includedir)
+	- $(MKDIR) $(includedir)\error
+	- $(MKDIR) $(libdir)
+	- $(MKDIR) $(includedir)\error\erwin
+	- $(MKDIR) $(bindir)
+	- $(MKDIR) $(datadir)
+	- $(MKDIR) $(datadir)\doc
+	- $(MKDIR) $(datadir)\doc\packages
+	- $(MKDIR) $(docdir)
+	- $(MKDIR) $(datadir)
+	- $(MKDIR) $(datadir)\doc
+	- $(MKDIR) $(datadir)\doc\packages
+	- $(MKDIR) $(docdir)
+	- $(MKDIR) $(datadir)
+	- $(MKDIR) $(datadir)\doc
+	- $(MKDIR) $(datadir)\doc\packages
+	- $(MKDIR) $(docdir)
+	- $(MKDIR) $(docdir)\html
+	- $(MKDIR) $(docdir)\html
+	- $(MKDIR) $(docdir)\html
+	- $(MKDIR) $(docdir)\html
+	- $(MKDIR) $(docdir)\html
+	- $(MKDIR) $(docdir)\html
+	- $(MKDIR) $(docdir)\html
+	- $(MKDIR) $(docdir)\html
+	- $(MKDIR) $(docdir)\html
+	- $(MKDIR) $(docdir)\html
+	- $(MKDIR) $(docdir)\html
+	- $(MKDIR) $(docdir)\html
+	- $(MKDIR) $(docdir)\html
+	- $(MKDIR) $(docdir)\html
+	- $(MKDIR) $(docdir)\html
+	- $(MKDIR) $(docdir)\html
+	- $(MKDIR) $(docdir)\html
+	- $(MKDIR) $(docdir)\html
+	- $(MKDIR) $(docdir)\html
+	- $(MKDIR) $(docdir)\html
+	- $(MKDIR) $(docdir)\html
+	- $(MKDIR) $(docdir)\html
+	- $(MKDIR) $(docdir)\html
+	- $(MKDIR) $(docdir)\html
+	- $(MKDIR) $(docdir)\html
+	- $(MKDIR) $(docdir)\html
+	- $(MKDIR) $(docdir)\html
+	- $(MKDIR) $(docdir)\html
+	- $(MKDIR) $(docdir)\html
+	- $(MKDIR) $(docdir)\html
+	- $(MKDIR) $(docdir)\html
+	- $(MKDIR) $(docdir)\html
+	- $(MKDIR) $(docdir)\html
+	- $(MKDIR) $(docdir)\html
+	- $(MKDIR) $(docdir)\html
+	- $(MKDIR) $(datadir)
+	- $(MKDIR) $(sharedir)
+
+install: installdirs
+	- $(CP) error.lib $(libdir)
+	- $(CP) include\liberror.h $(includedir)
+	- $(CP) include\liberror.h $(includedir)
+	- $(CP) include\error\*.h* $(includedir)\error
+	- $(CP) include\error\*.inc $(includedir)\error
+	- $(CP) erwin\include\error\*.h* $(includedir)\error
+	- $(CP) erwin\include\error\erwin\*.h* $(includedir)\error\erwin
+	- $(CP) README $(docdir)\README
+	- $(CP) Changes $(docdir)\Changes
+	- $(CP) COPYING $(docdir)\COPYING
+	- $(CP) doc\errcodes.txt $(docdir)\errcodes.txt
+	- $(CP) doc\mails.txt $(docdir)\mails.txt
+	- $(CP) doc\options.txt $(docdir)\options.txt
+	- $(CP) doc\html\alpha.html $(docdir)\html\alpha.html
+	- $(CP) doc\html\cerr_area_t.html $(docdir)\html\cerr_area_t.html
+	- $(CP) doc\html\cerr_ext_address_class_t.html $(docdir)\html\cerr_ext_address_class_t.html
+	- $(CP) doc\html\cerr_ext_address_t.html $(docdir)\html\cerr_ext_address_t.html
+	- $(CP) doc\html\cerr_location_t.html $(docdir)\html\cerr_location_t.html
+	- $(CP) doc\html\cerr_markup_t.html $(docdir)\html\cerr_markup_t.html
+	- $(CP) doc\html\cerr_msg_info_t.html $(docdir)\html\cerr_msg_info_t.html
+	- $(CP) doc\html\cerr_normal_address_t.html $(docdir)\html\cerr_normal_address_t.html
+	- $(CP) doc\html\cerr_position_t.html $(docdir)\html\cerr_position_t.html
+	- $(CP) doc\html\cerr_style_t.html $(docdir)\html\cerr_style_t.html
+	- $(CP) doc\html\Changes.html $(docdir)\html\Changes.html
+	- $(CP) doc\html\classes.html $(docdir)\html\classes.html
+	- $(CP) doc\html\COPYING.html $(docdir)\html\COPYING.html
+	- $(CP) doc\html\doc_errcodes.html $(docdir)\html\doc_errcodes.html
+	- $(CP) doc\html\doc_mails.html $(docdir)\html\doc_mails.html
+	- $(CP) doc\html\doc_options.html $(docdir)\html\doc_options.html
+	- $(CP) doc\html\dummy.html $(docdir)\html\dummy.html
+	- $(CP) doc\html\functions.html $(docdir)\html\functions.html
+	- $(CP) doc\html\include_error_printf-gen_h.html $(docdir)\html\include_error_printf-gen_h.html
+	- $(CP) doc\html\include_error_printf_h.html $(docdir)\html\include_error_printf_h.html
+	- $(CP) doc\html\include_error_style-colon_h.html $(docdir)\html\include_error_style-colon_h.html
+	- $(CP) doc\html\include_error_style_h.html $(docdir)\html\include_error_style_h.html
+	- $(CP) doc\html\include_error_style-plain_h.html $(docdir)\html\include_error_style-plain_h.html
+	- $(CP) doc\html\include_error_style-qt3_h.html $(docdir)\html\include_error_style-qt3_h.html
+	- $(CP) doc\html\include_error_style-qt_h.html $(docdir)\html\include_error_style-qt_h.html
+	- $(CP) doc\html\include_error_style-quotes_h.html $(docdir)\html\include_error_style-quotes_h.html
+	- $(CP) doc\html\include_error_tags_h.html $(docdir)\html\include_error_tags_h.html
+	- $(CP) doc\html\include_liberror_h.html $(docdir)\html\include_liberror_h.html
+	- $(CP) doc\html\index.html $(docdir)\html\index.html
+	- $(CP) doc\html\README.html $(docdir)\html\README.html
+	- $(CP) doc\html\sources.html $(docdir)\html\sources.html
+	- $(CP) doc\html\types.html $(docdir)\html\types.html
+	- $(CP) doc\html\user000.html $(docdir)\html\user000.html
+	- $(CP) doc\html\dummy.css $(docdir)\html\dummy.css
+	- $(CP) doc\html\style.css $(docdir)\html\style.css
+	- $(CP) share\hotfuncs.default $(sharedir)\hotfuncs.default

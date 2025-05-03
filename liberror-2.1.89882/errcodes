@@ -1,0 +1,2552 @@
+#! /usr/bin/perl -w
+# -*- Mode: Fundamental -*- -*- Mode: Perl -*-
+
+use strict;
+
+my $prog= $0;
+
+my $result;
+my $exit_success;
+my $exit_failure;
+BEGIN {
+   $exit_success= 0;
+   $exit_failure= 1;
+   $result=       0;
+}
+
+sub halt (;$)
+{
+   my ($res)= @_;
+   if (defined $res) {
+       $result= 1;
+       $exit_failure= $res;
+   }
+   exit; # invokes END { ... } block.
+}
+
+# All warnings are fatal:
+$SIG{__WARN__} = sub {
+    print STDERR "Fatal: $_[0]";
+    halt 1;
+};
+
+######################################################################
+######################################################################
+#What this is supposed to do:
+#
+#A data base consists of:
+#   - a data base of error numbers
+#   - a list of files (and their position in CVS)
+#
+#The error numbers have to be assigned consistently in all
+#files.  The possible positions in C code are:
+#   - as the second parameter of the eprintf() function family
+#   - as the second parameter of the first parameter the deprintf() function family
+#   - as the first (and only) parameter of the err_number() macro.
+#For TeX and other documentation, other positions may have to be
+#defined.
+#
+#The following commands exist for a data base:
+#   add file1 file2 ....
+#       - adds these files to the data base
+#         this has to check that no conflicts occur when files
+#         already contain numbers that conflict with the rest.
+#
+#   update
+#       - scans the data base for changes of files and for added
+#         files, inserts new error numbers and updates the data
+#         base accordingly.
+#         This function warns when files have disappeared.  It
+#         also needs a cvs updated and current directory to work.
+#         This also warns if different eprintfs have the same
+#         error number.
+#         Further, this has to account for reserved ranges that
+#         are assigned manually.
+#
+#   renumber
+#       - reassigns all error codes consistently.  It produces
+#         similar errors as the update command.  This is more
+#         complicated, since it may need to check out all files
+#         because it is impossible to infer the location of the
+#         local version of a file from the location in the CVS.
+#
+#   remove
+#       - removes a file from the data base: following updates
+#         will not take this file into account.  The error
+#         numbers have to be released in the errcodes repository
+#         and maybe they should also be removed from the file.
+#
+#   join
+#         (maybe, if different branches of the errcodes repository
+#         are to be supported.  The same errcodes repository may
+#         be used for all branches of the project.)
+#       - join two branches.  This is a bit complicated, since partial
+#         renumbring is involved, since error numbers from one branch
+#         will have to be dropped in the other branch if they conflict.
+#         if they are without conflicts, they should be kept, though.
+#
+#Possible extensions:
+#    - user definition of search order (and therefore of the
+#      assignment order).
+#
+#Possible problems and trap doors:
+#   - The CVS tags and branches have to be handled correctly by
+#     this program.
+
+
+######################################################################
+# configure file:
+my $prefix=      '/usr/local';
+my $exec_prefix= "${prefix}";
+my $top_srcdir=  '/home/djkucera/src/rushhour/liberror-2.1.89882';
+my $datarootdir= '${prefix}/share';
+my $datadir=     '${datarootdir}';
+
+$datarootdir =~ s/\$\{prefix\}/$prefix/;
+$datadir =~ s/\$\{prefix\}/$prefix/;
+
+my $mydatadir=    undef;
+sub mydatadir()   { return $mydatadir || "$datadir/error"; }
+
+my $sysconf=     "${prefix}/etc/errcodes.conf";
+my $localconf=   "$ENV{HOME}/.errcodesrc";
+my $cvsbin=      "cvs";
+
+# settings:
+my $default_project= undef; # the default (of this default) is 'default' ...
+my $use_cvs= 1;             # everything is assumed to be CVS controlled.
+my $recursive= 1;
+my %debug= ();
+my $command= "status";
+my $verbose= 0;
+my $force= 0;
+my $tmp=     "/tmp";
+my $TMPSUFF= "errcodes-$<-$>/$$";
+my $output_file= undef;
+
+# Internal modes:
+my $mode=  "update";      # whether to insert numbers into eprintf (default is !$convert
+         # "add";          # directly after a file has been added: resolving of duplicate
+         #                 # numbers (NYI)
+         # "convert";      # currently not supported
+my $renumber= 0;
+
+
+# arguments
+my @ROOTS= ();
+my $have_dot_root= 0;
+my %used_roots= ();
+my @files= ();
+my %rootOfile= ();
+   # files to process
+my %filesOproject= ();
+my %projectsOfile= ();
+my %rootOproject= ();
+
+######################################################################
+# Constants:
+my $RESERVED_MAX= 100;
+
+######################################################################
+# Global Variables
+my %old2new= ();
+my %info= ();     # data base of numbers
+my %hotfunc= ();
+my %changed= ();
+my %id= ();             # used by unique_id
+my $current_id= undef;  # used by unique_id.
+
+my $cvs=        undef;  # depending on $verbose, this is "$cvsbin ".("" or "-q")
+my $shellquiet= undef;  # depending on $verbose, this is "" or ">/dev/null"
+
+# Constants
+my $current_db_version= 1;
+my $HOME= "$ENV{HOME}";  # This is convenient for the user to specify the home directory
+                         # in a config file.
+
+my $MODE_C=     0;
+my $MODE_CXX=   1;
+my $MODE_FLEX=  2;
+my $MODE_BISON= 3;
+
+my $scanner_mode= $MODE_C;
+
+my $SPACE=            0;
+my $IDENT=            1;
+my $INT=              2;
+my $FLOAT=            3;
+my $CHAR=             4;
+my $STRING=           5;
+my $SPECIAL=          6;
+my $COMMENT=          7;
+my $CXXCOMMENT=       8;
+my $BACKSLASH_CR=     9;
+my $BACKSLASH_OTHER= 10;
+my $PREPROC=         11;
+
+sub get_token_type ($)
+{
+   my ($name)= @_;
+   return undef unless defined $name;
+   if ($name=~ /^space$/i)           { return $SPACE; }
+   if ($name=~ /^ident$/i)           { return $IDENT; }
+   if ($name=~ /^int$/i)             { return $INT; }
+   if ($name=~ /^float$/i)           { return $FLOAT; }
+   if ($name=~ /^char$/i)            { return $CHAR; }
+   if ($name=~ /^string$/i)          { return $STRING; }
+   if ($name=~ /^special$/i)         { return $SPECIAL; }
+   if ($name=~ /^c-comment$/i)       { return $COMMENT; }
+   if ($name=~ /^c\+\+-comment$/i)   { return $CXXCOMMENT; }
+   if ($name=~ /^backslash-cr$/i)    { return $BACKSLASH_CR; }
+   if ($name=~ /^backslash-other$/i) { return $BACKSLASH_OTHER; }
+   if ($name=~ /^preproc$/i)         { return $PREPROC; }
+   return $name;
+}
+
+######################################################################
+# Expression parsing (C and C++)
+
+sub read_token_aux ($) # reads at \G in $_[0]
+{
+    my $pos= pos $_[0];
+    if ($_[0]=~ /\G(\s+)/gs) {
+        return ($1, $SPACE);
+    }
+
+    pos($_[0])= $pos;
+    if ($_[0]=~ /\G(\w[\w\d]*)/g) {
+        return ($1, $IDENT);
+    }
+
+    pos($_[0])= $pos;
+    if ($_[0]=~ /\G(\#\s*\w[\w\d]*)/g) {
+        return ($1, $PREPROC);
+    }
+
+    pos($_[0])= $pos;
+    if ($_[0]=~ /\G(\d[\w\d]*)/g) {
+        return ($1, $INT);
+    }
+
+    pos($_[0])= $pos;
+    if ($_[0]=~ m,\G(
+           \.\.\. |
+           \+\+   | --   |
+           <=     | >=   | ==  | !=  |
+           \+=    | -=   | \*= | /=  | %= |
+           >>     | <<   | <<= | >>= |
+           \|\|   | &&   |
+           ^=     | \|=  | &=  |
+           \.\*   | ->\* | ->  |
+           ::
+        ),gx)
+    {
+        return ($1, $SPECIAL);
+    }
+
+    pos($_[0])= $pos;
+    if ($_[0]=~ /\G(\.)/g) { # this would match a float, but isn't
+        return ($1, $1);
+    }
+
+    pos($_[0])= $pos;
+    if ($_[0]=~ /\G(\d*\.\d*(?:[eE][-+]?\d+)?)/g) {
+        return ($1, $FLOAT);
+    }
+
+    # as many compilers, allow // comments in C, too.
+    pos($_[0])= $pos;
+    if ($_[0]=~ m|\G(//.*)|g) {
+        return ($1, $CXXCOMMENT);
+    }
+
+    pos($_[0])= $pos;
+    if ($_[0]=~ m|\G(/\*.*?\*/)|sg) {
+        return ($1, $COMMENT);
+    }
+
+    pos($_[0])= $pos;
+    if ($_[0]=~ m|\G/\*|sg) {
+        return (undef, "comment");
+    }
+
+    pos($_[0])= $pos;
+    if ($_[0]=~ /\G(\"(?:[^\"\\]*|\\.)*\")/sg) {
+        return ($1, $STRING);
+    }
+
+    pos($_[0])= $pos;
+    if ($_[0]=~ /\G\"/sg) {
+        return (undef, "string");
+    }
+
+    pos($_[0])= $pos;
+    if ($_[0]=~ /\G(\'(?:[^\'\\]*|\\.)*\')/sg) {
+        return ($1, $CHAR);
+    }
+
+    pos($_[0])= $pos;
+    if ($_[0]=~ /\G\'/sg) {
+        return (undef, "char");
+    }
+
+    pos($_[0])= $pos;
+    if ($_[0]=~ /\G(\\\n)/g) {
+        return ($1, $BACKSLASH_CR);
+    }
+
+    if ($scanner_mode == $MODE_FLEX) {
+        pos($_[0])= $pos; # This is for flex: an escape sequence outside string or char.
+        if ($_[0]=~ /\G(\\.)/sg) {
+            return ($1, $BACKSLASH_OTHER);
+        }
+    }
+
+    pos($_[0])= $pos;
+    if ($_[0]=~ /\G(.)/sg) {
+        return ($1, $1);
+    }
+
+    pos($_[0])= $pos;
+    return (undef, "eof");
+}
+
+sub read_token ($)
+{
+    my ($text, $type)= read_token_aux $_[0];
+    if ($debug{scanner}) {
+        if (defined $text) {
+            print STDERR "TOKEN: $type: '$text'\n";
+        }
+        else {
+            print STDERR "TOKEN: $type: undef\n";
+        }
+    }
+    return ($text, $type);
+}
+
+sub word_type ($)
+{
+    my $type= shift;
+    return ($type eq $IDENT || $type eq $INT || $type eq $FLOAT);
+}
+
+sub read_argument ($$);
+sub read_argument ($$) # reads at \G in $_[0]
+{
+    # do not copy $_[0] into another variable!
+    my $kill_space= $_[1];
+        # kill_space= 1:   kill all space
+        # kill_space= 0:   kill no  space
+        # kill_space= "":  don't kill leading space, but all other
+        # kill_space= 2:   kill leading space, but no other
+        # kill_space= 3:   kill leading comments but no white space and no other space
+    my $param= "";
+    my ($part, $type, $more);
+    my $last_type= -1;
+
+    while (1) {
+        ($part, $type)= read_token $_[0];
+        unless (defined $part) {
+            return ($param, $part, 0);
+        }
+        my $is_comment=
+                $type eq $CXXCOMMENT ||
+                $type eq $COMMENT ||
+                $type eq $BACKSLASH_CR;
+        my $is_space=
+                $type eq $SPACE ||
+                $is_comment;
+        if ($part eq ',') {
+            return ($param, $part, 1);
+        }
+        elsif ($part eq ')' || $part eq ']' || $part eq '}') {
+            return ($param, $part, 0);
+        }
+        elsif ($part eq '(' || $part eq '[' || $part eq '{') {
+            my $more_param;
+            $kill_space= 1 if $kill_space eq "";
+            $kill_space= 0 if $kill_space eq "2";
+            $kill_space= 0 if $kill_space eq "3";
+            do {
+                $param.= $part;
+                ($more_param, $part, $more)= read_argument ($_[0], $kill_space);
+                if (!defined $more_param) {
+                    return (undef, $part);
+                }
+                $param.= $more_param;
+            } while ($more);
+            $param.= $part;
+        }
+        elsif ($kill_space && $is_space &&
+               ($kill_space ne "3" || $is_comment))
+        {
+            # skip
+        }
+        else {
+            $param.= " " if $kill_space && word_type ($type) && word_type ($last_type);
+            $last_type= $type;
+            $param.= $part;
+
+            $kill_space= 1 if $kill_space eq ""  && !$is_space;
+            $kill_space= 0 if $kill_space eq "2" && !$is_space;
+            $kill_space= 0 if $kill_space eq "3" && !$is_space;
+        }
+    }
+    return (undef, $type);
+}
+
+sub read_list ($$) # reads at \G in $_[0]
+{
+    # do not copy $_[0] into another variable!
+    my $kill_space= $_[1];
+    my @result= ();
+    my ($part, $sep, $more);
+    my $num= 0;
+    do {
+        ($part, $sep, $more)= read_argument ($_[0], $$kill_space[$num]);
+        unless (defined $part) {
+            return [ undef, $sep ];
+        }
+        push @result, $part;
+        $num++;
+        $num= $#$kill_space if $num > $#$kill_space;
+    } while ($more);
+
+    if ($#result+1 == 1 && $result[0] =~ /^\s*$/) {
+        pop @result;
+    }
+    return \@result;
+}
+
+######################################################################
+
+sub db_quote ($)
+{
+    my ($s)= @_;
+    $s=~ s/\\/\\\\/g;
+    $s=~ s/\n/\\n/g;
+    $s=~ s/\t/\\t/g;
+    $s=~ s/\0/\\0/g;
+    return $s;
+}
+
+sub perl_quote ($)
+{
+    my ($s)= @_;
+    $s=~ s/\\/\\\\/g;
+    $s=~ s/\n/\\n/g;
+    $s=~ s/\t/\\t/g;
+    $s=~ s/\0/\\0/g;
+    $s=~ s/[\'\"\$\@\%]/\\$&/g;
+    return "\"$s\"";
+}
+
+{
+    my %quotetable= (
+        "\\" => "\\",
+        "n" => "\n",
+        "t" => "\t",
+        "0" => "\0",
+    );
+
+    sub db_unquote ($)
+    {
+        my ($s)= @_;
+        return undef unless defined $s;
+        $s=~ s/\\(.)/$quotetable{$1}/eg;
+        return $s;
+    }
+}
+
+sub read_perl ($)
+{
+    my ($dbfile)= @_;
+    if (!-r $dbfile) {
+        print STDERR "Error: $dbfile does not exit or is not readable.\n";
+        halt 1;
+    }
+    return ((eval `cat '$dbfile'`) || {});
+}
+
+sub write_perl ($$;$);
+
+sub read_db_raw ($)
+{
+    my ($dbfile)= @_;
+    if (!-r $dbfile) {
+        print STDERR "Error: $dbfile does not exit or is not readable.\n",
+                     "    Maybe you need to -init the project.\n";
+        halt 1;
+    }
+    my $result= read_perl $dbfile;
+
+    # check signature
+    if (!defined $result->{signature}) {
+        print STDERR "Error: $dbfile does not contain a signature.\n";
+        print STDERR "    Reading file again using 'do' to get more messages.\n";
+        my $dummy= do $dbfile;
+        halt 1;
+    }
+    if ($result->{signature} ne "htPerlDB") {
+        print STDERR "Error: $dbfile does not have a 'htPerlDB' signature.";
+        halt 1;
+    }
+
+    # check version
+    if (!defined $result->{version}) {
+        print STDERR "Error: $dbfile does not contain a version number.\n";
+        print STDERR "    Reading file again using 'do' to get more messages.\n";
+        my $dummy= do $dbfile;
+        halt 1;
+    }
+    if ($result->{version} < $current_db_version) {
+        print STDERR "Error: $dbfile is too old, cannot import ".
+                         "(version=$result->{version}, current=$current_db_version).\n";
+        halt 1;
+    }
+
+    # return result:
+    return $result->{x};
+}
+
+sub mark_old ($)
+{
+    my ($project)= @_;
+    my $db= $info{$project};
+    for my $id (keys %$db) {
+        $info{$project}->{$id}{' old'}= 1;
+    }
+}
+
+sub read_db ($$$)
+{
+    my ($project, $map, $dbfile)= @_;
+    my $db= read_db_raw $dbfile;
+    $db= {} unless $db;
+    if (ref ($db) ne 'HASH') {
+        print STDERR "Error: not a hash table in data base $db\n";
+        halt 1;
+    }
+    $$map{$project}= $db;
+    mark_old $project;
+}
+
+{
+    my $store_undef;
+
+    sub write_key_value ($$$);
+    sub write_key_value_perhaps ($$$;$);
+    sub write_value ($$);
+
+    sub write_indent ($)
+    {
+        my ($level)= @_;
+        print DB ("  " x $level);
+    }
+
+    sub by_num_lex ($$)
+    {
+        my ($a, $b)= @_;
+        my $dig_a= 0;
+        if ($a=~ /^(\d+)/) {
+            $dig_a= $1;
+        }
+        my $dig_b= 0;
+        if ($b=~ /^(\d+)/) {
+            $dig_b= $1;
+        }
+        return ($dig_a <=> $dig_b) || ($a cmp $b);
+    }
+
+    sub write_value_hash ($$)
+    {
+        my ($value, $level)= @_;
+        my $sep= "";
+        for my $key (sort by_num_lex keys %$value) {
+            if (write_key_value_perhaps ($key, $$value{$key}, $level, "$sep\n")) {
+                $sep= ",";
+            }
+        }
+    }
+
+    sub write_value_array ($$)
+    {
+        my ($values, $level)= @_;
+        my $sep= "";
+        my $space= " ";
+
+        # one line?
+        my $length= 0;
+        ELEM: for my $value (@$values) {
+            if (ref($value) ||
+                ($length += length $value) > 60 - $level * 2)
+            {
+                $space= "\n";
+                last ELEM;
+            }
+        }
+
+        # print it
+        for my $value (@$values) {
+            print DB "$sep$space";
+            write_indent $level if $space eq "\n";
+            write_value ($value, $level);
+            $sep= ",";
+        }
+
+        return $space eq "\n";
+    }
+
+    # This should check for cycles as well to reconstruct everything
+    # correctly.
+    sub write_value ($$)
+    {
+        my ($value, $level)= @_;
+        unless (defined $value) {
+            print DB "undef";
+        }
+        elsif (ref ($value) eq 'HASH') {
+            print DB "{";
+            write_value_hash $value, $level+1;
+            print DB "\n";
+            write_indent $level;
+            print DB "}";
+        }
+        elsif (ref ($value) eq 'ARRAY') {
+            print DB "[";
+            if (write_value_array $value, $level+1) {
+                print DB "\n";
+                write_indent $level;
+            }
+            else {
+                print DB " ";
+            }
+            print DB "]";
+        }
+        # elsif (ref ($value) eq 'SCALAR') { // rather die than trying this
+        #     print DB "\\";
+        #     write_value $$value, $level+1;
+        # }
+        elsif (ref ($value)) {
+            print STDERR "Cannot store objects of type ",ref($value),"\n";
+            halt 1;
+        }
+        elsif ($value eq "" || $value =~ /\D/) { # FIXME: find a way to ask Perl for the type.
+            print DB perl_quote ($value);
+        }
+        else {
+            print DB $value;
+        }
+    }
+
+    sub write_key_value ($$$)
+    {
+        my ($key, $value, $level)= @_;
+        write_indent $level;
+        if ($key =~ /^(\d+|[a-zA-Z_][a-zA-Z0-9_]*)$/) {
+            print DB "$key => ";
+        }
+        else {
+            print DB "'$key' => ";
+        }
+        write_value ($value, $level);
+    }
+
+    sub write_key_value_perhaps ($$$;$)
+    {
+        my ($key, $value, $level, $prefix)= @_;
+        if ($key !~ /[\\\'\s]/) {
+            if (defined $value || $store_undef) {
+                print DB $prefix if defined $prefix;
+                write_key_value $key, $value, $level;
+                return 1;
+            }
+        }
+        return 0;
+    }
+
+    sub write_perl ($$;$)
+    {
+        my ($map, $dbfile);
+        ($map, $dbfile, $store_undef)= @_;
+
+        open (DB, ">${dbfile}.new") || return;
+        print DB "#! perl\n";
+        write_value $map, 0;
+        print DB ";\n";
+        close (DB) || return;
+
+        rename "${dbfile}.new", $dbfile;
+    }
+}
+
+sub write_db_raw ($$;$)
+{
+    my ($db, $dbfile, $store_undef)= @_;
+    write_perl ({
+            'signature' => "htPerlDB",
+            'version'   => $current_db_version,
+            'x'         => $db,
+        },
+        $dbfile, $store_undef);
+}
+
+sub write_db ($$$;$)
+{
+    my ($project, $map, $dbfile, $store_undef)= @_;
+
+    my $db= $$map{$project};
+    write_db_raw ($db, $dbfile, $store_undef);
+}
+
+sub open_db ($)
+{
+    my ($project)= @_;
+    my $proj= (split /,/, $project, 3)[2];
+    my $root= $rootOproject{$project};
+    unless (defined $info{$project}) {
+        print "Reading data base for $project...\n";
+        read_db ($project, \%info,    "$root->{local}/p_$proj/codes");
+        mark_old $project;
+        read_db ($project, \%hotfunc, "$root->{local}/p_$proj/hotfuncs");
+        $changed{$project}= 0;
+    }
+}
+
+sub commit ($$);
+sub run ($);
+
+sub command_line ()
+{
+    my $str= "$prog";
+    for my $arg (@ARGV) {
+        $str.= " $arg";
+    }
+    return $str;
+}
+
+sub cvs_description ()
+{
+    my $str= "Command line:\n  ".command_line."\n".
+             "Working directory:\n  ".`pwd`."\n";
+    $str=~ s/\'/-APOS-/gs;
+    return $str;
+}
+
+######################################################################
+
+sub touch ($;$)
+{
+    my ($file, $echo_date)= @_;
+    if ($echo_date) {
+        run ("date > '$file'");
+    }
+    else {
+        run ("touch '$file'");
+    }
+}
+
+sub open_dbs ($)
+{
+    my ($projects)= @_;
+    for my $project (keys %$projects) {
+        open_db ($project);
+    }
+}
+
+sub close_dbs ()
+{
+    my %roots= ();
+    for my $project (keys %info) {
+        my $proj= (split /,/, $project, 3)[2];
+        my $root= $rootOproject{$project};
+        $roots{$root->{local}}= 1;
+
+        my $dbfile= "$root->{local}/p_$proj/codes";
+        if ($changed{$project}) {
+            print "Writing data base for $project...\n";
+            write_db ($project, \%info,    $dbfile);
+            write_db ($project, \%hotfunc, "$root->{local}/p_$proj/hotfuncs");
+        }
+        touch "$dbfile.stamp", 1;
+    }
+
+    commit \%roots, "Data base update.\n".cvs_description;
+}
+
+sub unique_id ()
+{
+    while ($id{$current_id}) {
+        $current_id+= $id{$current_id}; # skip the area
+    }
+    # $id{$current_id}= 1;
+    #     This is not done since we might want to check whether this
+    #     was assigned during the processing of the current file.
+    return $current_id++;
+}
+
+sub init_unique_id ($)
+{
+    my ($projects)= @_;
+    %id= ();
+
+    $id{1}= $RESERVED_MAX; # reserve this area
+         # Later, we must have a means to let the user define
+         # other reserved areas.
+
+    # Learn all ids from the given projects.
+    for my $project (keys %$projects) {
+        my $db= $info{$project};
+        for my $id (keys %$db) {
+            $id{$id}= 1;
+        }
+    }
+
+    # next invocation of unique_id will return the first free id.
+    $current_id= 1;
+}
+
+######################################################################
+
+sub now_gmt ()
+{
+    my ($sec,$min,$hour,$mday,$mon,$year) = gmtime(time);
+    if ($year < 50) {
+        $year+= 2000;
+    }
+    elsif ($year < 1000) {
+        $year+= 1900;
+    }
+    return [$year, $mon+1, $mday, $hour, $min, $sec];
+}
+
+sub read_pattern ($)
+{
+    my ($param)= @_;
+    return $param == 0 ? [1, 0]
+         : $param == 1 ? [0, 1, 0]
+         : $param == 2 ? [0, 0, 1, 0]
+         : $param == 3 ? [0, 0, 0, 1, 0]
+         : $param == 4 ? [0, 0, 0, 0, 1, 0]
+         : [0];
+}
+
+{
+    my $start_pos;
+    my $count_pos;
+    my $file;
+    my $full_file;
+    my $full_dir;
+    my $projects;
+    my $new_project;
+    my $line;
+    my $first_warning= 1;
+    my $default_scope= undef;
+    my $text;
+    my $write_protect;
+
+    sub get_line ()
+    {
+        my $p= pos($text);
+        pos($text)= $count_pos;
+        while ($text=~ /\G.*\n/g && pos($text) < $start_pos) {
+            $count_pos= pos($text);
+            $line++;
+        }
+        pos($text)= $p;
+    }
+
+    sub check_scope ($)
+    {
+        my ($def)= @_;
+        # print STDERR "Checking for scope $$def{scope}:$$def{scope_pattern}.\n";
+        return 1 if $$def{scope} eq "project";
+        return 1 if $$def{scope} eq "file" && $full_file eq $$def{scope_pattern};
+        return 1 if $$def{scope} eq "dir"  && $full_dir  eq $$def{scope_pattern};
+        return 1 if $$def{scope} eq "tree" && $full_dir  =~ /^\Q$$def{scope_pattern}\E/;
+        return 0;
+    }
+
+    sub find_hotfunc ($)
+    {
+        my ($name)= @_;
+        for my $project ((sort { $a cmp $b } keys %$projects), " std") {
+            my $db=  $hotfunc{$project};
+            my $def= $$db{$name};
+            # print STDERR "Searching for $name in $project.\n";
+            if (defined $def && check_scope $def) {
+                return $def;
+            }
+        }
+        return undef;
+    }
+
+    sub learn_decl ($$$)
+    {
+        my ($name, $arg, $option)= @_;
+
+        my %def= ();
+
+        # handle the options
+        if (defined $$option{''}) { # copy from another function
+            my $def2= find_hotfunc $$option{''};
+            unless (defined $def2) {
+                get_line;
+                print STDERR "$file:$line: Error: function $$option{''} is not known.\n",
+                             "      Skipping definition of $name.\n";
+                return;
+            }
+            my ($k,$v);
+            while (($k,$v)= each %$def2) {
+                $def{$k}= $v;
+            }
+        }
+        my ($k,$v);
+        while (($k,$v)= each %$option) {
+            if ($k) {
+                $def{$k}= $v;
+            }
+        }
+
+        delete $def{name};
+            # we have that in $name now and do not need it anymore $def
+
+        my $decl= "/*err-renumber*/ $name (...)";
+        my $int_arg= undef;
+        if (defined $arg) {
+            # translate (a...) to (a, ...):
+            if ($#$arg+1 > 0 && $$arg[-1] =~ /^(.+)\.\.\.$/) {
+                $$arg[-1]= $1;
+                push @$arg, "...";
+            }
+            $decl= "/*err-renumber*/ $name (".(join ", ", @$arg).")";
+
+            # check vararg:
+            if ($#$arg+1 > 0 && $$arg[-1] eq "...") {
+                $def{min_argc}= $#$arg;
+                $def{max_argc}= undef;
+            }
+            else {
+                $def{max_argc}= $def{min_argc}= $#$arg + 1;
+            }
+
+            # find number and tag
+            for my $i (0..$#$arg) {
+                my $a= $$arg[$i];
+                if ($a eq "int") {
+                    if (defined $int_arg) {
+                        $int_arg= -1;
+                    }
+                    else {
+                        $int_arg= $i;
+                    }
+                }
+                elsif (!defined $def{argc_number} && $a =~ /\w.*\bnumber$/) {
+                    $def{argc_number}= $i+1;
+                }
+                elsif (!defined $def{argc_tag} && $a =~ /\w.*\btag$/) {
+                    $def{argc_tag}= $i+1;
+                }
+            }
+        }
+
+        # check argc_number
+        unless (defined $def{argc_number}) {
+            unless (defined $int_arg) {
+                get_line;
+                print STDERR "$file:$line: Error: In $decl:\n",
+                    "      No int arg found.  Ignoring declaration.\n";
+                return;
+            }
+            elsif ($int_arg < 0) {
+                get_line;
+                print STDERR "$file:$line: Error: In $decl:\n",
+                    "      Several int args found.\n",
+                    "      Please mark one as 'int number' (and possible another as 'int tag').\n",
+                    "      Ignoring declaration.\n";
+                return;
+            }
+            else {
+                $def{argc_number}= $int_arg+1;
+            }
+        }
+
+        # check is_eprintf
+        unless (defined $def{is_eprintf}) {
+            $def{is_eprintf}= $name =~ /eprintf/ ? 1 : 0;
+        }
+
+        # check argc_tag for eprintf style functions
+        if ($def{is_eprintf} && !defined $def{argc_tag}) {
+            get_line;
+            print STDERR "$file:$line: Error: In $decl:\n",
+                "      No tag arg found for eprintf type function.  Ignoring declaration.\n";
+            return;
+        }
+
+        # check min_argc
+        if (!defined $def{min_argc}) {
+            $def{min_argc}= 0;
+        }
+        if (defined $def{min_argc} && $def{min_argc} < $def{argc_number}) {
+            $def{min_argc}= $def{argc_number};
+        }
+        if (defined $def{min_argc} &&
+            defined $def{argc_tag} &&
+            $def{min_argc} < $def{argc_tag})
+        {
+            $def{min_argc}= $def{argc_tag};
+        }
+
+        # check the scope:
+        unless (defined $def{scope}) {
+            $def{scope}= $default_scope;
+        }
+        unless (defined $def{scope}) {
+            get_line;
+            print STDERR "$file:$line: Warning: No scope defined, assuming 'file'.\n";
+            $def{scope}= 'file';
+        }
+
+        if (defined $def{scope_pattern}) {
+            #ok
+        }
+        elsif ($def{scope} eq 'project') {
+            $def{scope_pattern}= "";
+        }
+        elsif ($def{scope} eq 'file') {
+            $def{scope_pattern}= $full_file;
+        }
+        elsif ($def{scope} =~ /^file:(.*)$/) {
+            $def{scope}= "file";
+            $def{scope_pattern}= $1;
+        }
+        elsif ($def{scope} eq 'dir' || $def{scope} eq 'directory') {
+            $def{scope}= "dir";
+            $def{scope_pattern}= $full_dir;
+        }
+        elsif ($def{scope} =~ /^dir(?:ectory):(.*)$/) {
+            $def{scope}= "dir";
+            $def{scope_pattern}= $1;
+        }
+        elsif ($def{scope} eq 'tree') {
+            $def{scope_pattern}= $full_dir;
+        }
+        elsif ($def{scope} =~ /^tree:(.*)$/) {
+            $def{scope}= "tree";
+            $def{scope_pattern}= $1;
+        }
+        else {
+            get_line;
+            print STDERR "$file:$line: Warning: Unknown scope: $def{scope}.\n",
+                         "      Skipping definition of $name.\n";
+            return;
+        }
+
+        # print STDERR "learn_decl: $name (", (join ", ", @$arg), "): min=$def{min_argc}, max=$def{max_argc}, number=$def{argc_number}\n";
+
+        # add more info:
+        $def{file}=        $file;
+        $def{line}=        $line;
+        $def{time_change}= now_gmt;
+
+        # define the function in all projects:
+        my $def2= find_hotfunc $name;
+        if (defined $def2) {
+            if ($def{argc_number} ne $$def2{argc_number}) {
+                print STDERR "$file:$line: Warning: Old definition if function has the number\n",
+                             "    in argument $$def2{argc_number} but now one in $def{argc_number}.\n",
+                             "    This might be an error, a duplicate definition or the like.\n",
+                             "    If if is ok, you have to manually change the applications of\n",
+                             "    function $name everywhere in the project(s).\n";
+            }
+        }
+
+        for my $project (keys %$projects) {
+            my $db= $hotfunc{$project};
+            # print "Learning hotfunc $name in $project.\n";
+            if (defined $db->{$name}{time_add}) {
+                $def{time_add}= $db->{$name}{time_add};
+            }
+            else {
+                $def{time_add}= now_gmt;
+            }
+            $$db{$name}= \%def;
+            $changed{$project}= 1;
+        }
+    }
+
+    sub read_open ($)
+    {
+        my ($token, $type);
+        my $open= "";
+        do {
+            ($token,$type)= read_token $_[0];
+            unless (defined $token) {
+                if ($type ne "eof") {
+                    get_line;
+                    print STDERR "$file:$line: Error: Token of type $type ended prematurely.\n";
+                    return (undef, 1); # error
+                }
+                return (undef, 2); # next token
+            }
+            $open.= $token;
+        } while (defined $type && $type ne '(');
+        return ($open, 0);
+    }
+
+    sub xlat_number ($$)
+    {
+        my ($num, $new_assignment)= @_;
+        if ($num == 0) {
+            if ($mode eq "update" && $new_assignment) {
+                $num= unique_id;
+            }
+        }
+        elsif ($num > $RESERVED_MAX) {
+            my $do_renumber= 0;
+
+            if ($mode eq "add") {
+                # has to be changed if it is assigned already in $new_project.
+                my $db= $info{$new_project};
+                if (defined $$db{$num} && $$db{$num}->{' old'}) {
+                    print STDERR "$num is already defined and will be renumbered.\n";
+                    $do_renumber= 1;
+                }
+            }
+            elsif ($mode eq "update" && $renumber) {
+                $do_renumber= 1;
+            }
+
+            if ($do_renumber) {
+                if (defined $old2new{$num}) {
+                    $num= $old2new{$num};
+                }
+                else {
+                    my $id= unique_id;
+                    $old2new{$num}= $id;
+                    $num= $id;
+                }
+            }
+        }
+        return $num;
+    }
+
+    sub split_options ($)
+    {
+        my ($options)= @_;
+
+        $options=~ s/\*\/$//; # delete end of C comment
+        $options=~ s/\s+$//;  # delete space
+        $options=~ s/^\s+//;
+
+        my @options= split /[\s,]+/, $options;
+        my %options= ();
+        for my $option (@options) {
+            if ($option =~ m|^-(.*)$|) {
+                $options{$1}= undef;
+            }
+            else {
+                my ($k, $v)= split /\s*=+\s*/, $option, 2;
+                $v="1" unless defined $v;
+                $options{$k}= $v;
+            }
+        }
+
+        return \%options;
+    }
+
+    sub change_perhaps ($$$)
+    {
+        my ($map, $key, $value)= @_;
+        if (!defined $$map{$key} || $$map{$key} ne $value) {
+            $$map{$key}= $value;
+            return 1;
+        }
+        return 0;
+    }
+
+    sub select_mode ()
+    {
+        if ($file =~ /\.c$/)         { $scanner_mode= $MODE_C; }
+        if ($file =~ /\.i$/)         { $scanner_mode= $MODE_C; }
+
+        if ($file =~ /\.h+$/i)       { $scanner_mode= $MODE_CXX; } # headers always C++
+        if ($file =~ /\.hpp$/i)      { $scanner_mode= $MODE_CXX; } # headers always C++
+        if ($file =~ /\.ii$/)        { $scanner_mode= $MODE_CXX; }
+        if ($file =~ /\.cc$/i)       { $scanner_mode= $MODE_CXX; }
+        if ($file =~ /\.cpp$/i)      { $scanner_mode= $MODE_CXX; }
+
+        if ($file =~ /\.f?l+(ex)?$/) { $scanner_mode= $MODE_FLEX; }
+        if ($file =~ /\.y+$/)        { $scanner_mode= $MODE_BISON; }
+
+        # default is C++ mode:
+        $scanner_mode= $MODE_CXX;
+    }
+
+    sub ensure_map($)
+    {
+        my ($rmap)= @_;
+        unless (defined $$rmap) {
+            $$rmap= {};
+            return 1;
+        }
+        unless (ref($$rmap) eq 'HASH') {
+            print STDERR "Internal Error: a map was expected, but found '$$rmap'.\n";
+            halt 1;
+        }
+        return 0;
+    }
+
+    sub insert_file_line_expr ($$$$)
+    {
+        my ($rmap, $file, $line, $expr)= @_;
+        my $ch= 0;
+        $ch|= ensure_map ($rmap);
+        $ch|= ensure_map (\$$rmap->{$file});
+        $ch|= change_perhaps ($$rmap->{$file}, $line, $expr);
+        return $ch;
+    }
+
+    sub convert ($$$;$$)
+    {
+        ($file, $full_file, $projects, $new_project, $write_protect)= @_;
+        $full_dir= $full_file;
+        $full_dir=~ s@[^/]+$@@; # delete the file name
+
+        select_mode;
+
+        # load file
+        {
+            local $/= undef;
+            unless (open (F, "$file")) {
+                print STDERR "$file: Error: $!\n";
+                halt 1
+            }
+            $text= <F>;
+            close F;
+        }
+
+        # open data bases:
+        if ($mode eq "update" || $mode eq "add") {
+            open_dbs $projects;
+            init_unique_id $projects;
+        }
+
+        my $new_text= "";
+        my $pos= undef;
+        my ($token, $type);
+
+        $count_pos= undef;
+        $line= 1;
+
+        pos($text)= undef;
+        TOKEN: while (1) {
+            ($token, $type)= read_token $text;
+            unless (defined $token) {
+                if ($type ne "eof") {
+                    get_line;
+                    print STDERR "$file:$line: Error: Token of type $type ended prematurely.\n";
+                    goto error;
+                }
+                last TOKEN;
+            }
+
+            $start_pos= pos ($text);
+
+            if ($mode eq "convert") {
+                if ($type eq $IDENT &&
+                    $token=~ /^(v?)(f?)printf/)
+                {
+                    my ($v,$f)= ($1,$2);
+                    my ($open, $open_result)= read_open $text;
+                    goto error if $open_result == 1;
+                    last TOKEN if $open_result == 2;
+
+                    my $result;
+                    if ($f eq "") {
+                        $result= read_list ($text, [3, 0]);
+                        unshift @$result, "stdout" if $f eq "";
+                    }
+                    else {
+                        $result= read_list ($text, [1, 3, 0]);
+                    }
+
+                    if ($#$result + 1 >= 2 &&
+                        ($$result[0] eq "stderr" || $$result[0] eq "stdout"))
+                    {
+                        $$result[0]= "0"; # new number
+                        unshift @$result, "C_TAG_NOCLASS";
+
+                        if ($$result[2]=~ s/^(\s*)\"\**Error\**:\s+/$1\"/is) {
+                            $$result[0]= "C_TAG_ERR";
+                        }
+                        elsif ($$result[2]=~ s/^(\s*)\"\**Warning\**:\s+/$1\"/is) {
+                            $$result[0]= "C_TAG_WARN";
+                        }
+                        elsif ($$result[2]=~ s/^(\s*)\"\**DEBUG\**:\s+/$1\"/is) {
+                            $$result[0]= "C_TAG_DEBUG";
+                        }
+                        elsif ($$result[2]=~ s/^(\s*)\"\**Fatal(\s+Error)?\**:\s+/$1\"/is) {
+                            $$result[0]= "C_TAG_FATAL";
+                        }
+                        elsif ($$result[2]=~ s/^(\s*)\"\**Internal(\s+Error)?\**:\s+/$1\"/is) {
+                            $$result[0]= "C_TAG_INTERNAL";
+                        }
+                        elsif ($$result[2]=~ s/^(\s*)\"\**(?:Info|Note)\**:\s+/$1\"/is) {
+                            $$result[0]= "C_TAG_INFO";
+                        }
+
+                        $$result[1]= " $$result[1]";
+                        $token= "${v}eprintf${open}".
+                                (join ",", @$result).
+                                ")";
+                    }
+                    else {
+                        shift @$result if $f eq ""; # undo this change.
+                        $token= "${v}${f}printf${open}".(join ",", @$result). ")";
+                    }
+                }
+            }
+
+            if ($mode eq "update" || $mode eq "add" || $mode eq "list-hotfuncs") {
+                my $param= 0;
+                my $param_tag= 0;
+                my $min_argc= undef;
+                my $max_argc= undef;
+                my $is_eprintf= 0;
+                my $explode_param= undef;
+                my $func_name= undef;
+
+                my $def= $type eq $IDENT ? find_hotfunc($token) : undef;
+                if (defined $def) {
+                    $func_name=     $token;
+                    $param=         $$def{argc_number}-1;
+                    $param_tag=     defined $$def{argc_tag}     ? $$def{argc_tag}    -1 : undef;
+                    $explode_param= defined $$def{argc_explode} ? $$def{argc_explode}-1 : undef;
+                    $min_argc=      $$def{min_argc};
+                    $max_argc=      $$def{max_argc};
+                    $is_eprintf=    $$def{is_eprintf} ? 1 : 0;
+                    # print STDERR "Found user defined hotfunc: $func_name, number=$param, is_eprintf=$is_eprintf\n";
+                    # print "\n// **** $func_name, $param, $min_argc, $is_eprintf ****\n";
+
+                    my ($open, $open_result)= read_open $text;
+                    goto error if $open_result == 1;
+                    last TOKEN if $open_result == 2;
+
+                    my $result=
+                        read_list ($text, (defined $explode_param ? [0] : read_pattern $param));
+                    $pos= pos($text);
+
+                    my $orig_result= $result;
+                    my $orig_param=  $param;
+                    if (defined $explode_param) {
+                        my ($open, $open_result)= read_open $$result[$param];
+                        goto error if $open_result == 1;
+                        last TOKEN if $open_result == 2;
+                        $result= read_list ($$result[$param], read_pattern $explode_param);
+                        $param= $explode_param;
+                    }
+
+                    my $remember= 0;
+                    my $num= 0;
+                    if ($#$result + 1 < $min_argc) {
+                        get_line;
+                        if ($#$result == 1 && !defined $$result[0]) {
+                            print STDERR "$file:$line: Error: Token of type $$result[$param] ended prematurely.\n";
+                            goto error;
+                        }
+                        print STDERR "$file:$line: Warning: Too few arguments for ${func_name}.\n";
+                    }
+                    elsif (defined $max_argc && $#$result + 1 > $max_argc) {
+                        get_line;
+                        print STDERR "$file:$line: Warning: Too many arguments for ${func_name}.\n";
+                    }
+                    else {
+                        # Check for explicit ErrNumber setting.
+                        if ($$result[$param]=~ /^\s*(err_number|ErrNumber)\s*\(\s*(\d+)\s*\)(.*)$/) {
+                            my ($prefix, $suffix);
+                            ($prefix, $num, $suffix)= ($1, $2, $3);
+                            $num= xlat_number ($num, 1);
+                            $$result[$param]= "${prefix}(${num})${suffix}";
+                            $remember= 1;
+                        }
+                        elsif ($is_eprintf && $$result[$param_tag]=~ /TAG_MORE\b/) {
+                            # We give numbers to every tag but C_TAG_MORE, even if the
+                            # number will not be displayed, since the programmer might
+                            # want to have control over showing/hiding these messages
+                            # anyway.
+                            # To also give ids to C_TAG_MORE, explicitly use
+                            # err_number(0)->number or ErrNumber(0) or
+                            # /*err-number*/0  (not yet implemented).
+
+                            # DO NOT CHANGE ANYTHING:
+                            #     $$result[$param]= 0; # no number for these.
+
+                                # Note: we do not match \bC_TAG...\b because users may which
+                                #       to use macros here.  But please, users, keep them
+                                #       in the <prefix_>TAG_<suffix> form.
+                        }
+                        elsif ($$result[$param]=~ /^(\d+)$/) {
+                            $num= xlat_number ($1, $is_eprintf);
+                            $$result[$param]= $num;
+                            $remember= 1;
+                        }
+                        elsif ($$result[$param]=~ /^\(*(\w[\w\d]*)\)?\s*\)?->\s*number\)?$/) {
+                            my $arg= $1;
+                            # The valid forms in macros are:
+                            #     X->number
+                            #     (X)->number       - preferred
+                            #     ((X)->number)
+                            #
+                            # no translation here.
+                            $$result[$param]= "($arg)->number";
+                        }
+                        else {
+                            get_line;
+                            print STDERR
+                                "$file:$line: Warning: No message number found for ${func_name}.\n".
+                                "        The argument that is illegal is '$$result[$param]'.\n";
+
+                            if ($first_warning) {
+                                print STDERR
+                                    "        If this is inside a macro, use (X)->number to force the user to\n".
+                                    "        invoke the macro via err_number().  Otherwise error numbers\n".
+                                    "        cannot be assigned correctly.\n";
+                                $first_warning= 0;
+                            }
+                        }
+
+                        if ($param > 0) {
+                            $$result[$param]= " $$result[$param]";
+                                ## add a leading space for the second parameter
+                        }
+                    }
+
+                    # re-implode the exploded arg
+                    if (defined $explode_param) {
+                        $$orig_result[$orig_param]= "(".(join ",",@$result).")";
+                        $result= $orig_result;
+                        $param=  $orig_param;
+                    }
+
+                    # possibly enter inter data base and change the text
+                    my $new_funcall= "${func_name}${open}".(join ",", @$result).")";
+                    if ($remember && $num != 0) {
+                        # remember this in the data base
+                        for my $project (keys %$projects) {
+                            my $db= $info{$project};
+                            my $old= defined $db->{$num} && $db->{$num}{' old'};
+                            get_line;
+                            if (!$old) {
+                                # There was no entry in the database when we started
+                                # with this file.
+                                $db->{$num}= {
+                                    time_add => now_gmt,
+                                };
+                                $changed{$project}= 1;
+                            }
+
+                            my $field= $is_eprintf ? 'def' : 'use';
+                            if (insert_file_line_expr
+                                   \$db->{$num}{$field}, $full_file, $line, $new_funcall)
+                            {
+                                $db->{$num}{time_change}= now_gmt;
+                                $changed{$project}= 1;
+                            }
+                        }
+                    }
+                    $new_text.= $new_funcall;
+
+                    pos($text)= $pos;
+                }
+                elsif (($type eq $COMMENT || $type eq $CXXCOMMENT) &&
+                        $token =~ /^..\s*err-default\b(.*)$/)
+                {
+                    $new_text.= $token;
+                    my $options= split_options ($1);
+                    for my $key (keys %$options) {
+                        if ($key eq "scope") {
+                            $default_scope= $$options{$key};
+                        }
+                        else {
+                            get_line;
+                            print STDERR
+                                "$file:$line: Warning: Ignoring definition of default value for '$key'\n",
+                                "    since I do not know that variable.\n";
+                        }
+                    }
+                }
+                elsif (($type eq $COMMENT || $type eq $CXXCOMMENT) &&
+                        $token =~ /^..\s*err-skip\b(.*)$/)
+                {
+                    $new_text.= $token;
+                    my $options= split_options ($1);
+                    my $type= get_token_type ($$options{type} || "ident");
+                    my $cnt=  $$options{count} || 1;
+
+                    my ($part, $this_type);
+                    TOKEN: while (1) {
+                        ($part, $this_type)= read_token $text;
+                        if (!defined $part) {
+                            get_line;
+                            print STDERR "$file:$line: Error: No token of type $type found.\n";
+                            return;
+                        }
+                        $new_text.= $part;
+                        if ($this_type eq $type) {
+                            $cnt--;
+                            if ($cnt <= 0) {
+                                last TOKEN;
+                            }
+                        }
+                    }
+                }
+                elsif (($type eq $COMMENT || $type eq $CXXCOMMENT) &&
+                        $token =~ /^..\s*err-renumber\b(.*)$/)
+                {
+                    $new_text.= $token;
+                    my $options= split_options ($1);
+
+                    if (defined $$options{name}) {
+                        learn_decl $$options{name}, undef, $options;
+                    }
+                    else {
+                        my ($part, $type, $last_id);
+                        DECL: while (1) {
+                            ($part, $type)= read_token $text;
+                            if (!defined $part) {
+                                last DECL;
+                            }
+                            if ($type eq "(") {
+                                # parse this without change:
+                                my $result1= read_list ($text, [0]);
+                                my $str1=    join ",", @$result1;
+
+                                # then parse the part again killing all space:
+                                my $result=  read_list ("$str1)", [1]);
+                                learn_decl $last_id, $result, $options;
+
+                                # and then use the original to make the string
+                                $new_text.= "($str1)";
+                                last DECL;
+                            }
+                            if ($type eq $COMMENT || $type eq $CXXCOMMENT || $type eq $SPACE ||
+                                $type eq "*" || $type eq "&" ||
+                                $type eq "<" || $type eq ">" ||
+                                $type eq $SPECIAL)
+                            {
+                                # nix
+                            }
+                            elsif ($type eq $IDENT) {
+                                $last_id= $part;
+                            }
+                            else {
+                                get_line;
+                                print STDERR
+                                    "$file:$line: Error in err-renumber declaration:\n".
+                                    "        Expected an identifier, but got $part.\n";
+                            }
+                            $new_text.= $part;
+                        }
+                    }
+                }
+                elsif (($type eq $COMMENT || $type eq $CXXCOMMENT) &&
+                        $token =~ /^..\s*err-(.*)$/)
+                {
+                    $new_text.= $token;
+                    get_line;
+                    print STDERR "$file:$line: Warning: Ignoring unrecognised option: $token\n";
+                }
+                else {
+                    $new_text.= $token;
+                }
+            }
+            else {
+                $new_text.= $token;
+            }
+        }
+
+        if (pos($text) != length($text)) {
+            print STDERR "$file:1: Error: Could not parse file up to its end.\n";
+            goto error;
+        }
+
+        unless ($write_protect) {
+            if ($text ne $new_text) {
+                open (F, ">${file}.new") || return 1;
+                print F $new_text;
+                close F;
+    
+                rename ($file, "${file}.bak") || return 1;
+                rename ("${file}.new", $file) || return 1;
+            }
+        }
+
+        return 0;
+
+    error:
+        print STDERR "Skipping file $file...\n";
+        return 1;
+    }
+}
+
+######################################################################
+
+sub add_root ($)
+{
+    my ($new_root)= @_;
+    for my $root (@ROOTS) {
+        if ($root->{root} eq $new_root->{root} &&
+            $root->{path} eq $new_root->{path})
+        {
+            return 0;
+        }
+    }
+    if ($new_root->{root} eq ".") {
+        $have_dot_root= 1;
+    }
+    push @ROOTS, $new_root;
+    return 1;
+}
+
+sub get_root_of ($)
+{
+    my ($file)= @_;
+    my $dir= $file;
+    unless ($dir=~ s|/[^/]*$||) { $dir= "."; }
+    open (Z, "<$dir/CVS/Root") ||
+        return undef;
+    my $root= <Z>;
+    chomp $root;
+    close Z;
+    return $root;
+}
+
+sub get_path_and_basename_of ($)
+{
+    my ($file)= @_;
+    my ($dir, $basename);
+
+    if ($file=~ m|^(.*)/([^/]*)$|) {
+        ($dir, $basename)= ($1, $2);
+    }
+    else {
+        ($dir, $basename)= (".", $file);
+    }
+
+    open (Z, "<$dir/CVS/Repository") ||
+        return (undef, undef);
+    my $root= <Z>;
+    chomp $root;
+    close Z;
+
+    return ($root, $basename);
+}
+
+sub find_cvs_roots ($$);
+sub find_cvs_roots ($$)
+{
+    my ($roots, $dir)= @_;
+    # print STDERR "Directory '$dir' ...\n";
+    if (!open (F, "<$dir/CVS/Root")) {
+        # print STDERR "Info: Directory $dir is not CVS controlled, skipping.\n";
+        return; # no more recursion if the directory is not CVS controlled.
+    }
+    my $new_root= <F>;
+    chomp $new_root;
+    close F;
+
+    push @$roots, $new_root;
+
+    if ($recursive) {
+        my @dirs= ();
+        unless (opendir (DIR, "$dir")) {
+            print STDERR "internal error: expected $dir to be a directory: $!";
+            halt 1;
+        }
+        while (($_= readdir DIR)) {
+            if ($_ ne "." &&
+                $_ ne ".." &&
+                $_ ne "CVS" &&
+                stat "$dir/$_" &&
+                -d)
+            {
+                push @dirs, "$dir/$_";
+            }
+        }
+        closedir DIR;
+
+        for my $new_dir (@dirs) {
+            find_cvs_roots $roots, $new_dir;
+        }
+    }
+}
+
+sub expand_roots ()
+{
+    # find the new roots:
+    my @new_roots= ();
+    find_cvs_roots (\@new_roots, ".");
+
+    my @dot_paths= ();
+    my @OLD_ROOTS= @ROOTS;
+    @ROOTS= ();
+    for my $root (@OLD_ROOTS) {
+        if ($root->{root} eq ".") {
+            for my $nr (@new_roots) {
+                add_root {
+                    root => $nr,
+                    path => $root->{path}
+                };
+            }
+        }
+        else {
+            add_root $root;
+        }
+    }
+}
+
+sub find_files ($$);
+sub find_files ($$)
+{
+    my ($files, $dir)= @_;
+    my @dirs= ();
+
+    print "Searching directory $dir...\n" if $verbose;
+
+    opendir (DIR, "$dir") ||
+        return; # ignore this silently
+
+    while (($_= readdir DIR)) {
+        if ($_ ne "." &&
+            $_ ne ".." &&
+            $_ ne "CVS")
+        {
+            $_= "$dir/$_";
+            if (stat && -d)
+            {
+                push @dirs, $_;
+            }
+            elsif (-f) {
+                push @$files, $_;
+            }
+        }
+    }
+    closedir DIR;
+
+    if ($recursive) {
+        for my $new_dir (@dirs) {
+            find_files $files, $new_dir;
+        }
+    }
+}
+
+######################################################################
+
+sub simplify_path($)
+{
+    my ($f)= @_;
+    while ($f=~ s|/\./|/|) {}
+    while ($f=~ s|[^/]+/\.\./||) {}
+    $f=~ s|^(\./)+||;
+    return $f;
+}
+
+sub add_to_project ($$$)
+{
+    my ($root, $project, $file)= @_;
+    $file= simplify_path $file;
+    my $p= "$root->{root},$root->{path},$project";
+
+    # add file to project
+    unless (defined $filesOproject{$p}) {
+       my %empty=();
+       $filesOproject{$p}= \%empty;
+    }
+    
+    return undef if defined ${$filesOproject{$p}}{$file};
+    ${$filesOproject{$p}}{$file}= 1;
+
+    # add project to file
+    unless (defined $projectsOfile{$file}) {
+       my %empty=();
+       $projectsOfile{$file}= \%empty;
+    }
+    ${$projectsOfile{$file}}{$p}= 1;
+
+    # add project to root lookup.
+    $rootOproject{$p}= $root; # for fast lookup.
+
+    return $p;
+}
+
+sub file_compare ($$)
+{
+    my ($a,$b)= @_;
+    return run ("cmp -s '$a' '$b'");
+}
+
+sub move ($;$)
+{
+    my ($a,$b)= @_;
+
+    unless (defined $b) {
+       $b= $a;
+       $a= "$b.new";
+    }
+
+    if (-r $a) {
+        if (-f $b && file_compare ($a,$b) == 0) {
+            # nothing, they are the same.
+        }
+        else {
+            if (!rename ($a, $b)) {
+                print STDERR "Error: cannot move $a to $b: $!\n";
+                halt 1;
+            }
+        }
+        unlink $a;
+    }
+}
+
+sub create_project_files()
+{
+    my ($files, $project);
+    my %texts= ();
+    while (($project, $files)= each %filesOproject) {
+        my $root= $rootOproject{$project};
+        my $proj= (split /,/, $project, 3)[2];
+
+        my $f= "$root->{local}/projects/f_$proj";
+        my $fnew= "${f}.new";
+        if (!open (F, ">$fnew")) {
+            print STDERR "Error: unable to open file $fnew for writing.\n";
+            halt 1;
+        }
+        for my $file (sort { $a cmp $b } keys %$files) {
+            print F "$file\n";
+        }
+        close F;
+
+        move $f;
+    }
+}
+
+######################################################################
+## DB handling
+
+sub read_project_table ($$)
+{
+    my ($root, $project)= @_;
+    my $file_list= "$root->{local}/projects/f_${project}";
+    print "Learning project file list $file_list...\n" if $verbose;
+    if (open (F, "<$file_list")) {
+        while (<F>) {
+            chomp;
+            my $file= $_;
+            add_to_project $root, $project, $file;
+        }
+        close F;
+    }
+}
+
+sub read_all_project_tables ($)
+{
+    my ($root)= @_;
+    my $dir= "$root->{local}/projects";
+    opendir (DIR, $dir) || return;
+    while ($_= readdir DIR) {
+        if ($_=~ /^f_(.*)/) {
+            my $project= $1;
+            read_project_table ($root, $project);
+        }
+    }
+    closedir DIR;
+}
+
+######################################################################
+
+sub mymkdir ($)
+{
+    my ($dir)= @_;
+    $dir=~ s|/{2,}|/|;
+    $dir=~ s|/$||;
+
+    my $part= "";
+    for my $piece (split m|/|, $dir) {
+        $part.= "/$piece";
+        mkdir $part, 0700;
+    }
+}
+
+sub run ($)
+{
+    my ($command)= @_;
+    print "> $command\n" if $verbose;
+    return system ($command);
+}
+
+sub equalp($$)
+{
+    my ($a, $b)=@_;
+    return defined $a && defined $b && $a eq $b;
+}
+
+sub check_out_root($$)
+{
+    my ($root, $i)= @_;
+    run ("rm -rf $tmp/$TMPSUFF/$i");
+    if (run ("cd $tmp/$TMPSUFF && $cvs -d '$root->{root}' checkout -d $i '$root->{path}' $shellquiet") != 0) {
+        print STDERR "Fatal error during execution of shell command.  Correct this first.\n";
+        halt 1;
+    }
+    $root->{local}= "$tmp/$TMPSUFF/$i";
+    read_all_project_tables $root;
+}
+
+sub check_out_roots ()
+{
+    my $i= 0;
+    for my $root (@ROOTS) {
+        check_out_root $root, $i;
+        $i++;
+    }
+}
+
+######################################################################
+
+sub no_root($$)
+{
+    my ($project_spec, $a2)= @_;
+    print STDERR "Cannot identify root for project $project_spec.\n";
+    if (0+@ROOTS == 0) {
+        print STDERR
+            "    The list of roots in this directly is empty.  Either move\n".
+            "    to a CVS controlled directory with the desired root, or\n".
+            "    add roots with the --data-base-dir command line options.\n";
+    }
+    else {
+    ambiguous:
+        print STDERR
+            "    The specified root is ambiguous.\n".
+            "    To specify which of the roots you mean, supply the\n".
+            "    server name and/or sub-directory name before the project,\n".
+            "    separated by commas.  E.g. myserver,mypath,$a2.\n".
+            "    For this directory, you can chose one of the following\n".
+            "    alternatives:\n";
+        for my $r (@ROOTS) {
+            print STDERR "        $r->{root},$r->{path},$a2\n";
+        }
+    }
+    halt 1;
+}
+
+sub commit ($$)
+{
+    my ($roots, $msg)= @_;
+    for my $dir (keys %$roots) {
+        unless (run ("cd '$dir' && $cvs commit -m '$msg' $shellquiet") == 0) {
+            print STDERR "Error: Unable to commit.\n";
+            halt 1;
+        }
+    }
+}
+
+sub init_project($$)
+{
+    my ($root, $project)= @_;
+
+    check_out_root $root, "i";
+    mymkdir "$root->{local}/projects";
+    mymkdir "$root->{local}/p_$project";
+    run ("cd $root->{local} && $cvs add projects $shellquiet");
+
+    if (-f "$root->{local}/projects/f_$project") {
+        print STDERR "Error: Project exists.  Will not overwrite.\n";
+        halt 1;
+    }
+    unless (open (F, ">$root->{local}/projects/f_$project")) {
+        print STDERR "Error: Unable to open $root->{local}/projects/f_$project: $!\n";
+        halt 1;
+    }
+    close F;
+
+    my @db_files= ("codes", "codes.stamp", "hotfuncs");
+    for my $file (@db_files) {
+        unless (open (F, ">$root->{local}/p_$project/$file")) {
+            print STDERR "Error: Unable to open $root->{local}/p_$project/$file: $!\n";
+            halt 1;
+        }
+        close F;
+    }
+    write_db_raw {}, "$root->{local}/p_$project/codes";
+    write_db_raw {}, "$root->{local}/p_$project/hotfuncs";
+
+    unless (run ("cd $root->{local} && $cvs add p_$project projects/f_$project $shellquiet") == 0) {
+        print STDERR "Error: Unable to add project.\n";
+        halt 1;
+    }
+    unless (run ("cd $root->{local}/p_$project && $cvs add ".(join " ", @db_files)." $shellquiet") == 0) {
+        print STDERR "Error: Unable to add project.\n";
+        halt 1;
+    }
+
+    my %roots= ( $root->{local} => 1 );
+    commit \%roots, "New project '$project' added.\n".cvs_description;
+}
+
+sub resolve_project ($)
+{
+    my ($project_spec)= @_;
+    my @a= split /,/, $project_spec, 3;
+
+    while (0+@a < 3) { unshift @a, ""; }
+
+    # match the root:
+    my $root= undef;
+    for my $r (@ROOTS) {
+        my $match1= 1;
+        my $match2= 1;
+        if ($a[0]) { $match1= ($r->{root} =~ /\Q$a[0]\E/); }
+        if ($a[1]) { $match2= ($r->{path} =~ /\Q$a[1]\E/); }
+        if ($match1 && $match2) {
+            if (defined $root) {
+                print STDERR "Error: The specified root is ambiguous.\n";
+                print STDERR "Previous match: $root->{root},$root->{path},$a[2]\n";
+                print STDERR "Also matches:   $r->{root},$r->{path},$a[2]\n";
+                no_root $project_spec, $a[2];
+            }
+            $root= $r;
+        }
+    }
+    if (!defined $root) {
+        print STDERR "Error: No root matches your specification.\n";
+        no_root $project_spec, $a[2];
+    }
+
+    return ($root, $a[2]);
+}
+
+sub cmd_init ()
+{
+    # Each argument is a project.
+    # It contains zero to two patterns that identify the root,
+    # and always the project name.  These are separated by
+    # commas.
+
+    expand_roots;
+    for my $project_spec (@files) {
+        my ($root, $project)= resolve_project $project_spec;
+
+        # root found, project_spec is known.
+        print "Initialising project $project...\n";
+        init_project ($root, $project);
+    }
+}
+
+######################################################################
+
+sub fdate_cmp ($$)
+{
+    my ($a, $b)= @_;
+    {
+        my ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size,
+         $atime,$a_mtime,$ctime,$blksize,$blocks)
+         = stat($a);
+        {
+            my ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size,
+             $atime,$b_mtime,$ctime,$blksize,$blocks)
+             = stat($b);
+
+             #print "a: $a: $a_mtime ".(gmtime $a_mtime)."\n";
+             #print "b: $b: $b_mtime ".(gmtime $b_mtime)."\n";
+             return $a_mtime - $b_mtime;
+        }
+    }
+}
+
+sub check_file ($$$)
+{
+    my ($file, $full_file, $projects)= @_;
+    my $result= 0;
+    for my $project (keys %$projects) {
+        my $proj= (split /,/, $project, 3)[2];
+        my $root= $rootOproject{$project};
+        # make a few additional tests here, which are actually unnecessary,
+        # but maybe they are useful for debugging one time.
+        if (!$root) {
+            print STDERR "Error: Data base of $file does not exist for some strange reason.\n";
+        }
+        elsif (!$root->{local}) {
+            print STDERR "Error: Data base of $file was not opened for some strange reason.\n";
+        }
+        elsif (!-d "$root->{local}/p_$proj") {
+            print STDERR "Error: Data base directory $root->{local}/p_$proj is not readable: $!\n";
+        }
+        elsif (!-r "$root->{local}/p_$proj/codes") {
+            print STDERR "Error: Data base file $root->{local}/p_$proj/codes is not readable: $!\n";
+        }
+        elsif (!-r "$root->{local}/p_$proj/codes.stamp") {
+            print STDERR "Error: Data base stamp file $root->{local}/p_$proj/codes.stamp is not readable: $!\n";
+        }
+        else {
+            my $cmp= fdate_cmp ($file, "$root->{local}/p_$proj/codes.stamp");
+            if ($cmp > 0) {
+                print "'$file' is newer than data base '$proj' and needs update.\n";
+                $result++;
+            }
+            else {
+                print "'$file' is up-to-date in project '$proj'.\n";
+            }
+        }
+    }
+    return $result;
+}
+
+######################################################################
+
+sub get_bool ($$)
+{
+    my ($invert, $value)= @_;
+    my $result= 1;
+    if (defined $value) {
+        if ($value eq "no" || $value eq "") { # this is the only additional false value.
+            $result= 0;
+        }
+        else {
+            $result= $value;
+        }
+    }
+    return !$result if $invert;
+    return $result;
+}
+
+sub eval_string($)
+{
+    my ($str)= @_;
+    return (eval "\"$str\"");
+}
+
+{
+    my $dash= '[-_]*';
+
+    sub process_initial_option ($;$)
+    {
+        my ($arg, $extra_arg)= @_;
+        my $extra_arg_perhaps= undef;
+        my $true_result= 1;
+        my $two_args= 2;
+
+        # Possible split one arg into two:
+        if ($arg=~ /^([^\s=]+)(?:\s+|=)(.*)$/) {
+            ($arg, $extra_arg)= ($1, $2);
+            $extra_arg_perhaps= $extra_arg;
+            $two_args= 1;
+        }
+
+        # Check the argument(s):
+        if ($arg=~ /^-*sys(?:tem)?${dash}conf(?:ig(?:ure)?)?$/ && defined $extra_arg) {
+            $sysconf= eval_string $extra_arg;
+            $true_result= $two_args;
+        }
+        elsif ($arg=~ /^-*local${dash}conf(?:ig(?:ure)?)?$/ && defined $extra_arg) {
+            $localconf= eval_string $extra_arg;
+            $true_result= $two_args;
+        }
+        else {
+            return 0;
+        }
+        return $true_result;
+    }
+
+    sub process_option ($;$)
+    {
+        my ($arg, $extra_arg)= @_;
+        my $extra_arg_perhaps= undef;
+        my $true_result= 1;
+        my $two_args= 2;
+
+        # Possible split one arg into two:
+        if ($arg=~ /^([^\s=]+)(?:\s+|=)(.*)$/) {
+            ($arg, $extra_arg)= ($1, $2);
+            $extra_arg_perhaps= $extra_arg;
+            $two_args= 1;
+        }
+
+        # Check the argument(s):
+        if ($arg=~ /^-*((?:dont|not?)${dash})?(?:use${dash})?cvs$/) {
+            $use_cvs= get_bool ($1, $extra_arg_perhaps);
+        }
+        elsif ($arg=~ /^-*data${dash}base${dash}dir(?:ectory)?$/ &&
+               defined $extra_arg &&
+               $extra_arg=~ /^(.+)(?:,(.+))?$/)
+        {
+            my ($cvs_root, $cvs_path)= ($1, $2);
+            $cvs_path= "errcodes" unless defined $cvs_path;
+            add_root {
+                root => $cvs_root,
+                path => $cvs_path
+            };
+            $true_result= $two_args;
+        }
+        elsif ($arg=~ /^-*(not?${dash})?(?:v|verbose)$/) {
+            $verbose= get_bool ($1, $extra_arg_perhaps);
+        }
+        elsif ($arg=~ /^-*(not?${dash})?(?:ds|debug${dash}scanner)$/) {
+            $debug{scanner}= get_bool ($1, $extra_arg_perhaps);
+        }
+        elsif ($arg=~ /^-*(not?${dash})?(?:f|force)$/) {
+            $force= get_bool ($1, $extra_arg_perhaps);
+        }
+        elsif ($arg=~ /^-*(not?${dash})?(?:R|recurse|recursive|recursion)$/) {
+            $recursive= get_bool ($1, $extra_arg_perhaps);
+        }
+        elsif ($arg=~ /^-*project$/ && defined $extra_arg) {
+            $default_project= $extra_arg;
+            $true_result= $two_args;
+        }
+        elsif ($arg=~ /^-*datadir$/ && defined $extra_arg) {
+            $datadir= $extra_arg;
+            $true_result= $two_args;
+        }
+        elsif ($arg=~ /^-*owndatadir$/ && defined $extra_arg) {
+            $mydatadir= $extra_arg;
+            $true_result= $two_args;
+        }
+        elsif ($arg=~ /^-*o$/ && defined $extra_arg) {
+            $output_file= $extra_arg;
+            $true_result= $two_args;
+        }
+        else {
+            return 0;
+        }
+        return $true_result;
+    }
+
+    sub process_command_line_option ($;$)
+    {
+        my ($arg, $extra_arg)= @_;
+        my $extra_arg_perhaps= undef;
+        my $true_result= 1;
+        my $two_args= 2;
+
+        # Possible split one arg into two:
+        if ($arg=~ /^([^\s=]+)(?:\s+|=)(.*)$/) {
+            ($arg, $extra_arg)= ($1, $2);
+            $extra_arg_perhaps= $extra_arg;
+            $two_args= 1;
+        }
+
+        # Check the argument(s):
+        if ($arg=~ /^-*(no${dash})?re${dash}number$/) {
+            $renumber= get_bool ($1, $extra_arg_perhaps);
+        }
+        elsif ($arg=~ /^-*(check|stat(?:us)?)$/) {
+            $command= "status";
+        }
+        elsif ($arg=~ /^-*(init|update|add|help|list-hotfuncs)$/) {
+            $command= $1;
+        }
+        else {
+            return 0;
+        }
+        return 1;
+    }
+}
+
+sub read_config ($)
+{
+    my ($file)= @_;
+    open (F, "<$file") || return;
+    while (<F>) {
+        s/\#.*//;
+        s/^\s+//;
+        s/\s+$//s;
+        if ($_) {
+            if (!process_option $_) {
+                print STDERR "Fatal Error: Unknown option in $file: $_\n";
+                halt 1;
+            }
+        }
+    }
+    close F;
+}
+
+######################################################################
+### main
+
+# Step 1: scan arguments for config file options:
+{
+    my $i= 0;
+    while ($i <= $#ARGV) {
+        my $arg= $ARGV[$i];
+        my $cnt= 0;
+
+        if ($arg=~ /^-/) {
+            my $extra_arg= $i+1 <= $#ARGV ? $ARGV[$i+1] : undef;
+            my $cnt= process_initial_option $arg, $extra_arg;
+        }
+
+        $i+= ($cnt == 0) ? 1 : $cnt;
+    }
+}
+
+######################################################################
+
+# Step 1b: make temporary directory
+mymkdir "$tmp/$TMPSUFF";
+
+# Step 2: read config files
+read_config $sysconf;
+read_config $localconf;
+
+# Step 3: parse all arguments
+{
+    my $i= 0;
+    my $first= 1;
+    while ($i <= $#ARGV) {
+        my $arg= $ARGV[$i];
+        if ($arg=~ /^-/ || $first) {
+            my $extra_arg= $i + 1 <= $#ARGV ? $ARGV[$i+1] : undef;
+            unless ($arg=~ /^-/) {
+                $first= 0;
+            }
+            my $cnt= 0;
+            if (($cnt= process_initial_option      $arg, $extra_arg) == 0 &&
+                ($cnt= process_option              $arg, $extra_arg) == 0 &&
+                ($cnt= process_command_line_option $arg, $extra_arg) == 0)
+            {
+                print STDERR "Fatal Error: Unknown command line option: $arg\n";
+                halt 1;
+            }
+
+            $i+= $cnt;
+        }
+        else {
+            push @files, $arg;
+            $i+= 1;
+        }
+    }
+}
+
+$shellquiet= $verbose ? "" : ">/dev/null";
+$cvs=        "$cvsbin ".($verbose ? "" : "-q");
+
+if (0+@ROOTS == 0 || $command eq "init") {
+    # The default is to use the current CVS sub-directory for each
+    # file and look up the root.
+    # print STDERR "Adding .\n";
+    add_root {
+        root => ".",
+        path => "errcodes"
+    };
+}
+
+######################################################################
+
+sub read_default_hotfuncs ()
+{
+    my ($needed)= @_;
+
+    my $file= mydatadir()."/hotfuncs.default";
+    if (!-r $file) {
+        print STDERR "Fatal: Default definition of hot functions could not be opened:\n",
+                     "    $file: $!\n";
+        print STDERR "    If the installation prefix is different for you, please\n",
+                     "    specify either --datadir or --owndatadir.  The current values\n",
+                     "    are:\n";
+        print STDERR "        datadir=$datadir\n";
+        print STDERR "        owndatadir=".($mydatadir ? $mydatadir : "\$(datadir)/error")."\n";
+
+        halt 1;
+    }
+    read_db " std", \%hotfunc, $file;
+}
+
+######################################################################
+
+sub help ()
+{
+    print << "EOF";
+usage:
+Likely usage:
+    > errcodes add [-project PROJECTNAME] FILE1 FILE2 ... FILEn
+         - default project is 'default'
+
+    > errcodes update FILE1 FILE2 ... FILEn
+         - single file update
+
+    > errcodes update
+         - recursive sub-directory update
+
+Unlikely usage:
+    > errcodes init PROJECTNAME
+
+For more information, read errcodes.txt in the documentation of the
+liberror package.
+EOF
+}
+
+
+if ($command eq "init") {
+    cmd_init;
+}
+elsif ($command eq "help") {
+    help;
+}
+elsif ($command eq "list-hotfuncs") {
+    # Internal command used to extract the hotfuncs from the liberror itself.
+    printf STDERR "Learning hotfuncs...\n";
+    $mode= "list-hotfuncs";
+    $hotfunc{dummy}= {};
+    for my $file (@files) {
+        printf STDERR "Reading $file...\n";
+        convert $file, $file, { "dummy" => { } }, undef, 1;
+    }
+
+    my $file= $output_file || "./hotfuncs.default";
+    printf STDERR "Writing $file...\n";
+    write_db ("dummy", \%hotfunc, $file);
+}
+elsif ($command eq "status" ||
+       $command eq "update" ||
+       $command eq "add")
+{
+    # File commands.
+
+    # Step: collect all data bases that are involved.
+    #       If the user has not specified any files,
+    #       then we have to search directories.
+    my $auto_search= 0;
+    if ($have_dot_root) {
+        print "Searching for CVS roots...\n" if $verbose;
+        expand_roots;
+    }
+
+    if (0+@files == 0) {
+        if ($command eq "update" || $command eq "check") {
+            print "Searching for files...\n" if $verbose;
+            find_files \@files, ".";
+            $auto_search= 1;
+        }
+        else {
+            print STDERR "Warning: no files for command '$command', nothing to do.\n";
+            halt 0;
+        }
+    }
+
+    # Step: for each file, find its root
+    my $file;
+    for $file (@files) {
+        my $root= get_root_of ($file);
+        if (defined $root) {
+            # print STDERR "root_of($file)= $root\n";
+            $rootOfile{$file}= $root;
+            $used_roots{$root}= 1;
+        }
+    }
+
+    # Step: filter the roots by their need:
+    @ROOTS= grep { $used_roots{$_->{root}} } @ROOTS;
+
+    # Step: checkout the roots and read the project lists:
+    check_out_roots;
+
+    # Read the default data base:
+    read_default_hotfuncs;
+
+    if ($command eq "add") {
+        # run convert in a special mode on each file:
+        #    a) each error number that conflicts with the new project has to be changed.
+        #    b) do not assign numbers that are 0, since that's the work of the
+        #       update command.  In order to let that change anything, make sure the
+        #       file stamp is newer than that of the data base.
+        $mode= "add";
+
+        my $project_spec= $default_project || "default";
+        my ($root, $project)= resolve_project $project_spec;
+        my %roots= ();
+        for my $file (@files) {
+            my $f= simplify_path $file;
+            my ($path, $basename)= get_path_and_basename_of $f;
+            if (defined $path) {
+                my $full_file= "$path/$basename";
+                my $full_project= add_to_project $root, $project, $full_file;
+                if ($full_project) {
+                    print "Adding '$f' to project '$project'.\n";
+                    my $projects= $projectsOfile{$full_file};
+                    if (defined $projects) {
+                        $result+= convert $file, $full_file, $projects, $full_project;
+                    }
+                }
+                else {
+                    print "File '$f' is already part of project '$project'.\n";
+                }
+                $roots{$root->{local}}= 1;
+            }
+            else {
+                print STDERR "Warning: unable to determine repository of $file.\n";
+            }
+        }
+
+
+        create_project_files;
+        close_dbs;
+        commit \%roots, "Files added to project '$project'.\n".cvs_description;
+
+        sleep 1;
+        for my $file (@files) {
+            touch $file;
+        }
+    }
+    else {
+        $mode= "update";
+        # Step: process files
+        for my $file (@files) {
+            #print STDERR "file=$file\n";
+            $file= simplify_path $file;
+            my ($path, $basename)= get_path_and_basename_of $file;
+            if ($path) {
+                #print STDERR "path=$path\n";
+                my $full_file= "$path/$basename";
+                #print STDERR "full_file=$full_file\n";
+                my $projects= $projectsOfile{$full_file};
+                if (defined $projects) {
+                    my $check_cnt= check_file $file, $full_file, $projects;
+                    if ($command eq "update") {
+                        if ($force || $check_cnt > 0) {
+                            if ($check_cnt <= 0) {
+                                print "Forcing update by user request...\n";
+                            }
+                            $result+= convert $file, $full_file, $projects;
+                        }
+                    }
+                }
+                else {
+                    unless ($auto_search) {
+                        print "'$file' is not part of any project.\n";
+                    }
+                }
+            }
+            else {
+                unless ($auto_search) {
+                    print "'$file': cannot determine CVS repository.\n";
+                }
+            }
+        }
+
+        # close opened data bases
+        close_dbs;
+    }
+}
+
+exit;
+
+END {
+    if ($tmp && $TMPSUFF) {
+        run ("rm -rf $tmp/$TMPSUFF");
+    }
+    exit ($result ? $exit_failure : $exit_success);
+}

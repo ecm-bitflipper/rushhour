@@ -1,0 +1,633 @@
+/* include/erwin/config.h.in.  Generated from configure.ac by autoheader.  */
+
+/* Whether ctype is broken */
+#undef BROKEN_CTYPE
+
+/* The number of bytes in a int.  */
+#undef SIZEOF_INT
+
+/* The number of bytes in a long.  */
+#undef SIZEOF_LONG
+
+/* The number of bytes in a long long.  */
+#undef SIZEOF_LONG_LONG
+
+/* The number of bytes in a short.  */
+#undef SIZEOF_SHORT
+
+/* The number of bytes in a short.  */
+#undef SIZEOF_FLOAT
+
+/* The number of bytes in a short.  */
+#undef SIZEOF_DOUBLE
+
+/* The number of bytes in a short.  */
+#undef SIZEOF_LONG_DOUBLE
+
+/* The number of bytes in a void*.  */
+#undef SIZEOF_VOIDP
+
+#undef SIZEOF_WCHAR_T
+
+#undef SIZEOF_WINT_T
+
+#undef ERWIN_CANONICAL_BUILD
+#undef ERWIN_CANONICAL_TARGET
+#undef ERWIN_CANONICAL_HOST
+#undef HAVE_FLOOR
+#undef CONFIG_WITH_LONG_LONG
+
+/* Does the C++ compiler have a working mutable? */
+#undef HAVE_WORKING_MUTABLE
+
+/* Does the C++ compiler have a working explicit? */
+#undef HAVE_WORKING_EXPLICIT
+
+/* sys_siglist or _sys_siglist? */
+#undef SYS_SIGLIST_DECLARED
+#undef _SYS_SIGLIST_DECLARED
+
+/* ********************************************************************** */
+/* The following are generated with gnuattr-acconfig.sh in $(top_srcdir). */
+#undef HAVE_GNU_FUNC_ATTR_NORETURN
+#undef HAVE_GNU_FUNC_ATTR_NOINLINE
+#undef HAVE_GNU_FUNC_ATTR_ALWAYS_INLINE
+#undef HAVE_GNU_FUNC_ATTR_PURE
+#undef HAVE_GNU_FUNC_ATTR_CONST
+#undef HAVE_GNU_FUNC_ATTR_NOTHROW
+#undef HAVE_GNU_FUNC_ATTR_FORMAT
+#undef HAVE_GNU_FUNC_ATTR_FORMAT_ARG
+#undef HAVE_GNU_FUNC_ATTR_NONNULL
+#undef HAVE_GNU_FUNC_ATTR_NO_INSTRUMENT_FUNCTION
+#undef HAVE_GNU_FUNC_ATTR_SECTION
+#undef HAVE_GNU_FUNC_ATTR_CONSTRUCTOR
+#undef HAVE_GNU_FUNC_ATTR_DESTRUCTOR
+#undef HAVE_GNU_FUNC_ATTR_USED
+#undef HAVE_GNU_FUNC_ATTR_WEAK
+#undef HAVE_GNU_FUNC_ATTR_MALLOC
+#undef HAVE_GNU_FUNC_ATTR_ALIAS
+#undef HAVE_GNU_FUNC_ATTR_VISIBILITY
+#undef HAVE_GNU_FUNC_ATTR_STDCALL
+#undef HAVE_GNU_FUNC_ATTR_CDECL
+#undef HAVE_GNU_FUNC_ATTR_LONGCALL
+#undef HAVE_GNU_FUNC_ATTR_SHORTCALL
+#undef HAVE_GNU_FUNC_ATTR_LONG_CALL
+#undef HAVE_GNU_FUNC_ATTR_SHORT_CALL
+#undef HAVE_GNU_FUNC_ATTR_DLLIMPORT
+#undef HAVE_GNU_FUNC_ATTR_DLLEXPORT
+#undef HAVE_GNU_FUNC_ATTR_EXCEPTION
+#undef HAVE_GNU_FUNC_ATTR_FUNCTION_VECTOR
+#undef HAVE_GNU_FUNC_ATTR_INTERRUPT
+#undef HAVE_GNU_FUNC_ATTR_INTERRUPT_HANDLER
+#undef HAVE_GNU_FUNC_ATTR_SP_SWITCH
+#undef HAVE_GNU_FUNC_ATTR_TRAP_EXIT
+#undef HAVE_GNU_FUNC_ATTR_EIGHTBIT_DATA
+#undef HAVE_GNU_FUNC_ATTR_TINY_DATA
+#undef HAVE_GNU_FUNC_ATTR_SIGNAL
+#undef HAVE_GNU_FUNC_ATTR_NAKED
+#undef HAVE_GNU_FUNC_ATTR_MODEL
+#undef HAVE_GNU_FUNC_ATTR_NO_CHECK_MEMORY_USAGE
+#undef HAVE_GNU_VAR_ATTR_ALIGNED
+#undef HAVE_GNU_VAR_ATTR_MODE
+#undef HAVE_GNU_VAR_ATTR_NOCOMMON
+#undef HAVE_GNU_VAR_ATTR_PACKED
+#undef HAVE_GNU_VAR_ATTR_SECTION
+#undef HAVE_GNU_VAR_ATTR_SHARED
+#undef HAVE_GNU_VAR_ATTR_TRANSPARENT_UNION
+#undef HAVE_GNU_VAR_ATTR_VECTOR_SIZE
+#undef HAVE_GNU_VAR_ATTR_WEAK
+#undef HAVE_GNU_VAR_ATTR_MODEL
+#undef HAVE_GNU_TYPE_ATTR_ALIGNED
+#undef HAVE_GNU_TYPE_ATTR_PACKED
+#undef HAVE_GNU_TYPE_ATTR_TRANSPARENT_UNION
+#undef HAVE_GNU_TYPE_ATTR_MAY_ALIAS
+/* ********************************************************************** */
+
+/* whether ctype definitions are broken */
+#undef BROKEN_CTYPE
+
+/* whether 64-bit ints shall be used */
+#undef CONFIG_WITH_LONG_LONG
+
+/* Define to 1 if you have the <ctype.h> header file. */
+#undef HAVE_CTYPE_H
+
+/* Define to 1 if you have the declaration of `fabs', and to 0 if you don't.
+   */
+#undef HAVE_DECL_FABS
+
+/* Define to 1 if you have the declaration of `getpid', and to 0 if you don't.
+   */
+#undef HAVE_DECL_GETPID
+
+/* Define to 1 if you have the declaration of `isalpha', and to 0 if you
+   don't. */
+#undef HAVE_DECL_ISALPHA
+
+/* Define to 1 if you have the declaration of `isdigit', and to 0 if you
+   don't. */
+#undef HAVE_DECL_ISDIGIT
+
+/* Define to 1 if you have the declaration of `islower', and to 0 if you
+   don't. */
+#undef HAVE_DECL_ISLOWER
+
+/* Define to 1 if you have the declaration of `isspace', and to 0 if you
+   don't. */
+#undef HAVE_DECL_ISSPACE
+
+/* Define to 1 if you have the declaration of `isupper', and to 0 if you
+   don't. */
+#undef HAVE_DECL_ISUPPER
+
+/* Define to 1 if you have the declaration of `memcmp', and to 0 if you don't.
+   */
+#undef HAVE_DECL_MEMCMP
+
+/* Define to 1 if you have the declaration of `memcpy', and to 0 if you don't.
+   */
+#undef HAVE_DECL_MEMCPY
+
+/* Define to 1 if you have the declaration of `memmem', and to 0 if you don't.
+   */
+#undef HAVE_DECL_MEMMEM
+
+/* Define to 1 if you have the declaration of `memmove', and to 0 if you
+   don't. */
+#undef HAVE_DECL_MEMMOVE
+
+/* Define to 1 if you have the declaration of `popen', and to 0 if you don't.
+   */
+#undef HAVE_DECL_POPEN
+
+/* Define to 1 if you have the declaration of `rand', and to 0 if you don't.
+   */
+#undef HAVE_DECL_RAND
+
+/* Define to 1 if you have the declaration of `setjmp', and to 0 if you don't.
+   */
+#undef HAVE_DECL_SETJMP
+
+/* Define to 1 if you have the declaration of `setvbuf', and to 0 if you
+   don't. */
+#undef HAVE_DECL_SETVBUF
+
+/* Define to 1 if you have the declaration of `sqrt', and to 0 if you don't.
+   */
+#undef HAVE_DECL_SQRT
+
+/* Define to 1 if you have the declaration of `srand', and to 0 if you don't.
+   */
+#undef HAVE_DECL_SRAND
+
+/* Define to 1 if you have the declaration of `strcasecmp', and to 0 if you
+   don't. */
+#undef HAVE_DECL_STRCASECMP
+
+/* Define to 1 if you have the declaration of `strcasestr', and to 0 if you
+   don't. */
+#undef HAVE_DECL_STRCASESTR
+
+/* Define to 1 if you have the declaration of `strchr', and to 0 if you don't.
+   */
+#undef HAVE_DECL_STRCHR
+
+/* Define to 1 if you have the declaration of `strcmp', and to 0 if you don't.
+   */
+#undef HAVE_DECL_STRCMP
+
+/* Define to 1 if you have the declaration of `strcpy', and to 0 if you don't.
+   */
+#undef HAVE_DECL_STRCPY
+
+/* Define to 1 if you have the declaration of `strerror_r', and to 0 if you
+   don't. */
+#undef HAVE_DECL_STRERROR_R
+
+/* Define to 1 if you have the declaration of `stricmp', and to 0 if you
+   don't. */
+#undef HAVE_DECL_STRICMP
+
+/* Define to 1 if you have the declaration of `stristr', and to 0 if you
+   don't. */
+#undef HAVE_DECL_STRISTR
+
+/* Define to 1 if you have the declaration of `strncasecmp', and to 0 if you
+   don't. */
+#undef HAVE_DECL_STRNCASECMP
+
+/* Define to 1 if you have the declaration of `strncpy', and to 0 if you
+   don't. */
+#undef HAVE_DECL_STRNCPY
+
+/* Define to 1 if you have the declaration of `strnicmp', and to 0 if you
+   don't. */
+#undef HAVE_DECL_STRNICMP
+
+/* Define to 1 if you have the declaration of `strnlen', and to 0 if you
+   don't. */
+#undef HAVE_DECL_STRNLEN
+
+/* Define to 1 if you have the declaration of `strstr', and to 0 if you don't.
+   */
+#undef HAVE_DECL_STRSTR
+
+/* Define to 1 if you have the declaration of `time', and to 0 if you don't.
+   */
+#undef HAVE_DECL_TIME
+
+/* Define to 1 if you have the declaration of `tolower', and to 0 if you
+   don't. */
+#undef HAVE_DECL_TOLOWER
+
+/* Define to 1 if you have the declaration of `toupper', and to 0 if you
+   don't. */
+#undef HAVE_DECL_TOUPPER
+
+/* Define to 1 if you have the declaration of `wcrtomb', and to 0 if you
+   don't. */
+#undef HAVE_DECL_WCRTOMB
+
+/* Define to 1 if you have the <errno.h> header file. */
+#undef HAVE_ERRNO_H
+
+/* Define to 1 if you have the `fabs' function. */
+#undef HAVE_FABS
+
+/* Define to 1 if you have the <fcntl.h> header file. */
+#undef HAVE_FCNTL_H
+
+/* Define to 1 if you have the <float.h> header file. */
+#undef HAVE_FLOAT_H
+
+/* Define to 1 if you have the `getpid' function. */
+#undef HAVE_GETPID
+
+/* whether GNU attribute((deprecated)) works */
+#undef HAVE_GNU_ATTRIBUTE_DEPRECATED
+
+/* whether GNU attribute((unused)) works */
+#undef HAVE_GNU_ATTRIBUTE_UNUSED
+
+/* whether GNU attribute((used)) works */
+#undef HAVE_GNU_ATTRIBUTE_USED
+
+/* whether GNU attribute((always_inline)) works on functions */
+#undef HAVE_GNU_FUNC_ATTRIBUTE_ALWAYS_INLINE
+
+/* whether GNU attribute((const)) works on functions */
+#undef HAVE_GNU_FUNC_ATTRIBUTE_CONST
+
+/* whether GNU attribute((deprecated)) works on functions */
+#undef HAVE_GNU_FUNC_ATTRIBUTE_DEPRECATED
+
+/* whether GNU attribute((fastcall)) works on functions */
+#undef HAVE_GNU_FUNC_ATTRIBUTE_FASTCALL
+
+/* whether GNU attribute((flatten)) works on functions */
+#undef HAVE_GNU_FUNC_ATTRIBUTE_FLATTEN
+
+/* whether GNU attribute((format(__printf__, 1, 2))) works on functions */
+#undef HAVE_GNU_FUNC_ATTRIBUTE_FORMAT
+
+/* whether GNU attribute((malloc)) works on functions */
+#undef HAVE_GNU_FUNC_ATTRIBUTE_MALLOC
+
+/* whether GNU attribute((nonnull)) works on functions */
+#undef HAVE_GNU_FUNC_ATTRIBUTE_NONNULL
+
+/* whether GNU attribute((noreturn)) works on functions */
+#undef HAVE_GNU_FUNC_ATTRIBUTE_NORETURN
+
+/* whether GNU attribute((no_check_memory_usage)) works on functions */
+#undef HAVE_GNU_FUNC_ATTRIBUTE_NO_CHECK_MEMORY_USAGE
+
+/* whether GNU attribute((pure)) works on functions */
+#undef HAVE_GNU_FUNC_ATTRIBUTE_PURE
+
+/* whether GNU
+   attribute((section("abcdefghijklmnopqrstuvwxzy0123456789abcdefghijklmnopqrstuvwxzy0123456789abcdefghijklmnopqrstuvwxzy0123456789")))
+   works on functions */
+#undef HAVE_GNU_FUNC_ATTRIBUTE_SECTION
+
+/* whether GNU attribute((unused)) works on functions */
+#undef HAVE_GNU_FUNC_ATTRIBUTE_UNUSED
+
+/* whether GNU attribute((used)) works on functions */
+#undef HAVE_GNU_FUNC_ATTRIBUTE_USED
+
+/* whether GNU attribute((warn_unused_result)) works on functions */
+#undef HAVE_GNU_FUNC_ATTRIBUTE_WARN_UNUSED_RESULT
+
+/* whether GNU attribute((weak)) works on functions */
+#undef HAVE_GNU_FUNC_ATTRIBUTE_WEAK
+
+/* whether GNU attribute((deprecated)) works on types */
+#undef HAVE_GNU_TYPE_ATTRIBUTE_DEPRECATED
+
+/* whether GNU attribute((unused)) works on types */
+#undef HAVE_GNU_TYPE_ATTRIBUTE_UNUSED
+
+/* whether GNU attribute((used)) works on types */
+#undef HAVE_GNU_TYPE_ATTRIBUTE_USED
+
+/* whether GNU attribute((deprecated)) works on variables */
+#undef HAVE_GNU_VAR_ATTRIBUTE_DEPRECATED
+
+/* whether GNU attribute((unused)) works on variables */
+#undef HAVE_GNU_VAR_ATTRIBUTE_UNUSED
+
+/* whether GNU attribute((used)) works on variables */
+#undef HAVE_GNU_VAR_ATTRIBUTE_USED
+
+/* Define to 1 if you have the <inttypes.h> header file. */
+#undef HAVE_INTTYPES_H
+
+/* Define to 1 if you have the `isalpha' function. */
+#undef HAVE_ISALPHA
+
+/* Define to 1 if you have the `isdigit' function. */
+#undef HAVE_ISDIGIT
+
+/* Define to 1 if you have the `islower' function. */
+#undef HAVE_ISLOWER
+
+/* Define to 1 if you have the `isspace' function. */
+#undef HAVE_ISSPACE
+
+/* Define to 1 if you have the `isupper' function. */
+#undef HAVE_ISUPPER
+
+/* Define to 1 if you have the `error' library (-lerror). */
+#undef HAVE_LIBERROR
+
+/* Define to 1 if you have the <limits.h> header file. */
+#undef HAVE_LIMITS_H
+
+/* Define to 1 if you have the <malloc.h> header file. */
+#undef HAVE_MALLOC_H
+
+/* Define to 1 if you have the <math.h> header file. */
+#undef HAVE_MATH_H
+
+/* Define to 1 if you have the `memcmp' function. */
+#undef HAVE_MEMCMP
+
+/* Define to 1 if you have the `memcpy' function. */
+#undef HAVE_MEMCPY
+
+/* Define to 1 if you have the `memmem' function. */
+#undef HAVE_MEMMEM
+
+/* Define to 1 if you have the `memmove' function. */
+#undef HAVE_MEMMOVE
+
+/* Define to 1 if you have the <memory.h> header file. */
+#undef HAVE_MEMORY_H
+
+/* Define to 1 if you have the <mem.h> header file. */
+#undef HAVE_MEM_H
+
+/* Define to 1 if you have the `popen' function. */
+#undef HAVE_POPEN
+
+/* Define to 1 if you have the `rand' function. */
+#undef HAVE_RAND
+
+/* Define to 1 if you have the `setjmp' function. */
+#undef HAVE_SETJMP
+
+/* Define to 1 if you have the <setjmp.h> header file. */
+#undef HAVE_SETJMP_H
+
+/* Define to 1 if you have the `setvbuf' function. */
+#undef HAVE_SETVBUF
+
+/* Define to 1 if you have the <signal.h> header file. */
+#undef HAVE_SIGNAL_H
+
+/* Define to 1 if you have the `sqrt' function. */
+#undef HAVE_SQRT
+
+/* Define to 1 if you have the `srand' function. */
+#undef HAVE_SRAND
+
+/* Define to 1 if you have the <stdarg.h> header file. */
+#undef HAVE_STDARG_H
+
+/* Define to 1 if you have the <stddef.h> header file. */
+#undef HAVE_STDDEF_H
+
+/* Define to 1 if you have the <stdint.h> header file. */
+#undef HAVE_STDINT_H
+
+/* Define to 1 if you have the <stdio.h> header file. */
+#undef HAVE_STDIO_H
+
+/* Define to 1 if you have the <stdlib.h> header file. */
+#undef HAVE_STDLIB_H
+
+/* Define to 1 if you have the `strcasecmp' function. */
+#undef HAVE_STRCASECMP
+
+/* Define to 1 if you have the `strcasestr' function. */
+#undef HAVE_STRCASESTR
+
+/* Define to 1 if you have the `strchr' function. */
+#undef HAVE_STRCHR
+
+/* Define to 1 if you have the `strcmp' function. */
+#undef HAVE_STRCMP
+
+/* Define to 1 if you have the `strcpy' function. */
+#undef HAVE_STRCPY
+
+/* Define to 1 if you have the `strerror_r' function. */
+#undef HAVE_STRERROR_R
+
+/* Define to 1 if you have the `stricmp' function. */
+#undef HAVE_STRICMP
+
+/* Define to 1 if you have the <strings.h> header file. */
+#undef HAVE_STRINGS_H
+
+/* Define to 1 if you have the <string.h> header file. */
+#undef HAVE_STRING_H
+
+/* Define to 1 if you have the `stristr' function. */
+#undef HAVE_STRISTR
+
+/* Define to 1 if you have the `strncasecmp' function. */
+#undef HAVE_STRNCASECMP
+
+/* Define to 1 if you have the `strncpy' function. */
+#undef HAVE_STRNCPY
+
+/* Define to 1 if you have the `strnicmp' function. */
+#undef HAVE_STRNICMP
+
+/* Define to 1 if you have the `strnlen' function. */
+#undef HAVE_STRNLEN
+
+/* Define to 1 if you have the `strstr' function. */
+#undef HAVE_STRSTR
+
+/* Define to 1 if you have the <sys/stat.h> header file. */
+#undef HAVE_SYS_STAT_H
+
+/* Define to 1 if you have the <sys/time.h> header file. */
+#undef HAVE_SYS_TIME_H
+
+/* Define to 1 if you have the <sys/types.h> header file. */
+#undef HAVE_SYS_TYPES_H
+
+/* whether __thread keyword works */
+#undef HAVE_THREAD_KEYWORD
+
+/* Define to 1 if you have the `time' function. */
+#undef HAVE_TIME
+
+/* Define to 1 if you have the <time.h> header file. */
+#undef HAVE_TIME_H
+
+/* Define to 1 if you have the `tolower' function. */
+#undef HAVE_TOLOWER
+
+/* Define to 1 if you have the `toupper' function. */
+#undef HAVE_TOUPPER
+
+/* Define to 1 if you have the <unistd.h> header file. */
+#undef HAVE_UNISTD_H
+
+/* Define to 1 if you have the <wchar.h> header file. */
+#undef HAVE_WCHAR_H
+
+/* Define to 1 if you have the `wcrtomb' function. */
+#undef HAVE_WCRTOMB
+
+/* whether C++ keyword explicit works */
+#undef HAVE_WORKING_EXPLICIT
+
+/* whether C++ keyword mutable works */
+#undef HAVE_WORKING_MUTABLE
+
+/* Define to the address where bug reports for this package should be sent. */
+
+/* Define to the full name of this package. */
+
+/* Define to the full name and version of this package. */
+
+/* Define to the one symbol short name of this package. */
+
+/* Define to the version of this package. */
+
+/* Define as the return type of signal handlers (`int' or `void'). */
+#undef RETSIGTYPE
+
+/* The size of `double', as computed by sizeof. */
+#undef SIZEOF_DOUBLE
+
+/* The size of `float', as computed by sizeof. */
+#undef SIZEOF_FLOAT
+
+/* The size of `int', as computed by sizeof. */
+#undef SIZEOF_INT
+
+/* The size of int64_t */
+#undef SIZEOF_INT64_T
+
+/* The size of intmax_t */
+#undef SIZEOF_INTMAX_T
+
+/* The size of intptr_t */
+#undef SIZEOF_INTPTR_T
+
+/* The size of `long', as computed by sizeof. */
+#undef SIZEOF_LONG
+
+/* The size of `long double', as computed by sizeof. */
+#undef SIZEOF_LONG_DOUBLE
+
+/* The size of `long long', as computed by sizeof. */
+#undef SIZEOF_LONG_LONG
+
+/* The size of ptrdiff_t */
+#undef SIZEOF_PTRDIFF_T
+
+/* The size of `short', as computed by sizeof. */
+#undef SIZEOF_SHORT
+
+/* The size of size_t */
+#undef SIZEOF_SIZE_T
+
+/* The size of ssize_t */
+#undef SIZEOF_SSIZE_T
+
+/* The size of uint64_t */
+#undef SIZEOF_UINT64_T
+
+/* The size of `void*', as computed by sizeof. */
+#undef SIZEOF_VOIDP
+
+/* The size of void(*)(void) */
+#undef SIZEOF_VOID_P__VOID_
+
+/* The size of wchar_t */
+#undef SIZEOF_WCHAR_T
+
+/* The size of wint_t */
+#undef SIZEOF_WINT_T
+
+/* The size of _wchar_t */
+#undef SIZEOF__WCHAR_T
+
+/* The size of _wint_t */
+#undef SIZEOF__WINT_T
+
+/* The size of __wchar_t */
+#undef SIZEOF___WCHAR_T
+
+/* The size of __wint_t */
+#undef SIZEOF___WINT_T
+
+/* Define to 1 if you have the ANSI C header files. */
+#undef STDC_HEADERS
+
+/* Define to 1 if strerror_r returns char *. */
+#undef STRERROR_R_CHAR_P
+
+/* whether siglist is declared */
+#undef SYS_SIGLIST_DECLARED
+
+/* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
+#undef TIME_WITH_SYS_TIME
+
+/* Define to 1 if your processor stores words with the most significant byte
+   first (like Motorola and SPARC, unlike Intel and VAX). */
+#undef WORDS_BIGENDIAN
+
+/* Whether words are little-endian */
+#undef WORDS_LITTLEENDIAN
+
+/* whether _siglist is declared */
+#undef _SYS_SIGLIST_DECLARED
+
+/* Define to 1 if type `char' is unsigned and you are not using gcc.  */
+#ifndef __CHAR_UNSIGNED__
+# undef __CHAR_UNSIGNED__
+#endif
+
+/* Define to empty if `const' does not conform to ANSI C. */
+#undef const
+
+/* Define to `__inline__' or `__inline' if that's what the C compiler
+   calls it, or to nothing if 'inline' is not supported under any name.  */
+#ifndef __cplusplus
+#undef inline
+#endif
+
+/* Define to `long int' if <sys/types.h> does not define. */
+#undef off_t
+
+/* Define to `unsigned int' if <sys/types.h> does not define. */
+#undef size_t

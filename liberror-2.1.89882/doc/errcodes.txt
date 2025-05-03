@@ -1,0 +1,244 @@
+Assigning Error Numbers
+=======================
+
+Error number can be assigned automaticall using the program
+'errcodes'.  It's syntax very much resembles that of cvs.
+
+When you change a file using 'errcodes', it is wise to commit it into
+CVS before that.  This makes it easy to trace automatic changes.
+
+
+Adding Files to Projects
+------------------------
+
+Before a file can be processed to add error numbers, it must be part
+of a project.  If you are a user, it is most probable that there is a
+default project 'default' that is used for all files in the system and
+that you do not need to know exactly about long project names, so this
+paragraph will be enough to read for you.  Otherwise, also read the
+paragraph 'New Projects'.
+
+To add files to a project, use:
+
+    : errcodes add [-project PROJECTNAME] FILE1 FILE2 ... FILEn
+
+If you do not specify '-project PROJECTNAME', the project name
+'default' is assumed.
+
+This is what happens when you add a file to a project:
+
+   - The file will be inserted into the list of files that belong to
+     that project.
+
+   - The file will be processed in order to prevent error numbers that
+     exist in the file to collide with error numbers already assigned
+     in the project.  If all error number are 0, nothing will be
+     changed.
+
+Note: The file will not be assigned with numbers by the 'add' command.
+      Use the 'update' command for this.
+
+You can add a file to several projects, IF YOU DO IT WITH CARE.  The
+'errcodes' application assures unique numbers inside each project when
+assigning new numbers.  Read the paragraph 'Multiple Project Files'
+for this.
+
+Assigning Error Numbers
+-----------------------
+To assign error numbers in files that are part of some project, use
+the 'update' command:
+
+    : errcodes update FILE1 FILE2 ... FILEn
+
+Each file will be processed seperately, so the files need not belong
+to the same project.
+
+If you want to update the whole sub-directory tree, simply use:
+
+   : errcodes update
+
+This searches for files in the current directory and in
+sub-directories and updates all files that belong to at least one
+project.
+
+For up-to-date checks, it is important that the system clock is in
+sync with the CVS server's clock.  If you encounter problems, use the
+--force option with 'update' command.
+
+Processing of Error Numbers
+---------------------------
+The errcodes script maintains a data base of parameters of functions
+that are error numbers.  These parameters are automatically assigned
+and renumbered.
+
+Pre-Defined Functions
+~~~~~~~~~~~~~~~~~~~~~
+
+The following parameters are recognised and processed by the
+'update' and 'add' commands:
+
+    - eprintf-family: second parameter
+
+      Exception:
+          If the tag contains the string 'TAG_MORE', the parameter
+          is not processed, unless forced by the user by an explicit
+          usage of err_number(...) or ErrNumber(...).
+
+    - err_number,
+      ErrNumber,
+      err_show_message,
+      err_issue_message: first parameter
+
+    - err_do_count,
+      err_is_shown,
+      err_is_issued,
+      err_count,
+      err_(set|clear|add)_count,
+      err_fatal_count,
+      err_(set|clear|add)_fatal_msg_count:   second paramter
+
+The parser tries its best to parse C and C++ files in the correct
+syntax, including comments, strings, etc.  For the given parameter,
+all spaces and commands are deleted before it is checked, the rest of
+the source code is left as is.  The parser only parses the input file
+recursively after a token from the above list has been found (so it
+recognises nested parameters correctly).  The remaining part of the
+file is processed token by token.
+
+'errcodes' changes the given parameter in the following way:
+
+If the parameter is a number:
+   - In the 'update' command, if it is a number == 0 and we
+     process an eprintf-parameter, the parameter is changed to a
+     number unique to all the file's projects.
+
+     THUS: Only eprintf-parameters are assigned automatically.
+           (But all parameters are changed consistenly during
+           re-enumeration, e.g. during the 'add' command.)
+
+   - In the 'add' command, if it is a number != 0 that is already
+     assigned in the new project, it is changed to a number unique
+     to all the file's projects.
+
+If the parameter is something list '(X)->number' where X is a C
+identifier, nothing is changed.  This is for using functions from the
+list above in macros when error numbers are passed as macro args.  The
+identifier is meant to be such a macro arg and the macro should be
+invoked using the 'err_number()' function call which will then be
+processed.
+
+Other parameters are not changed but produce a warning.
+
+The usage of err_number() (in C) and ErrNumber() (in C++) are for
+explicitly having 'errcodes' process numbers that would otherwise not
+be recognised.  You can use this in macros that defined error numbers
+or when you use a function of the above in a macro and want to pass an
+error number.
+
+User-Defined Functions
+~~~~~~~~~~~~~~~~~~~~~~
+FIXME: continue
+
+Version Management:
+-------------------
+CVS version management is a problem that is not yet solved
+perfectly.  'errcodes' maintains only one data base for a project,
+therefore, you can simply assign error numbers in branches without
+conflicting with other branches.
+
+However, when joining branches, conflicts may occur due to differently
+assigned errors.  Currently, it is up to the user to resolve these
+conflicts by simply deleting one of the conflicting portions of text.
+
+
+Re-Assignment
+-------------
+The idea is to re-assign the error numbers of all files of a project
+(or of several projects).  'errcodes' will process the same parameters
+as mentioned before and consistently re-assign the numbers.
+
+Re-assignment of numbers is not yet implemented.
+
+
+Removing Files from Projects
+----------------------------
+This is not yet implemented.
+
+
+Multiple Project Files
+----------------------
+The problem with multiple project files are collisions of error
+numbers.  E.g. if two files A and B are part of a project X and
+A and B share error numbers, e.g. there is an err_show_message(...)
+in A and the corresponding eprintf(...) in B, then it must
+be ensured that when adding A and B to a project Y, the error
+numbers are changed consistently.
+
+For this to be done, you must add the files A and B to project Y in
+the same invocation of the 'errcodes' program, because otherwise the
+correspondance will be lost:
+
+    : errcodes add -project Y  A B
+
+Unfortunately, it is quite impossible to do this automatically, so the
+user has to take care of this.
+
+
+New Projects
+------------
+Each file that contains error numbers can be part of several
+projects.  Projects have to be initialised before they can be used.
+Use 'errcodes init ...' to do this:
+
+    : errcodes init default
+         - initialises the project 'default'
+
+Projects names are composed of three components separated by commas.
+   1) the CVS root,
+   2) the CVS directory,
+   3) the project name local to this root.
+
+The first two components define the path to the directory in CVS that
+'errcodes' uses to maintain the data base for error numbers.  (CVS is
+always used for this, currently it does not work without).  In this
+directory, 'errcodes' maintains several files that are not interesting
+in detail to the normal user.  For each CVS directory for 'errcodes',
+several projects can be given.
+
+By default, the CVS root in the current directory is used and the
+directory 'errcodes' is used for the data base.  Make sure this
+directory does exist in CVS, otherwise you will get an error --
+it will not be created automatically in order to prevent errors.
+
+If this is not what you want, e.g., if you often use several CVS
+roots, read the following paragraph.
+
+Manually Defined Data Base Directories
+--------------------------------------
+Each of the three components is searched as an infix in all the three
+components.  To make use of this feature, you must define the CVS base
+dirs that may be used by 'errcodes'.  This can be done in the file
+'@sysconfdir@/errcodes.conf' or in '~/.errcodesrc' with the option:
+
+   : --data-base-directory=ROOT[,PATH]
+
+PATH defaults to 'errcodes'.
+
+E.g.:
+   : --data-base-directory=apache.absint.com:/usr/local/repository,errcodes
+
+With this specification, the above specification of a project to
+initialise, 'default', is an abbreviation for
+
+   : apache.absint.com:/usr/local/repository,errcodes,default
+
+Another abbreviations would be:
+   : apache,,default
+
+(Because sub-strings are matched for each component).
+
+A special case occurs of ROOT is '.' in which case the current
+directory is searched for a CVS sub-directory and the given root is
+added to the list of data base directories.  This is also the default
+if you do not add any data base directories.
+

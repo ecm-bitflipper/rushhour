@@ -1,0 +1,34 @@
+# -*- Mode: Makefile -*-
+# Copyright & vendor settings:
+
+VENDOR_SUBDIR    = gplv3
+
+HENRIK_URL       = http://www.theiling.de/
+
+VENDOR_HTML      = <a href="$(HENRIK_URL)">Henrik Theiling</a>
+VENDOR           = Henrik Theiling
+VENDOR_EMAIL     = theiling@absint.com
+
+UPLOAD_HOST      = www.theiling.de
+UPLOAD_PATH      = /var/www/default.test
+DEB_UPLOAD_HOST  = $(UPLOAD_HOST)
+DEB_UPLOAD_PATH  = /var/www/debian.test
+
+COPYRIGHT        = COPYING
+
+LOCAL_FILES     += COPYING
+
+# Source distribution by default:
+DEFAULT_DISTRO   = src
+
+# TGZ by default, so Debian source packages are equal and can be linked:
+DEFAULT_TARFLAGS = z
+DEFAULT_TAREXT   = .tgz
+
+# Copyright:
+
+do-it-all: $(srcdir)/COPYING
+
+$(srcdir)/COPYING: $(top_srcdir)/make/$(VENDOR_SUBDIR)/COPYING
+	cp $< $@
+

@@ -1,0 +1,5 @@
+printf.so printf.lo printf.o: printf.cpp /usr/lib/gcc/i486-linux-gnu/4.4.1/include/stdarg.h \
+ include/error/err-config.h
+printf.cpp :
+/usr/lib/gcc/i486-linux-gnu/4.4.1/include/stdarg.h :
+include/error/err-config.h :

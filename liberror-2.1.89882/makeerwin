@@ -1,0 +1,117 @@
+#! /bin/sh
+
+# Find out which untemplatize to use
+if test -z "$UNT" && test ! -z "$ERWIN_UNTEMPLATIZE"; then
+    UNT="$ERWIN_UNTEMPLATIZE"
+fi
+
+if test -z "$UNT" && test ! -z "$UNTEMPLATIZE"; then
+    UNT="$UNTEMPLATIZE"
+fi
+
+if test -z "$UNT"; then
+    if test -f config.unt; then
+        UNT="`cat config.unt`"
+    else
+        if test -f "`which untemplatize 2>/dev/null`"; then
+            UNT="`which untemplatize 2>/dev/null`"
+        else
+            UNT="`which untemplatize2 2>/dev/null`"
+        fi
+    fi
+fi
+
+test -f "$UNT" || {
+    echo "$0: Error: No 'untemplatize' in \$PATH, please specify on command line." 1>&2
+    exit 1
+}
+
+echo "$UNT" > config.unt
+echo "Using $UNT."
+
+# initialise.  We put another sub-directory into the include path in
+# order to clean up inclusion order.
+"$UNT" --init                                   \
+       --cpp=cpp,h                              \
+       --cpp-only=0                             \
+       --include=error/settings.h               \
+       --xinclude=error/decls.h                 \
+       --global-prefix="err_"                   \
+       --subdir=src,include/error,include/error \
+       MORE_CPPFLAGS='-DHAVE_LIBERROR'          \
+       LESS_CPPFLAGS='-I../include -Iinclude -I..'
+
+# Symbol table:
+"$UNT" map iType='char const *' iTypeVar='char *' \
+           oType='void'                            \
+           -DiType_ICOPY=Global_string_dup        \
+           -DiType_IFREE=Global_string_free       \
+           -DiType_HASH=Global_string_hash        \
+           -DiType_CMP=Global_string_cmp          \
+           --name=err_symtab
+
+# The char vector as usual
+"$UNT" vector oType=char --name=err_v_char
+"$UNT" vector oType=int  --name=err_v_int
+
+"$UNT" map    iType=int  oType=ERR_ERWIN_BOOL --name=err_map_int_bool
+
+"$UNT" vector oType='err_formatted_stream_t *' --name=err_v_stream
+
+"$UNT" vector oType='err_formatted_callback_t *' --name=err_v_callback \
+              -DoType_OFREE=delete
+
+"$UNT" map     iType='char *'  oType='char *'
+"$UNT" map     iType=int  oType='char *'
+"$UNT" map     iType=int  oType=int
+
+"$UNT" pmap    iType=int  oType='ErrVStream *'   --name=err_map_int_v_stream \
+               piType=int poType='char *'
+
+"$UNT" pmap    iType='FILE *'  oType='err_formatted_stream_t *' --name=err_map_file_stream \
+               piType='char *' poType='char *'
+
+"$UNT" pmap    iType='err_symbol_t'  oType='err_formatted_stream_t *' --name=err_map_symbol_stream \
+               piType='char *' poType='char *'
+
+"$UNT" pmap    iType=int  oType='ErrVCallback *' --name=err_map_int_v_callback \
+               piType=int poType='char *'
+
+"$UNT" pmap    iType=int oType='ErrMapIntVCallback *' --name=err_map_int_map_int_v_callback \
+               piType=int poType='char *'
+
+"$UNT" pmap    iType=int  oType='err_symbol_t'   --name=err_map_int_symbol \
+               piType=int poType='char *'
+
+"$UNT" map    iType='err_symbol_t' oType=int  --name=err_map_symbol_int
+
+"$UNT" map    iType='err_symbol_t' oType='char const *' \
+              oTypeVar='char *'                         \
+              -DiType_EQUAL'(A,B)'='((A) == (B))'       \
+              -DiType_CMP=Global_string_cmp             \
+              -DoType_OCOPY=Global_string_dup           \
+              -DoType_OFREE=Global_string_free          \
+              -DoType_HASH=Global_string_hash           \
+              -DoType_CMP=Global_string_cmp             \
+              --name=err_map_symbol_string
+
+"$UNT" map    iType=int  oType='err_formatted_callback_t *' --name=err_map_int_callback \
+              -DoType_OFREE=delete
+
+
+"$UNT" vector oType='err_message_t *'   --name=err_v_message \
+              oTypeVar='err_message_t *'                     \
+              -DoType_OFREE=err_message_free
+
+              #-DoType_OCOPY=err_message_copy
+
+"$UNT" vector oType='err_buffer_t *' --name=err_v_buffer
+
+"$UNT" vector oType='char const *' --name=err_v_char_const_p
+
+# The int vector as usual
+#"$UNT" vector oType=int --name=err_v_int
+
+# For pointers:
+#"$UNT" vector oType='char *'
+

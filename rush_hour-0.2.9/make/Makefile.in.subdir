@@ -1,0 +1,11 @@
+@SET_MAKE@
+
+default:
+	cd .. && $(MAKE)
+
+.PHONY: dummy default
+
+.DEFAULT: dummy
+	cd .. && $(MAKE) $@
+
+dummy:

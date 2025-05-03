@@ -1,0 +1,93 @@
+#! /bin/sh
+
+PREFIX=
+   # If you have a library that is going to be seen by C, too,
+   # delete the line 'cpp-only=1' below.
+
+######################################################################
+
+# Find out which untemplatize to use
+if test -z "$UNT" && test ! -z "$ERWIN_UNTEMPLATIZE"; then
+    UNT="$ERWIN_UNTEMPLATIZE"
+fi
+
+if test -z "$UNT" && test ! -z "$UNTEMPLATIZE"; then
+    UNT="$UNTEMPLATIZE"
+fi
+
+if test -z "$UNT"; then
+    if test -f config.unt; then
+        UNT="`cat config.unt`"
+    else
+        if test -z "`which untemplatize 2>/dev/null`"; then
+            UNT="`which untemplatize2 2>/dev/null`"
+        else
+            UNT="`which untemplatize 2>/dev/null`"
+        fi
+    fi
+fi
+
+echo "$UNT" > config.unt
+echo "Using $UNT."
+
+######################################################################
+
+if test "x$PREFIX" = x; then
+    P=
+    P_UC=
+    _DIR=
+    DIR_=
+    P_=
+    P_UC_=
+else
+    P="`echo $PREFIX | tr [A-Z] [a-z]`"
+    P_UC="`echo $PREFIX | tr [a-z] [A-Z]`"
+    _DIR="/${P}"
+    DIR_="${P}/"
+    P_=${P}_
+    P_UC_=${P_UC}_
+fi
+
+"$UNT" --init                                      \
+       --cpp=cpp,h                                 \
+       --cpp-only=1                                \
+       --include=${DIR_}settings.h                 \
+       --xinclude=${DIR_}decls.h                   \
+       --global-prefix=${P_}                       \
+       --subdir=src,include${_DIR},include${_DIR}  \
+       LESS_CPPFLAGS='-I../include -Iinclude -I..'
+
+######################################################################
+
+# Symbol table:
+"$UNT" map iType='char const *' iTypeVar='char *' \
+           oType='int'                            \
+           -DiType_ICOPY=${P_}string_dup          \
+           -DiType_IFREE=${P_}string_free         \
+           -DiType_HASH=${P_}string_hash          \
+           -DiType_CMP=${P_}string_cmp            \
+           --name=${P_}symtab
+
+# The char vector as usual
+"$UNT" vector  oType=char --name=${P_}v_char
+"$UNT" vector  oType='char *'
+"$UNT" pvector oType='Car *' poType='char *'
+
+"$UNT" map    iType=int oType='char *'
+"$UNT" map    iType=int oType=int
+
+"$UNT" map    iType=int oType='RGBColour *'
+
+"$UNT" map iType='Board *'              \
+           oType='Node *'               \
+           -DiType_HASH=${P_}board_hash \
+           -DiType_CMP=${P_}board_cmp   \
+
+# The int vector as usual
+"$UNT" pvector oType="Board *" poType="char *"
+"$UNT" pvector oType="Edge *"  poType="char *"
+"$UNT" pvector oType="Node *"  poType="char *"
+
+# For pointers:
+#"$UNT" vector oType='char *'
+

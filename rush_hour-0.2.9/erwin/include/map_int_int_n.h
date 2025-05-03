@@ -1,0 +1,59 @@
+
+#if defined(MAP_INT_INT_TP_BEING_USED) && !defined(MAP_INT_INT_NEED_HEADER)
+#define MAP_INT_INT_NEED_HEADER 1
+#endif /* defined MAP_INT_INT_TP_BEING_USED */
+
+#if defined(MAP_INT_INT_T_CONSTP_BEING_USED) && !defined(MAP_INT_INT_NEED_HEADER)
+#define MAP_INT_INT_NEED_HEADER 1
+#endif /* defined MAP_INT_INT_T_CONSTP_BEING_USED */
+
+#if defined(CONST_MAP_INT_INT_TP_BEING_USED) && !defined(MAP_INT_INT_NEED_HEADER)
+#define MAP_INT_INT_NEED_HEADER 1
+#endif /* defined CONST_MAP_INT_INT_TP_BEING_USED */
+
+#if defined(MAPINTINTP_BEING_USED) && !defined(MAP_INT_INT_NEED_HEADER)
+#define MAP_INT_INT_NEED_HEADER 1
+#endif /* defined MAPINTINTP_BEING_USED */
+
+#if defined(MAPINTINT_CONSTP_BEING_USED) && !defined(MAP_INT_INT_NEED_HEADER)
+#define MAP_INT_INT_NEED_HEADER 1
+#endif /* defined MAPINTINT_CONSTP_BEING_USED */
+
+#if defined(CONST_MAPINTINTP_BEING_USED) && !defined(MAP_INT_INT_NEED_HEADER)
+#define MAP_INT_INT_NEED_HEADER 1
+#endif /* defined CONST_MAPINTINTP_BEING_USED */
+
+#if defined(MAP_INT_INT_T_P_BEING_USED) && !defined(MAP_INT_INT_NEED_HEADER)
+#define MAP_INT_INT_NEED_HEADER 1
+#endif /* defined MAP_INT_INT_T_P_BEING_USED */
+
+#if defined(MAP_INT_INT_T_CONST_P_BEING_USED) && !defined(MAP_INT_INT_NEED_HEADER)
+#define MAP_INT_INT_NEED_HEADER 1
+#endif /* defined MAP_INT_INT_T_CONST_P_BEING_USED */
+
+#if defined(CONST_MAP_INT_INT_T_P_BEING_USED) && !defined(MAP_INT_INT_NEED_HEADER)
+#define MAP_INT_INT_NEED_HEADER 1
+#endif /* defined CONST_MAP_INT_INT_T_P_BEING_USED */
+
+#if defined(MAPINTINT_P_BEING_USED) && !defined(MAP_INT_INT_NEED_HEADER)
+#define MAP_INT_INT_NEED_HEADER 1
+#endif /* defined MAPINTINT_P_BEING_USED */
+
+#if defined(MAPINTINT_CONST_P_BEING_USED) && !defined(MAP_INT_INT_NEED_HEADER)
+#define MAP_INT_INT_NEED_HEADER 1
+#endif /* defined MAPINTINT_CONST_P_BEING_USED */
+
+#if defined(CONST_MAPINTINT_P_BEING_USED) && !defined(MAP_INT_INT_NEED_HEADER)
+#define MAP_INT_INT_NEED_HEADER 1
+#endif /* defined CONST_MAPINTINT_P_BEING_USED */
+
+#if defined(MAPINTINT_BEING_USED) && !defined(MAP_INT_INT_NEED_HEADER)
+#define MAP_INT_INT_NEED_HEADER 1
+#endif /* defined MAPINTINT_BEING_USED */
+
+
+
+#ifdef MAP_INT_INT_NEED_HEADER
+#include "map_int_int.h"
+#endif
+

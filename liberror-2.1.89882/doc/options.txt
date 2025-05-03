@@ -1,0 +1,329 @@
+Options of the Error Library
+============================
+
+Error Library Options
+---------------------
+
+There are two mechanisms for passing options to the error library.
+
+- Environment Variable:
+  The error library reads the environment variable ERR_OPTIONS.
+  It contains a space separated list of options.
+
+- Command Line:
+  The error library parses the command line and extract options from it.
+  All options meant to be for the error library start with '--err-'.
+  The options below are given without this prefix.
+
+E.g. setting the environment variable:
+   : ERR_OPTIONS='colourise=tty'
+
+is equivalent to passing the option
+
+   : --err-colourise=tty
+
+to the program.
+
+Command line options have precedence over the environment variable.
+
+Options
+-------
+
+ - |colourise=0| or:
+ - |colourise=1| or:
+ - |colourise=tty|:
+         Defines whether in plain styles, ANSI colour sequences should
+         be used to mark up the error message.
+
+         For programmers:
+
+         This option changes the library variable
+         |err_style_plain_color| to one of the
+         |ERR_STYLE_COLOR_*| options defined in
+         |style.h|
+
+ - |style=|_i_:
+          Defines which error style to use by default.
+
+          _i_ may be one of:
+           - |plain-colon|:
+                   Selects the plain style with colons.  The
+                   characteristics of this style is that error
+                   locations are printed separated by colons
+                   like many GNU Tools do.  Example:
+                      : file.c:15:6: Error: This is wrong.
+
+           - |plain-quotes|:
+                   Selects the plain style with double quotes
+                   around the file names.  Example:
+                       : Error: In "file.c", line 15(6):
+                       :     This is wrong.
+           - |plain|:
+                   Selects the default plain style.  This
+                   is either plain-colon or plain-quotes,
+                   depending on the setting of  the
+                   |sub-style=| option.
+ 
+           - |qt|:
+                   Selects a style that marks up messages
+                   with some simple HTML like mark-ups.
+                   This may be used when running the
+                   application in a Qt-GUI-Application.
+ 
+                   Depending on the |sub-style=|
+                   option, the error messages are formatted
+                   like in |plain-colon| or |plain-quotes|
+                   style.
+ 
+           - |qt3|:
+                   Selects a style that marks up messages
+                   with a lot of complex HTML like
+                   mark-ups.
+                   Its usage is similar to |qt|
+                   style.
+ 
+                   Again, the |sub-style=| option
+                   influences the formatting.
+ 
+           - |none|:
+                   Nothing is output.
+ 
+           - |simple|:
+                   No formatting is done: only the mere message
+                   texts are output.
+ 
+          For programmers:
+ 
+          - This option changes the library variable
+              |err_style_default_redirect| to one of the
+              |ERR_STYLE_DEFAULT_*| options defined in
+              |style.h|
+          - The default style is selected for a stream
+              by using either |err_style_default| or
+              |NULL| as the
+              |err_style_t const *| argument
+              to |err_add_stream()|.
+ 
+ - |sub-style=|_STYLE_:
+          Defines which style to be used for the default plain
+          style.
+ 
+          _STYLE_: may be one of:
+          - |colon|:
+              The style |plain-colon| is used.
+
+          - |quotes|:
+              The style |plain-quotes| is used.
+ 
+ 
+          For programmers:
+
+          - This option changes the library variable
+              |err_style_plain_redirect| to one of the
+              |ERR_STYLE_PLAIN_*| options defined in
+              |style-plain.h|
+ 
+          -
+              The default plain style is selected for a stream
+              by using |err_style_plain|
+              as the |err_style_t const *| argument
+              to |err_add_stream()|.
+ 
+ - |quiet=|_NUMBER_:
+          Sets the quiet level of the library to _NUMBER_.
+ 
+          This option always switches off messages, never on.
+ 
+          A more general and fine-grained way of setting up the
+          message filtering are
+          the |hide|, |show|, |issue|
+          and |suppress| options.
+ 
+          Depending on _NUMBER_, messages are
+          not shown anymore:
+          - _NUMBER_ >= 6:
+              fatal errors and assertions are hidden
+ 
+          - _NUMBER_ >= 5:
+              errors and internal errors are hidden
+          - _NUMBER_ >= 4:
+              warnings are hidden
+          - _NUMBER_ >= 3:
+              informational messages are hidden
+          - _NUMBER_ >= 2:
+              notes are hidden
+          - _NUMBER_ >= 1:
+              progress messages are hidden
+ 
+          For programmers:
+
+              This option is equivalent to
+              invoking |err_set_quiet_level|.
+ 
+ - |show=|_SPEC_:
+ - |hide=|_SPEC_:
+ - |issue|_SPEC_:
+ - |suppress=|_SPEC_:
+           Defines which messages to show or hide or
+           issue or suppress.
+ 
+           The difference between hiding and suppressing
+           a message is that hidden messages are still
+           internally counted, so they might provoke a
+           fatal error later.
+ 
+           Note: Usually it is wise not
+           to suppress messages from the command line
+           or environment variables unless you know
+           what you are doing!
+ 
+           Fatal errors and assertion messages cannot
+           be suppressed (but hidden).
+ 
+           _SPEC_ is a comma separated
+           list of either message tag or message number.
+           The following tags are recognised:
+           - |banner|,
+           - |progress|,
+           - |prompt|,
+           - |note|,
+           - |into|,
+           - |warning|,
+           - |error|,
+           - |internal|,
+           - |fatal|,
+           - |assertion| and
+           - |debug|.
+ 
+ 
+ - |show-sub-system=|_SPEC_:
+ - |hide-sub-system=|_SPEC_:
+ - |issue-sub-system=|_SPEC_:
+ - |suppress-sub-system=|_SPEC_:
+ - |show-group=|_SPEC_:
+ - |hide-group=|_SPEC_:
+ - |issue-group=|_SPEC_:
+ - |suppress-group=|_SPEC_:
+          Set up filtering by sub-system or group.
+ 
+          _SPEC_ is a comma separated list of
+          sub-system or group names.
+ 
+ - |color-plain=|_SPEC_:
+          Defines the ANSI color mark-up used for colourising
+          plain style messages.
+ 
+          Example to make the body of messages normal instead
+          of bold:
+             : color-plain=body.clear
+          Example to make the tag of error messages magenta:
+             : color-plain=error.tag=35
+          This results in an ANSI control sequence
+          of |\033[35mError:\033[0m| (where |\033|
+          is the ascii escape character) for the "Error"
+          tag.
+ 
+          Example to switch from ANSI to HTML mark-up that
+          makes all tags bold, but the "error" tag italic:
+            : color-plain=clear-all:prefix=<:suffix=>:prefix.off=/:tag=b:error.tag=i
+ 
+          _SPEC_ is a colon separated list
+          of commands that modify the table of mark-up
+          strings.
+ 
+          Each mark-up consists of a prefix, a possible negation prefix,
+          a specific string for the tag and the message part,
+          and a suffix.
+ 
+          Instead of a negation prefix, there may be a negation
+          suffix.
+ 
+          Instead of a negation, there may be a specific string
+          for terminating any open mark-up.
+ 
+          Any string may be assigned or empty.  If a specific
+          string is empty, no mark-up is written at all (neither
+          prefix, suffix, or the like).
+ 
+          A command is either:
+          - |clear|:
+               clears
+               all specific strings, but not the prefix, suffix,
+               negation prefix, negation suffix or termination
+               string.
+ 
+          - |clear-all|:
+               clears the whole table.
+ 
+          - an assignment of a string in the form _SPEC_=_STRING_:
+              _SPEC_ is a period separated list of a comma
+              seperated tag list, a comma separated part ist and
+              possible the word |off| to
+              specify the negation string.
+ 
+              Examples:
+                 : banner=34
+                 : address=35
+                 : banner.tag=mystring
+                 : banner.tag.off=anotherstring
+ 
+              The same tags are recognised as for hiding/suppressing
+              options.  Additionally, the tags |no-class|
+              and |none| are recognised.  All tags
+              may be selected by using |all|.
+ 
+              A group of tags may be negated by prefixing a minus
+              sign to the list.
+ 
+              A group of parts may be negated by prefixing a minus
+              sign to the list.
+ 
+              Examples:
+                 : -banner.body=test
+                 : banner.-body=test
+                 : -banner.-body,tag=test3
+ 
+              The following parts are recognised:
+               - |location|,
+               - |progname|,
+               - |tag|,
+               - |address|,
+               - |body| and
+               - |space|.
+ 
+              There are three special assignments:
+               - |prefix=|_STRING_:
+                   To set the prefix of a mark-up.
+ 
+               - |suffix=|_STRING_:
+                   To set the suffix of a mark-up.
+ 
+               - |off=|_STRING_:
+                   To set the default terminator
+                   of a mark-up.
+ 
+               - |prefix.off=|_STRING_:
+                   To set the negation prefix for
+                   all mark-ups.
+ 
+               - |suffix.off=|_STRING_:
+                   To set the negation prefix for
+                   all mark-ups.
+ 
+          - an erase command for a string.
+              The syntax is like for assignments with
+              |=|_STRING_ replaced by |.clear|.
+
+              Example:
+                 : banner.body.clear
+
+          By default, ANSI codes are used.  I.e., the
+          prefix is |\033[| (|\033| is the
+          escape character), the suffix is |m|
+          and the termination string is |0|.
+
+          Specific strings are set-up to be something
+          like |01| for bold text, |01;31|
+          for bold red text, etc.
+
+

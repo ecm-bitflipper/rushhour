@@ -1,0 +1,117 @@
+#! /bin/sh
+
+PREFIX=_REPLACE_
+   # If you have a library that is going to be seen by C, too,
+   # delete the line 'cpp-only=1' below.
+
+   # Please note that you also need to have the following files
+   # for compilation:
+   #    ./${DIR_}settings.h
+   #
+   #          With the #defines for the Erwin options.
+   #
+   #    ./${DIR_}decls.h
+   #
+   #          With the typedefs etc. for your own types used
+   #          in Erwin data structures.
+
+if test "x$PREFIX" = x; then
+    # Without prefix (application):
+    P=
+    P_UC=
+    _DIR=
+    DIR_=
+    P_=
+    P_UC_=
+    Pr=
+else
+    # With prefix (library):
+    P="`echo $PREFIX | tr [A-Z] [a-z]`"
+    P_UC="`echo $PREFIX | tr [a-z] [A-Z]`"
+    _DIR="/${P}"
+    DIR_="${P}/"
+    P_=${P}_
+    P_UC_=${P_UC}_
+    PrFirst=`expr "$PREFIX" : '\(.\).*' | tr '[a-z]' '[A-Z]'`
+    PrRest=`expr "$PREFIX" : '.\(.*\)'`
+    Pr="$PrFirst$PrRest"
+        # If the directory prefix is different from the symbol prefix,
+        # you should edit P_ etc., too.
+fi
+
+######################################################################
+# --BEGIN DON'T EDIT, THIS CHANGES AUTOMAGICALLY--
+# --VERSION: 1.0019--
+
+    if test "x$PREFIX" = x_REP"LACE_"; then
+        echo "Error: PREFIX is not properly set.  Please edit $0." 1>&2
+        exit 1
+    fi
+
+    # Find out which untemplatize to use
+    if test -z "$UNT" && test ! -z "$ERWIN_UNTEMPLATIZE"; then
+        UNT="$ERWIN_UNTEMPLATIZE"
+    fi
+
+    if test -z "$UNT" && test ! -z "$UNTEMPLATIZE"; then
+        UNT="$UNTEMPLATIZE"
+    fi
+
+    if test -z "$UNT"; then
+        if test -f config.unt; then
+            UNT="`cat config.unt`"
+        else
+            if test -f "`which untemplatize 2>/dev/null`"; then
+                UNT="`which untemplatize 2>/dev/null`"
+            else
+                UNT="`which untemplatize2 2>/dev/null`"
+            fi
+        fi
+    fi
+
+    test -f "$UNT" || {
+        echo "$0: Error: No 'untemplatize' in \$PATH, please specify on command line." 1>&2
+        exit 1
+    }
+
+    echo "$UNT" > config.unt
+    echo "Using $UNT."
+
+# --END DON'T EDIT, THIS CHANGES AUTOMAGICALLY--
+######################################################################
+# User Setup:
+
+# Init:
+
+"$UNT" --init                                      \
+       --cpp=cpp,h                                 \
+       --cpp-only=1                                \
+       --include=${DIR_}settings.h                 \
+       --xinclude=${DIR_}decls.h                   \
+       --global-prefix=${P_}                       \
+       --subdir=src,include${_DIR},include${_DIR}  \
+       LESS_CPPFLAGS='-I../include -Iinclude -I..'
+
+######################################################################
+
+# The vector of char: you'll need it!
+"$UNT" vector oType=char --name=${P_}v_char
+
+# Symbol table:
+"$UNT" map iType='char const *' iTypeVar='char *' \
+           oType='void'                           \
+           -DiType_ICOPY=${P_}string_dup          \
+           -DiType_IFREE=${P_}string_free         \
+           -DiType_HASH=${P_}string_hash          \
+           -DiType_CMP=${P_}string_cmp            \
+           --name=${P_}symtab
+
+#"$UNT" map    iType=int oType='char *'
+#"$UNT" map    iType=int oType=int
+
+# The int vector as usual
+#"$UNT" vector oType=int --name=err_v_int
+
+# For pointers:
+#"$UNT" vector oType='char *'
+

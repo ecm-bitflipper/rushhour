@@ -1,0 +1,312 @@
+error.so error.lo error.o: error.cpp /usr/include/stdio.h /usr/include/features.h \
+ /usr/include/bits/predefs.h /usr/include/sys/cdefs.h \
+ /usr/include/bits/wordsize.h /usr/include/gnu/stubs.h \
+ /usr/include/gnu/stubs-32.h \
+ /usr/lib/gcc/i486-linux-gnu/4.4.1/include/stddef.h \
+ /usr/include/bits/types.h /usr/include/bits/typesizes.h \
+ /usr/include/libio.h /usr/include/_G_config.h /usr/include/wchar.h \
+ /usr/lib/gcc/i486-linux-gnu/4.4.1/include/stdarg.h \
+ /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h \
+ /usr/include/bits/stdio.h /usr/include/bits/stdio2.h \
+ /usr/include/stdlib.h /usr/include/bits/waitflags.h \
+ /usr/include/bits/waitstatus.h /usr/include/endian.h \
+ /usr/include/bits/endian.h /usr/include/bits/byteswap.h \
+ /usr/include/xlocale.h /usr/include/sys/types.h /usr/include/time.h \
+ /usr/include/sys/select.h /usr/include/bits/select.h \
+ /usr/include/bits/sigset.h /usr/include/bits/time.h \
+ /usr/include/sys/sysmacros.h /usr/include/bits/pthreadtypes.h \
+ /usr/include/alloca.h /usr/include/bits/stdlib.h /usr/include/string.h \
+ /usr/include/bits/string3.h /usr/include/signal.h \
+ /usr/include/bits/signum.h /usr/include/bits/siginfo.h \
+ /usr/include/bits/sigaction.h /usr/include/bits/sigcontext.h \
+ /usr/include/bits/sigstack.h /usr/include/sys/ucontext.h \
+ /usr/include/bits/sigthread.h include/liberror.h \
+ erwin/include/error/erwin/defs.h include/error/settings.h \
+ include/error/err-config.h include/error/tags.h \
+ erwin/include/error/erwin/config.h \
+ /usr/lib/gcc/i486-linux-gnu/4.4.1/include-fixed/limits.h \
+ /usr/lib/gcc/i486-linux-gnu/4.4.1/include-fixed/syslimits.h \
+ /usr/include/limits.h /usr/include/bits/posix1_lim.h \
+ /usr/include/bits/local_lim.h /usr/include/linux/limits.h \
+ /usr/include/bits/posix2_lim.h /usr/include/bits/xopen_lim.h \
+ erwin/include/error/erwin/asm.h erwin/include/error/erwin/asm_i386.h \
+ erwin/include/error/erwin/asm_gen.h include/error/version.h \
+ erwin/include/error/erwin/erwin.h \
+ erwin/include/error/erwin/base.h erwin/include/error/erwin/map.h \
+ erwin/include/error/erwin/vector.h erwin/include/error/erwin/list.h \
+ erwin/include/error/erwin/typeinfo.h include/error/decls.h \
+ erwin/include/error/erwin/forwards.h \
+ erwin/include/error/err_map_int_callback_f.h \
+ erwin/include/error/err_map_int_v_callback_f.h \
+ erwin/include/error/err_map_symbol_int_f.h \
+ erwin/include/error/err_v_callback_f.h \
+ erwin/include/error/err_map_symbol_stream_f.h \
+ erwin/include/error/err_v_stream_f.h \
+ erwin/include/error/err_map_symbol_string_f.h \
+ erwin/include/error/err_v_char_f.h \
+ erwin/include/error/err_map_int_map_int_v_callback_f.h \
+ erwin/include/error/err_map_int_char_p_f.h \
+ erwin/include/error/err_v_buffer_f.h erwin/include/error/err_v_int_f.h \
+ erwin/include/error/err_v_char_const_p_f.h \
+ erwin/include/error/err_map_int_v_stream_f.h \
+ erwin/include/error/err_map_int_symbol_f.h \
+ erwin/include/error/err_map_file_stream_f.h \
+ erwin/include/error/err_map_char_p_char_p_f.h \
+ erwin/include/error/err_symtab_f.h erwin/include/error/err_v_message_f.h \
+ erwin/include/error/err_map_int_bool_f.h \
+ erwin/include/error/err_map_int_int_f.h include/error/printf.h \
+ include/error/printf-gen.h erwin/include/error/err_map_int_callback.h \
+ erwin/include/error/err_map_int_callback_d.h \
+ erwin/include/error/err_map_u.h \
+ erwin/include/error/err_map_int_callback_u.h \
+ erwin/include/error/err_map_int_callback_i.h \
+ erwin/include/error/err_map_int_v_callback.h \
+ erwin/include/error/err_map_int_char_p.h \
+ erwin/include/error/err_map_int_char_p_d.h \
+ erwin/include/error/err_map_int_char_p_u.h \
+ erwin/include/error/err_map_int_char_p_i.h \
+ erwin/include/error/err_map_symbol_int.h \
+ erwin/include/error/err_map_symbol_int_d.h \
+ erwin/include/error/err_map_symbol_int_u.h \
+ erwin/include/error/err_map_symbol_int_i.h \
+ erwin/include/error/err_v_callback.h \
+ erwin/include/error/err_v_callback_d.h \
+ erwin/include/error/err_vector_u.h \
+ erwin/include/error/err_v_callback_u.h \
+ erwin/include/error/err_v_callback_i.h \
+ erwin/include/error/err_map_symbol_stream.h \
+ erwin/include/error/err_map_char_p_char_p.h \
+ erwin/include/error/err_map_char_p_char_p_d.h \
+ erwin/include/error/err_map_char_p_char_p_u.h \
+ erwin/include/error/err_map_char_p_char_p_i.h \
+ erwin/include/error/err_v_stream.h erwin/include/error/err_v_stream_d.h \
+ erwin/include/error/err_v_stream_u.h \
+ erwin/include/error/err_v_stream_i.h \
+ erwin/include/error/err_map_symbol_string.h \
+ erwin/include/error/err_map_symbol_string_d.h \
+ erwin/include/error/err_map_symbol_string_u.h \
+ erwin/include/error/err_map_symbol_string_i.h \
+ erwin/include/error/err_v_char.h erwin/include/error/err_v_char_d.h \
+ erwin/include/error/err_v_char_u.h erwin/include/error/err_v_char_i.h \
+ erwin/include/error/err_map_int_map_int_v_callback.h \
+ erwin/include/error/err_v_buffer.h erwin/include/error/err_v_buffer_d.h \
+ erwin/include/error/err_v_buffer_u.h \
+ erwin/include/error/err_v_buffer_i.h erwin/include/error/err_v_int.h \
+ erwin/include/error/err_v_int_d.h erwin/include/error/err_v_int_u.h \
+ erwin/include/error/err_v_int_i.h \
+ erwin/include/error/err_v_char_const_p.h \
+ erwin/include/error/err_v_char_const_p_d.h \
+ erwin/include/error/err_v_char_const_p_u.h \
+ erwin/include/error/err_v_char_const_p_i.h \
+ erwin/include/error/err_map_int_v_stream.h \
+ erwin/include/error/err_map_int_symbol.h \
+ erwin/include/error/err_map_file_stream.h \
+ erwin/include/error/err_symtab.h erwin/include/error/err_symtab_d.h \
+ erwin/include/error/err_symtab_u.h erwin/include/error/err_symtab_i.h \
+ erwin/include/error/err_v_message.h \
+ erwin/include/error/err_v_message_d.h \
+ erwin/include/error/err_v_message_u.h \
+ erwin/include/error/err_v_message_i.h \
+ erwin/include/error/err_map_int_bool.h \
+ erwin/include/error/err_map_int_bool_d.h \
+ erwin/include/error/err_map_int_bool_u.h \
+ erwin/include/error/err_map_int_bool_i.h \
+ erwin/include/error/err_map_int_int.h \
+ erwin/include/error/err_map_int_int_d.h \
+ erwin/include/error/err_map_int_int_u.h \
+ erwin/include/error/err_map_int_int_i.h \
+ include/error/err-config.h include/error/tags.h include/error/printf.h \
+ include/error/style.h include/error/style-colon.h \
+ include/error/style-quotes.h include/error/style-plain.h \
+ include/error/style-qt.h include/error/style-qt3.h \
+ include/error/assert.h internal.h include/error/symbol.h \
+ include/error/failure.h /usr/include/unistd.h \
+ /usr/include/bits/posix_opt.h /usr/include/bits/environments.h \
+ /usr/include/bits/confname.h /usr/include/getopt.h \
+ /usr/include/bits/unistd.h
+error.cpp :
+/usr/include/stdio.h :
+/usr/include/features.h :
+/usr/include/bits/predefs.h :
+/usr/include/sys/cdefs.h :
+/usr/include/bits/wordsize.h :
+/usr/include/gnu/stubs.h :
+/usr/include/gnu/stubs-32.h :
+/usr/lib/gcc/i486-linux-gnu/4.4.1/include/stddef.h :
+/usr/include/bits/types.h :
+/usr/include/bits/typesizes.h :
+/usr/include/libio.h :
+/usr/include/_G_config.h :
+/usr/include/wchar.h :
+/usr/lib/gcc/i486-linux-gnu/4.4.1/include/stdarg.h :
+/usr/include/bits/stdio_lim.h :
+/usr/include/bits/sys_errlist.h :
+/usr/include/bits/stdio.h :
+/usr/include/bits/stdio2.h :
+/usr/include/stdlib.h :
+/usr/include/bits/waitflags.h :
+/usr/include/bits/waitstatus.h :
+/usr/include/endian.h :
+/usr/include/bits/endian.h :
+/usr/include/bits/byteswap.h :
+/usr/include/xlocale.h :
+/usr/include/sys/types.h :
+/usr/include/time.h :
+/usr/include/sys/select.h :
+/usr/include/bits/select.h :
+/usr/include/bits/sigset.h :
+/usr/include/bits/time.h :
+/usr/include/sys/sysmacros.h :
+/usr/include/bits/pthreadtypes.h :
+/usr/include/alloca.h :
+/usr/include/bits/stdlib.h :
+/usr/include/string.h :
+/usr/include/bits/string3.h :
+/usr/include/signal.h :
+/usr/include/bits/signum.h :
+/usr/include/bits/siginfo.h :
+/usr/include/bits/sigaction.h :
+/usr/include/bits/sigcontext.h :
+/usr/include/bits/sigstack.h :
+/usr/include/sys/ucontext.h :
+/usr/include/bits/sigthread.h :
+include/liberror.h :
+erwin/include/error/erwin/defs.h :
+include/error/settings.h :
+include/error/err-config.h :
+include/error/tags.h :
+erwin/include/error/erwin/config.h :
+/usr/lib/gcc/i486-linux-gnu/4.4.1/include-fixed/limits.h :
+/usr/lib/gcc/i486-linux-gnu/4.4.1/include-fixed/syslimits.h :
+/usr/include/limits.h :
+/usr/include/bits/posix1_lim.h :
+/usr/include/bits/local_lim.h :
+/usr/include/linux/limits.h :
+/usr/include/bits/posix2_lim.h :
+/usr/include/bits/xopen_lim.h :
+erwin/include/error/erwin/asm.h :
+erwin/include/error/erwin/asm_i386.h :
+erwin/include/error/erwin/asm_gen.h :
+include/error/version.h :
+include/error/symbol.h :
+erwin/include/error/erwin/erwin.h :
+erwin/include/error/erwin/base.h :
+erwin/include/error/erwin/map.h :
+erwin/include/error/erwin/vector.h :
+erwin/include/error/erwin/list.h :
+erwin/include/error/erwin/typeinfo.h :
+include/error/decls.h :
+erwin/include/error/erwin/forwards.h :
+erwin/include/error/err_map_int_callback_f.h :
+erwin/include/error/err_map_int_v_callback_f.h :
+erwin/include/error/err_map_symbol_int_f.h :
+erwin/include/error/err_v_callback_f.h :
+erwin/include/error/err_map_symbol_stream_f.h :
+erwin/include/error/err_v_stream_f.h :
+erwin/include/error/err_map_symbol_string_f.h :
+erwin/include/error/err_v_char_f.h :
+erwin/include/error/err_map_int_map_int_v_callback_f.h :
+erwin/include/error/err_map_int_char_p_f.h :
+erwin/include/error/err_v_buffer_f.h :
+erwin/include/error/err_v_int_f.h :
+erwin/include/error/err_v_char_const_p_f.h :
+erwin/include/error/err_map_int_v_stream_f.h :
+erwin/include/error/err_map_int_symbol_f.h :
+erwin/include/error/err_map_file_stream_f.h :
+erwin/include/error/err_map_char_p_char_p_f.h :
+erwin/include/error/err_symtab_f.h :
+erwin/include/error/err_v_message_f.h :
+erwin/include/error/err_map_int_bool_f.h :
+erwin/include/error/err_map_int_int_f.h :
+include/error/printf.h :
+include/error/printf-gen.h :
+erwin/include/error/err_map_int_callback.h :
+erwin/include/error/err_map_int_callback_d.h :
+erwin/include/error/err_map_u.h :
+erwin/include/error/err_map_int_callback_u.h :
+erwin/include/error/err_map_int_callback_i.h :
+erwin/include/error/err_map_int_v_callback.h :
+erwin/include/error/err_map_int_char_p.h :
+erwin/include/error/err_map_int_char_p_d.h :
+erwin/include/error/err_map_int_char_p_u.h :
+erwin/include/error/err_map_int_char_p_i.h :
+erwin/include/error/err_map_symbol_int.h :
+erwin/include/error/err_map_symbol_int_d.h :
+erwin/include/error/err_map_symbol_int_u.h :
+erwin/include/error/err_map_symbol_int_i.h :
+erwin/include/error/err_v_callback.h :
+erwin/include/error/err_v_callback_d.h :
+erwin/include/error/err_vector_u.h :
+erwin/include/error/err_v_callback_u.h :
+erwin/include/error/err_v_callback_i.h :
+erwin/include/error/err_map_symbol_stream.h :
+erwin/include/error/err_map_char_p_char_p.h :
+erwin/include/error/err_map_char_p_char_p_d.h :
+erwin/include/error/err_map_char_p_char_p_u.h :
+erwin/include/error/err_map_char_p_char_p_i.h :
+erwin/include/error/err_v_stream.h :
+erwin/include/error/err_v_stream_d.h :
+erwin/include/error/err_v_stream_u.h :
+erwin/include/error/err_v_stream_i.h :
+erwin/include/error/err_map_symbol_string.h :
+erwin/include/error/err_map_symbol_string_d.h :
+erwin/include/error/err_map_symbol_string_u.h :
+erwin/include/error/err_map_symbol_string_i.h :
+erwin/include/error/err_v_char.h :
+erwin/include/error/err_v_char_d.h :
+erwin/include/error/err_v_char_u.h :
+erwin/include/error/err_v_char_i.h :
+erwin/include/error/err_map_int_map_int_v_callback.h :
+erwin/include/error/err_v_buffer.h :
+erwin/include/error/err_v_buffer_d.h :
+erwin/include/error/err_v_buffer_u.h :
+erwin/include/error/err_v_buffer_i.h :
+erwin/include/error/err_v_int.h :
+erwin/include/error/err_v_int_d.h :
+erwin/include/error/err_v_int_u.h :
+erwin/include/error/err_v_int_i.h :
+erwin/include/error/err_v_char_const_p.h :
+erwin/include/error/err_v_char_const_p_d.h :
+erwin/include/error/err_v_char_const_p_u.h :
+erwin/include/error/err_v_char_const_p_i.h :
+erwin/include/error/err_map_int_v_stream.h :
+erwin/include/error/err_map_int_symbol.h :
+erwin/include/error/err_map_file_stream.h :
+erwin/include/error/err_symtab.h :
+erwin/include/error/err_symtab_d.h :
+erwin/include/error/err_symtab_u.h :
+erwin/include/error/err_symtab_i.h :
+erwin/include/error/err_v_message.h :
+erwin/include/error/err_v_message_d.h :
+erwin/include/error/err_v_message_u.h :
+erwin/include/error/err_v_message_i.h :
+erwin/include/error/err_map_int_bool.h :
+erwin/include/error/err_map_int_bool_d.h :
+erwin/include/error/err_map_int_bool_u.h :
+erwin/include/error/err_map_int_bool_i.h :
+erwin/include/error/err_map_int_int.h :
+erwin/include/error/err_map_int_int_d.h :
+erwin/include/error/err_map_int_int_u.h :
+erwin/include/error/err_map_int_int_i.h :
+include/error/symbol.inc :
+include/error/err-config.h :
+include/error/tags.h :
+include/error/printf.h :
+include/error/style.h :
+include/error/style-colon.h :
+include/error/style-quotes.h :
+include/error/style-plain.h :
+include/error/style-qt.h :
+include/error/style-qt3.h :
+include/error/assert.h :
+internal.h :
+symbol.h :
+include/error/symbol.h :
+failure.h :
+include/error/failure.h :
+/usr/include/unistd.h :
+/usr/include/bits/posix_opt.h :
+/usr/include/bits/environments.h :
+/usr/include/bits/confname.h :
+/usr/include/getopt.h :
+/usr/include/bits/unistd.h :

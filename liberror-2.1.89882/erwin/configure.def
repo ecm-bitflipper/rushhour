@@ -1,0 +1,527 @@
+dnl -*- Mode: Fundamental -*-
+dnl Only bugs will be searched, no features will be added.  They go to acerwin.m4.
+
+dnl
+dnl Quote an option name to form a valid cv-variable.
+dnl    $1 - the option
+dnl    $2 - the family (e.g. CFLAGS, CXXFLAGS, ...)
+dnl
+define([er_quote_var],
+[changequote(<<,>>)dnl
+patsubst(er_cv_<<$1>>_<<$2>>, <<[-+\\="' 	]>>, <<_>>)<<>>dnl "
+changequote([,])dnl
+])
+
+dnl
+dnl Return the first element of a list
+dnl
+define([er_first],[[$1]])
+
+dnl
+dnl Map a function to several arguments
+dnl   $1         - the function
+dnl   all others - arguments
+dnl
+define(er_map,[
+ifelse(
+[$#],0,
+,
+[$#],1,
+,
+[$2],,
+,
+[$#],2,
+[indir([$1],[$2])],
+[indir([$1],[$2])
+er_map([$1],builtin([shift],builtin([shift],$@)))])])
+
+dnl
+dnl If the compiler understands it, add an option to the given variables.
+dnl   $1 - Flag to test
+dnl        This may be a list of flags: they will all be passed to the
+dnl        compiler, but only the first will be added to the variables.
+dnl   $2 - Variables to add to (may be a comma separated list)
+dnl        The first variable will the used as the family name, i.e.
+dnl        for forming the er_cv_ cache variable name.
+dnl   $3 - the thing that is tested (e.g. 'the C++ compiler')
+dnl   $4 - Test to use (ER_VAR_NAME has to be set to yes or no)
+dnl        (if this is empty, AC_TRY_LINK will be used.)
+dnl   $5 - (optional) command to switch language (e.g. AC_LANG_CPLUSPLUS)
+dnl
+dnl You are really crazy if you can understand this macro without thinking for an hour.
+dnl
+AC_DEFUN([ER_ADD_FLAG],[
+define([ER_VAR_NAME], er_quote_var(er_first($2),[$1]))
+define([er_add_to_var],[
+er_old_$][1="$$][1"
+$][1="$$][1 [$1]"])
+define([er_add_to_var_first],[
+er_old_$][1="$$][1"
+$][1="$$][1 er_first($1)"])
+er_map([er_add_to_var],$2)
+ifelse([$5],,,[AC_LANG_SAVE])[]dnl
+ifelse([$5],,,[$5])[]dnl
+AC_CACHE_CHECK(whether [$3] accepts [$1], ER_VAR_NAME,
+    ifelse([$4],,[AC_TRY_LINK(,, ER_VAR_NAME=yes, ER_VAR_NAME=no)],[$4]))
+ifelse([$5],,,[AC_LANG_RESTORE])[]dnl
+define([er_restore_var],[
+$][1="$er_old_$][1"])
+er_map([er_restore_var],$2)
+if test "x$ER_VAR_NAME" = "xyes"; then
+   er_map([er_add_to_var_first],$2)
+fi
+undefine([er_add_to_var])
+undefine([er_restore_var])
+undefine([ER_VAR_NAME])])
+
+dnl
+dnl Run $1 if we use GNU C (requires AC_PROG_CC or ER_PROG_CC)
+dnl
+AC_DEFUN([ER_IF_GCC],[
+if test "x${GCC}" = xyes; then
+   [$1]
+fi
+])
+
+dnl
+dnl Run $1 if we use GNU C++ (requires AC_PROG_CXX or ER_PROG_CXX)
+dnl
+AC_DEFUN([ER_IF_GXX],[
+if test "x${GXX}" = xyes; then
+   [$1]
+fi
+])
+
+dnl ----------------------------------------------------------------------
+
+dnl
+dnl Check for a CXXFLAG with C++ compiler
+dnl
+AC_DEFUN([ER_ADD_CXXFLAG],
+[if test "x${with_cxx}" != xno; then
+    ER_ADD_FLAG(
+        [$1],
+        [CXXFLAGS],
+        [the C++ compiler],
+        [],
+        [AC_LANG_CPLUSPLUS])
+fi
+])
+
+AC_DEFUN([ER_ADD_CXXFLAGS], [er_map([ER_ADD_CXXFLAG],$@)])
+AC_DEFUN([ER_ADD_GNU_CXXFLAGS], [ER_IF_GXX(ER_ADD_CXXFLAGS($@))])
+
+dnl
+dnl Check for a CFLAG with C compiler
+dnl
+AC_DEFUN([ER_ADD_CFLAG],
+[
+dnl *** new configure cannot do sizeof() checks with C++.  Puke, vomit, stupidity. ***
+dnl if test "x${with_cc}" != xno; then
+    ER_ADD_FLAG(
+        [$1],
+        [CFLAGS],
+        [the C compiler],
+        [],
+        [AC_LANG_C])
+dnl fi
+])
+
+AC_DEFUN([ER_ADD_CFLAGS], [er_map([ER_ADD_CFLAG],$@)])
+AC_DEFUN([ER_ADD_GNU_CFLAGS], [ER_IF_GCC(ER_ADD_CFLAGS($@))])
+
+dnl
+dnl If the compiler understands it, add an option to the CPPFLAGS.
+dnl
+AC_DEFUN([ER_ADD_CPPFLAG],
+[
+    ER_ADD_FLAG(
+        [$1],
+        [CPPFLAGS],
+        [the C/C++ preprocessor],
+        [AC_TRY_CPP(, ER_VAR_NAME=yes, ER_VAR_NAME=no)])
+])
+
+AC_DEFUN([ER_ADD_CPPFLAGS], [er_map([ER_ADD_CPPFLAG],$@)])
+AC_DEFUN([ER_ADD_GNU_CPPFLAGS], [ER_IF_GCC(ER_ADD_CPPFLAGS($@))])
+
+dnl
+dnl If the linker understands it, add an option to the LDFLAGS.
+dnl
+AC_DEFUN([ER_ADD_LDFLAG],
+    [ER_ADD_FLAG(
+        [$1],
+        [CPPFLAGS],
+        [the C/C++ linker])])
+
+AC_DEFUN([ER_ADD_LDFLAGS], [er_map([ER_ADD_LDFLAG],$@)])
+AC_DEFUN([ER_ADD_GNU_LDLFLAGS], [ER_IF_GCC(ER_ADD_CPPFLAGS($@))])
+
+dnl ----------------------------------------------------------------------
+
+dnl
+dnl Add a --disable/enable-opt(=max) option to the command line
+dnl
+AC_DEFUN([ER_ARG_ENABLE_OPT], [
+AC_ARG_ENABLE(opt, [  --enable-opt=max        gcc only: set maximal optimisation level
+  --disable-opt           gcc only: set optimisation level to 0])
+])
+
+dnl
+dnl acconfig.h: /* User en-/disabled long long support */
+dnl acconfig.h: #undef CONFIG_WITH_LONG_LONG
+dnl
+AC_DEFUN([ER_ARG_LONG_LONG], [
+AC_ARG_WITH(long-long,
+[  --without-long-long     do not support 64 bit integers even if the compiler
+                          handles them well])
+
+if test "x${with_long_long}" != xno; then
+    AC_DEFINE(CONFIG_WITH_LONG_LONG, 1, [whether 64-bit int shall be used])
+fi
+])
+
+dnl ----------------------------------------------------------------------
+dnl This checks whether the C++ compiler works.  If it does not link, it
+dnl tries whether it works without stdlib (i.e., it uses the C compiler. This
+dnl works for gcc.  We could also try to use -nostdlib.
+dnl
+dnl You can define the following M4 variables to 1 to influence the behaviour of
+dnl this macro:
+dnl     er_need_cxxlib
+dnl          prevents the trial of using the C compiler for C++
+dnl     er_no_warnings
+dnl          prevents adding additional warning flags for GNU C++
+dnl
+AC_DEFUN([ER_PROG_CXX], [
+WITH_CXX=""
+WITHOUT_CXX="# "
+AC_SUBST(WITH_CXX)
+AC_SUBST(WITHOUT_CXX)
+
+if test x${with_cxx} = xno
+then
+    CXX=":"
+    CXXCPP=":"
+    CXXFLAGS=""
+    WITH_CXX="# "
+    WITHOUT_CXX=""
+    AC_SUBST(CXX)
+    AC_SUBST(CXXCPP)
+    AC_SUBST(CXXFLAGS)
+else
+    if test "${GXX+set}" != set; then
+        dnl Hacks to work around 'exit 1' if compiler does not work.
+        ifelse(er_need_cxxlib,1,,
+        [if test "${ac_cv_prog_CC+set}" = set || test "${ac_cv_prog_CC+set}" = set; then
+            define([old_AC_MSG_ERROR],defn([AC_MSG_ERROR]))
+            define([AC_MSG_ERROR],[:])
+            AC_PROG_CXX
+            define([AC_MSG_ERROR],defn([old_AC_MSG_ERROR]))
+            if test "x$ac_cv_prog_cxx_works" = xno; then
+                if test "${ac_cv_prog_CC+set}" = set; then
+                    ac_cv_prog_CXX="$CC"
+                else
+                    ac_cv_prog_CXX="$ac_cv_prog_CC"
+                fi
+                CXX="$ac_cv_prog_CXX"
+            fi
+        fi])
+        AC_PROG_CXX
+        AC_PROG_CXXCPP
+    fi
+
+    ifelse(er_no_warnings,1,,
+        ER_ADD_GNU_CXXFLAGS(
+            -Wall,
+            -W,
+            -Wpointer-arith,
+            -Wno-cast-align,
+            -Wno-unused,
+            -Woverloaded-virtual))
+
+    if test x"$enable_opt" = xno; then
+        CXXFLAGSAUX="$CXXFLAGS" CXXFLAGS=`echo "$CXXFLAGSAUX" | sed s@-g@@g | sed 's@-O[[0-9]]*@@g'`
+        ER_ADD_GNU_CXXFLAGS(
+           -O0,
+           -fno-inline,
+           -g)
+        ER_ADD_CXXFLAGS($1)
+    else
+        if test x"$enable_opt" = xmax; then
+            CXXFLAGSAUX="$CXXFLAGS" CXXFLAGS=`echo "$CXXFLAGSAUX" | sed s@-g@@g | sed 's@-O[[0-9]]*@@g'`
+            ER_ADD_GNU_CXXFLAGS(
+                -O9,
+                -finline-functions,
+                -fomit-frame-pointer,
+                -ffast-math)
+            ER_ADD_CXXFLAGS($2)
+        fi
+    fi
+fi
+])
+
+
+AC_DEFUN([ER_CC_MANY_WARNINGS],
+[ER_ADD_GNU_CFLAGS(
+    -Wfloat-equal,
+    -Wundef,
+    -Wwrite-strings,
+    -Wstring-prototypes)])
+
+
+AC_DEFUN([ER_CXX_MANY_WARNINGS],
+[ER_ADD_GNU_CXXFLAGS(
+    -Wfloat-equal,
+    -Wundef,
+    -Wconversion,
+    -Wwrite-strings,
+    -Wenum-clash,
+    -Wsign-promo)])
+dnl    -Weffc++,    No, I cannot tell the compiler in which case I mean what I write.
+dnl                 Instead, I choose no such warnings.
+
+
+AC_DEFUN([ER_CXX_SPECIAL_FLAGS],
+[ER_ADD_GNU_CXXFLAGS(
+    -fno-rtti,
+    -felide-constructors,
+    -fnonnull-objects,
+    -fvtable-thunks,
+    -fno-exceptions)
+])
+
+dnl add many warnings for C and C++
+AC_DEFUN([ER_MANY_WARNINGS],
+[ER_CXX_MANY_WARNINGS
+ER_CC_MANY_WARNINGS])
+
+AC_DEFUN([ER_SPECIAL_FLAGS],
+[ER_CXX_SPECIAL_FLAGS])
+
+
+AC_DEFUN([ER_ARG_WITH_CXX],
+[AC_ARG_WITH(cxx,
+[  --without-cxx           disables C++ parts of library
+  --with-cxx              enables C++ parts of library])
+])
+
+AC_DEFUN([ER_ARG_WITH_CC],
+[AC_ARG_WITH(cc,
+[  --without-cc            disables C parts of library
+  --with-cc               enables C parts of library])
+])
+
+AC_DEFUN([ER_PROG_CC], [
+WITH_CC=""
+WITHOUT_CC="# "
+AC_SUBST(WITH_CC)
+AC_SUBST(WITHOUT_CC)
+
+dnl *** new configure cannot do sizeof() checks with C++.  Puke, vomit, stupidity. ***
+dnl if test x${with_cc} = xno
+dnl then
+dnl    CC=":"
+dnl    CPP=":"
+dnl    CCFLAGS=""
+dnl    WITH_CC="# "
+dnl    WITHOUT_CC=""
+dnl    AC_SUBST(CC)
+dnl    AC_SUBST(CPP)
+dnl    AC_SUBST(CCFLAGS)
+dnl else
+    if test "${GCC+set}" != set; then
+        AC_PROG_CC
+        AC_PROG_CPP
+    fi
+    ifelse(er_no_warnings,1,,
+        ER_ADD_GNU_CFLAGS(
+            -Wall,
+            -W,
+            -Wpointer-arith,
+            -Wno-cast-align,
+            -Wno-unused,
+            -Wmissing-prototypes))
+
+    if test x"$enable_opt" = xno; then
+        CFLAGSAUX="$CFLAGS" CFLAGS=`echo "$CFLAGSAUX" | sed s@-g@@g | sed 's@-O[[0-9]]*@@g'`
+        ER_ADD_GNU_CFLAGS(
+            -O0,
+            -fno-inline,
+            -g)
+        ER_ADD_CFLAGS($1)
+    else
+        if test x"$enable_opt" = xmax; then
+            CFLAGSAUX="$CFLAGS" CFLAGS=`echo "$CFLAGSAUX" | sed s@-g@@g | sed 's@-O[[0-9]]*@@g'`
+            ER_ADD_GNU_CFLAGS(
+                -O9,
+                -finline-functions,
+                -fomit-frame-pointer,
+                -ffast-math)
+            ER_ADD_CFLAGS($2)
+        fi
+    fi
+dnl fi
+])
+
+dnl
+dnl acconfig: /* Are ctype function broken for 8 bit characters? */
+dnl acconfig: #undef BROKEN_CTYPE
+dnl
+AC_DEFUN([ER_BROKEN_CTYPE], [
+AC_CACHE_CHECK(whether ctype functions are broken for 8 bit characters, er_cv_broken_ctype, [
+   AC_TRY_LINK([
+#include <stdlib.h>
+#include <ctype.h>
+],
+[
+        int i;
+
+        if (isspace (129)) exit (EXIT_FAILURE);
+        if (isspace (255)) exit (EXIT_FAILURE);
+        if (toupper ('a') != 'A') exit(EXIT_FAILURE);
+        if (toupper ('A') != 'A') exit(EXIT_FAILURE);
+        if (tolower ('A') != 'a') exit(EXIT_FAILURE);
+        if (tolower ('a') != 'a') exit(EXIT_FAILURE);
+
+        for (i=-128; i < 255; i++) {
+            (void)isspace (i);
+            (void)isalpha (i);
+            (void)isdigit (i);
+            (void)tolower (i);
+            (void)toupper (i);
+        }
+
+        exit (EXIT_SUCCESS);
+],
+er_cv_broken_ctype=no,
+er_cv_broken_ctype=yes)])
+
+if test x"$er_cv_broken_type" = xyes; then
+    AC_DEFINE(BROKEN_CTYPE, 1, [whether ctype is broken])
+fi
+
+AC_SUBST(BROKEN_CTYPE)
+])
+
+dnl
+dnl acconfig: /* Does the C++ compiler have a working mutable? */
+dnl acconfig: #undef HAVE_WORKING_MUTABLE
+dnl
+dnl Define whether C++ compiler understands mutable.
+dnl
+AC_DEFUN([ER_WORKING_MUTABLE], [
+AC_CACHE_CHECK(whether C++ compiler honours mutable, er_cv_working_mutable, [
+if test x${with_cxx} = xno; then
+   er_cv_working_mutable=untested
+else
+   AC_LANG_SAVE
+   AC_LANG_CPLUSPLUS
+   AC_TRY_LINK([
+#include <stdlib.h>
+class A {
+    mutable int i;
+public:
+    A (): i(0) {}
+    void assign_test (void) const { i= 0; }
+};
+
+static void test (A const *a)
+{
+    a->assign_test ();
+}
+],
+[
+        A a;
+        test (&a);
+
+        exit (EXIT_SUCCESS);
+],
+er_cv_working_mutable=yes,
+er_cv_working_mutable=no)
+    AC_LANG_RESTORE
+fi
+])
+
+if test x"$er_cv_working_mutable" = xyes; then
+    AC_DEFINE(HAVE_WORKING_MUTABLE, 1, [whether mutual works])
+fi
+
+AC_SUBST(HAVE_WORKING_MUTABLE)
+])
+
+dnl
+dnl
+dnl
+AC_DEFUN([ER_PROG_PERL], [
+AC_PATH_PROG(PERL, perl5)
+AC_PATH_PROG(PERL, perl)
+if test x${PERL} = x ; then
+    ${ECHO} "WARNING: Perl not found." 1>&2
+    PERL=:
+fi
+
+])
+
+
+dnl
+dnl Check for M4
+dnl
+AC_DEFUN([ER_PROG_M4], [
+AC_BEFORE([$0], [ER_MAKE_MAKEFILE_IN])dnl
+
+AC_PATH_PROG(M4,m4)
+if test ! -z "$M4"; then
+    AC_MSG_CHECKING(whether $M4 is GNU M4)
+    result="`echo 'change''quote(<,>)if''def(<__g''nu__>,<<yes>>,<<no>>)' | $M4`"
+    test x"$result" = xyes || result=no
+    AC_MSG_RESULT($result);
+    if test x"$result" = xno; then
+       M4=
+    fi
+fi
+
+if test -z "$M4"; then
+    AC_PATH_PROG(GM4,gm4)
+    if test ! -z "$GM4"; then
+        AC_MSG_CHECKING(whether $GM4 is GNU M4)
+        result="`echo 'change''quote(<,>)if''def(<__g''nu__>,<<yes>>,<<no>>)' | $GM4`"
+        test x"$result" = xyes || result=no
+        AC_MSG_RESULT($result);
+        if test x"$result" = xno; then
+           GM4=
+        fi
+    fi
+    M4="$GM4"
+fi
+
+AC_SUBST(M4)
+if test -z "$M4"; then
+    echo "Warning: GNU M4 is needed for the development version of this library." 1>&2
+    M4=:
+fi
+])
+
+dnl
+dnl Generate Makefile.in from Makefile.m4 for some directories
+dnl
+AC_DEFUN([ER_MAKE_MAKEFILE_IN], [
+for i in [$1]; do
+   if test ! -f $i/Makefile.in; then
+       (cd $i
+           echo "creating $i/Makefile.in from $i/Makefile.m4..." 1>&6
+           ${M4} Makefile.m4 > Makefile.in.new
+           if test -s Makefile.m4; then
+               if test -f Makefile.in && cmp -s Makefile.in.new Makefile.in >/dev/null 2>/dev/null
+               then
+                   rm -f Makefile.in.new
+               else
+                   mv Makefile.in.new Makefile.in
+               fi
+           else
+               AC_MSG_WARN("Unable to create $i/Makefile.in")
+           fi
+       )
+   fi
+done
+])

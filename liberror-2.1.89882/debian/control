@@ -1,0 +1,25 @@
+Source: liberror
+Section: devel
+Priority: optional
+Maintainer: Henrik Theiling <theiling@absint.com>
+Build-Depends: cdbs, debhelper (>= 4.1.0)
+Standards-Version: 3.6.2
+
+Package: liberror
+Architecture: any
+Depends: perl (>= 5.6.1), m4 (>= 1.4)
+Suggests: liberror-doc, erwin
+Description: Message Printing Library for C and C++
+ liberror is a library for C and C++ that addresses the
+ allegedly simply task of printing messages. It is essentially a
+ feature-rich substitute for fprintf. Features include colours via
+ ANSI mark-up, multiple error streams, report files, automatic error
+ number assignment, filtering by number, subsystems, and groups, buffering
+ with manual filtering and re-issuing, callbacks, error counters, time
+ stamping, and message styles.
+
+Package: liberror-doc
+Architecture: all
+Description: Message Printing Library for C and C++ (Documentation)
+ This package contains additional html documentation for liberror.
+

@@ -1,0 +1,168 @@
+2.1.89882
+----------------------------------------------------------------------
+- There are now separate filters for developer and normal messages.
+  The command line parser was extended accordingly, so you can
+  write, e.g., --msg-hide=devel-info.
+
+- The debug function err_flush_buffers() was made extern.
+  ONLY use it for debugging!
+
+2.1.80011
+----------------------------------------------------------------------
+- the err_position stuff now uses reference counting so that
+  there is much less copying when such objects are passed around
+
+- the ERR_MODULE_TOKEN is now translated to with err_group() via
+  a cache so that the C_TAG_... macros are much faster when ERR_MODULES_TOKEN
+  is used.
+
+- when everything is broken and nothing is printed, you can use the
+  env. variable MSG_FORCE_FPRINTF to force the library to simply
+  invoke fprintf.
+
+- a typo was fixed so that 'never' is now recognised on the cmd line
+
+- warnings fixed for newer gcc
+
+- free more memory (filtering and stream handling)
+
+- exported the argument and environment parser:
+  - err_opt_parse()
+  - err_opt_parse_args()
+  - err_opt_parse_string()
+
+- added err_location_copy() and err_location_delete() for C programmers
+
+- added err_group_set_prefix() and err_group_get_prefix().  The programmer
+  can set a prefix to print for all messages of a certain group.
+
+
+2.1.58643
+----------------------------------------------------------------------
+- switch to version numbers using svn revision
+- add debian package support
+- added support for XML report files
+- fixed compilation for newer gccs
+
+2.0.62
+----------------------------------------------------------------------
+- Made compiling under Linux a bit faster for tar.bz2 version.
+  It did some unnecessary remakes (it still does, but less).
+
+2.0.61
+----------------------------------------------------------------------
+- Additional to --msg-crash, which generates an artificial
+  SIGSEGV, I also added:
+   +----------------+----------------------------------------+
+   | --msg-assert0  | raises an artificial assertion         |
+   |                | (for testing whether the binary        |
+   |                | includes assertions, i.e, was compiled |
+   |                | with -DNDEBUG).                        |
+   +----------------+----------------------------------------+
+   | --msg-forever  | starts an endless loop until you       |
+   |                | attach to the binary from a debugger   |
+   |                | and 'set err_continue=1'               |
+   +----------------+----------------------------------------+
+- fixed building of the source package so that all files
+  are included for out-of-the-box Windows compilation.
+  For compilation and installation, type:
+
+     : nmake -f nmakefile
+     : nmake -f nmakefile install
+
+  The default installation prefix is E:\WINNT.  To change,
+  use:
+
+     : make -f nmakefile WIN_PREFIX=blahblah install
+     :
+
+- The assert() macro in error/assert.h was fixed to
+  work for nested asserts
+
+
+2.0.49
+----------------------------------------------------------------------
+- Bug fix for --err-{hide,suppress}-{subsystem,group} for
+  multiple comma-separated values.  The bug lead to in
+  infinite loop consuming memory and eventually this
+  lead to a crash.
+
+
+2.0.40
+----------------------------------------------------------------------
+- Bug fix in Erwin (err_v_char.cpp would not compile
+  on some systems).
+
+- Bug in usage of 'which' in 'makeerwin', which breaks
+  the script in some shells (notably BSD).
+
+- While fixing the above bug, it was noticed that 'makeerwin'
+  is missing in the source code distro file.
+  Added.
+
+- parseargs: add support for err_set_fatal_count()
+
+- Fixed bug so that C_TAG_PREFIX will successfully
+  set the next_location.  It was accidentally cleared
+  right after setting it.
+
+  This also changes the semantics of a prefix: a prefix
+  and a suffix will be kept until the user manually
+  invokes err_prefix/suffix_erase.  This was done since
+  it is not nice when debug messages use the prefix that
+  was meant for another message.
+
+2.0.16
+----------------------------------------------------------------------
+- For compatibility reasons, the "err-" prefix is still
+  understood.  To prevent this compatibility, use
+
+     : #define ERR_CUT_COMPAT ERR_BASE_VERSION(2,0)
+
+  or add a CPPFLAG:
+     : -DERR_CUT_COMPAT='ERR_BASE_VERSION(2,0)'
+
+  The means that compatibility is supported for
+  features introduced in versions >= 2.0.x only,
+  i.e., no compatibility for features only found in
+  versions < 2.0.x.  (The sub-version is not included
+  in the comparison, still the macro always takes
+  three arguments)
+
+  This may result is smaller and faster code (though
+  it's currently neglectible).
+
+- Fixed a bug in err_count() that led to wrong results
+  for parameters (0,0).
+
+- Fixed some problems in the make subdir where targets
+  depended on special tools (most of them part of Erwin).
+
+
+2.0.2
+----------------------------------------------------------------------
+- Changed the default prefix from "err" to "msg", since we
+  can handle messages, not only errors.
+
+  To switch back to old behaviour -- you should not do this,
+  but in case you really want this, use:
+
+     : err_set_config_prefix ("err");
+
+  This must be invoked before the call to err_init().
+
+- added a lot of documentation
+
+- added the command line tool |eprintf|
+
+- symbols are now installed, so the user has access to the
+  library's symbol table by
+     : err_string2symbol()
+
+- user can override PID now:
+     : err_pid()
+     : err_set_pid()
+
+1.x
+----------------------------------------------------------------------
+- First release.

@@ -1,0 +1,26 @@
+# -*- Mode: Makefile -*-
+# Copyright & vendor settings:
+
+VENDOR_SUBDIR = absint
+
+ABSINT_URL    = http://www.absint.com/
+
+VENDOR_HTML   = <a href="$(ABSINT_URL)">AbsInt Angewandte Informatik GmbH</a>
+VENDOR        = AbsInt Angewandte Informatik GmbH
+VENDOR_EMAIL  = info@absint.com
+
+COPYRIGHT     = COPYING
+
+LOCAL_FILES  += COPYING
+
+DEB_SECTION   = non-free
+
+# Binary distribution by default:
+DEFAULT_DISTRO = bin
+
+# Copyright:
+
+do-it-all: $(srcdir)/COPYING
+
+$(srcdir)/COPYING: $(top_srcdir)/make/$(VENDOR_SUBDIR)/COPYING
+	cp $< $@

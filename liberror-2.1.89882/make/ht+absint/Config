@@ -1,0 +1,39 @@
+# -*- Mode: Makefile -*-
+# Copyright & vendor settings:
+
+VENDOR_SUBDIR      = ht+absint
+
+HENRIK_URL         = http://www.theiling.de/
+ABSINT_URL         = $(HENRIK_URL)link?absint
+
+VENDOR_HTML        = <a href="$(HENRIK_URL)">Henrik Theiling</a> &amp; \
+                     <a href="$(ABSINT_URL)">AbsInt Angewandte Informatik GmbH</a>
+
+VENDOR             = Henrik Theiling & AbsInt Angewandte Informatik GmbH
+VENDOR_EMAIL       = theiling@absint.com
+
+UPLOAD_HOST        = www.theiling.de
+UPLOAD_PATH        = /var/www/default.test
+DEB_UPLOAD_HOST    = $(UPLOAD_HOST)
+DEB_UPLOAD_PATH    = /var/www/debian.test
+
+RELEASE_MSG_PREFIX = [bug 2653]
+
+COPYRIGHT          = COPYING
+
+LOCAL_FILES       += COPYING
+
+# Source distribution by default:
+DEFAULT_DISTRO     = src
+
+# TGZ by default, so Debian source packages are equal and can be linked:
+DEFAULT_TARFLAGS   = z
+DEFAULT_TAREXT     = .tgz
+
+
+# Copyright:
+
+do-it-all: $(srcdir)/COPYING
+
+$(srcdir)/COPYING: $(top_srcdir)/make/$(VENDOR_SUBDIR)/COPYING
+	cp $< $@

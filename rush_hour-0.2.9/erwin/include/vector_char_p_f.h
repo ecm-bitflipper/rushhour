@@ -1,0 +1,632 @@
+
+#ifndef ERWIN_VECTOR_CHAR_P_f_h
+#define ERWIN_VECTOR_CHAR_P_f_h
+
+/* Unification of VectorCharP and vector_char_p_t: they are identical now. */
+struct vector_char_p_t;
+
+#ifndef __cplusplus
+typedef struct vector_char_p_t vector_char_p_t;
+#endif /* not defined __cplusplus */
+
+typedef vector_char_p_t VectorCharP;
+
+typedef vector_char_p_t *vector_char_p_t_p;
+
+typedef vector_char_p_t const *vector_char_p_t_const_p;
+
+#define VECTOR_CHAR_P_SIG 910986960
+
+
+
+#ifdef VECTOR_CHAR_P_TP_DEEP
+#  if VECTOR_CHAR_P_TP_DEEP
+#    ifndef VECTOR_CHAR_P_TP_DEEP_COPY
+#      define VECTOR_CHAR_P_TP_DEEP_COPY 1
+#    endif
+#    ifndef VECTOR_CHAR_P_TP_DEEP_COMPARE
+#      define VECTOR_CHAR_P_TP_DEEP_COMPARE 1
+#    endif
+#  else
+#    ifndef VECTOR_CHAR_P_TP_DEEP_COPY
+#      define VECTOR_CHAR_P_TP_DEEP_COPY 0
+#    endif
+#    ifndef VECTOR_CHAR_P_TP_DEEP_COMPARE
+#      define VECTOR_CHAR_P_TP_DEEP_COMPARE 0
+#    endif
+#  endif
+#endif
+#ifndef VECTOR_CHAR_P_TP_DEEP_COPY
+#define VECTOR_CHAR_P_TP_DEEP_COPY 0
+#endif /* !defined VECTOR_CHAR_P_TP_DEEP_COPY */
+
+#ifndef VECTOR_CHAR_P_TP_DEEP_COMPARE
+#define VECTOR_CHAR_P_TP_DEEP_COMPARE 0
+#endif /* !defined VECTOR_CHAR_P_TP_DEEP_COMPARE */
+
+#ifdef VECTOR_CHAR_P_T_CONSTP_DEEP
+#  if VECTOR_CHAR_P_T_CONSTP_DEEP
+#    ifndef VECTOR_CHAR_P_T_CONSTP_DEEP_COPY
+#      define VECTOR_CHAR_P_T_CONSTP_DEEP_COPY 1
+#    endif
+#    ifndef VECTOR_CHAR_P_T_CONSTP_DEEP_COMPARE
+#      define VECTOR_CHAR_P_T_CONSTP_DEEP_COMPARE 1
+#    endif
+#  else
+#    ifndef VECTOR_CHAR_P_T_CONSTP_DEEP_COPY
+#      define VECTOR_CHAR_P_T_CONSTP_DEEP_COPY 0
+#    endif
+#    ifndef VECTOR_CHAR_P_T_CONSTP_DEEP_COMPARE
+#      define VECTOR_CHAR_P_T_CONSTP_DEEP_COMPARE 0
+#    endif
+#  endif
+#endif
+#ifndef VECTOR_CHAR_P_T_CONSTP_DEEP_COPY
+#define VECTOR_CHAR_P_T_CONSTP_DEEP_COPY 0
+#endif /* !defined VECTOR_CHAR_P_T_CONSTP_DEEP_COPY */
+
+#ifndef VECTOR_CHAR_P_T_CONSTP_DEEP_COMPARE
+#define VECTOR_CHAR_P_T_CONSTP_DEEP_COMPARE 0
+#endif /* !defined VECTOR_CHAR_P_T_CONSTP_DEEP_COMPARE */
+
+#ifdef CONST_VECTOR_CHAR_P_TP_DEEP
+#  if CONST_VECTOR_CHAR_P_TP_DEEP
+#    ifndef CONST_VECTOR_CHAR_P_TP_DEEP_COPY
+#      define CONST_VECTOR_CHAR_P_TP_DEEP_COPY 1
+#    endif
+#    ifndef CONST_VECTOR_CHAR_P_TP_DEEP_COMPARE
+#      define CONST_VECTOR_CHAR_P_TP_DEEP_COMPARE 1
+#    endif
+#  else
+#    ifndef CONST_VECTOR_CHAR_P_TP_DEEP_COPY
+#      define CONST_VECTOR_CHAR_P_TP_DEEP_COPY 0
+#    endif
+#    ifndef CONST_VECTOR_CHAR_P_TP_DEEP_COMPARE
+#      define CONST_VECTOR_CHAR_P_TP_DEEP_COMPARE 0
+#    endif
+#  endif
+#endif
+#ifndef CONST_VECTOR_CHAR_P_TP_DEEP_COPY
+#define CONST_VECTOR_CHAR_P_TP_DEEP_COPY 0
+#endif /* !defined CONST_VECTOR_CHAR_P_TP_DEEP_COPY */
+
+#ifndef CONST_VECTOR_CHAR_P_TP_DEEP_COMPARE
+#define CONST_VECTOR_CHAR_P_TP_DEEP_COMPARE 0
+#endif /* !defined CONST_VECTOR_CHAR_P_TP_DEEP_COMPARE */
+
+#ifdef VECTORCHARPP_DEEP
+#  if VECTORCHARPP_DEEP
+#    ifndef VECTORCHARPP_DEEP_COPY
+#      define VECTORCHARPP_DEEP_COPY 1
+#    endif
+#    ifndef VECTORCHARPP_DEEP_COMPARE
+#      define VECTORCHARPP_DEEP_COMPARE 1
+#    endif
+#  else
+#    ifndef VECTORCHARPP_DEEP_COPY
+#      define VECTORCHARPP_DEEP_COPY 0
+#    endif
+#    ifndef VECTORCHARPP_DEEP_COMPARE
+#      define VECTORCHARPP_DEEP_COMPARE 0
+#    endif
+#  endif
+#endif
+#ifndef VECTORCHARPP_DEEP_COPY
+#define VECTORCHARPP_DEEP_COPY 0
+#endif /* !defined VECTORCHARPP_DEEP_COPY */
+
+#ifndef VECTORCHARPP_DEEP_COMPARE
+#define VECTORCHARPP_DEEP_COMPARE 0
+#endif /* !defined VECTORCHARPP_DEEP_COMPARE */
+
+#ifdef VECTORCHARP_CONSTP_DEEP
+#  if VECTORCHARP_CONSTP_DEEP
+#    ifndef VECTORCHARP_CONSTP_DEEP_COPY
+#      define VECTORCHARP_CONSTP_DEEP_COPY 1
+#    endif
+#    ifndef VECTORCHARP_CONSTP_DEEP_COMPARE
+#      define VECTORCHARP_CONSTP_DEEP_COMPARE 1
+#    endif
+#  else
+#    ifndef VECTORCHARP_CONSTP_DEEP_COPY
+#      define VECTORCHARP_CONSTP_DEEP_COPY 0
+#    endif
+#    ifndef VECTORCHARP_CONSTP_DEEP_COMPARE
+#      define VECTORCHARP_CONSTP_DEEP_COMPARE 0
+#    endif
+#  endif
+#endif
+#ifndef VECTORCHARP_CONSTP_DEEP_COPY
+#define VECTORCHARP_CONSTP_DEEP_COPY 0
+#endif /* !defined VECTORCHARP_CONSTP_DEEP_COPY */
+
+#ifndef VECTORCHARP_CONSTP_DEEP_COMPARE
+#define VECTORCHARP_CONSTP_DEEP_COMPARE 0
+#endif /* !defined VECTORCHARP_CONSTP_DEEP_COMPARE */
+
+#ifdef CONST_VECTORCHARPP_DEEP
+#  if CONST_VECTORCHARPP_DEEP
+#    ifndef CONST_VECTORCHARPP_DEEP_COPY
+#      define CONST_VECTORCHARPP_DEEP_COPY 1
+#    endif
+#    ifndef CONST_VECTORCHARPP_DEEP_COMPARE
+#      define CONST_VECTORCHARPP_DEEP_COMPARE 1
+#    endif
+#  else
+#    ifndef CONST_VECTORCHARPP_DEEP_COPY
+#      define CONST_VECTORCHARPP_DEEP_COPY 0
+#    endif
+#    ifndef CONST_VECTORCHARPP_DEEP_COMPARE
+#      define CONST_VECTORCHARPP_DEEP_COMPARE 0
+#    endif
+#  endif
+#endif
+#ifndef CONST_VECTORCHARPP_DEEP_COPY
+#define CONST_VECTORCHARPP_DEEP_COPY 0
+#endif /* !defined CONST_VECTORCHARPP_DEEP_COPY */
+
+#ifndef CONST_VECTORCHARPP_DEEP_COMPARE
+#define CONST_VECTORCHARPP_DEEP_COMPARE 0
+#endif /* !defined CONST_VECTORCHARPP_DEEP_COMPARE */
+
+#ifdef VECTOR_CHAR_P_T_P_DEEP
+#  if VECTOR_CHAR_P_T_P_DEEP
+#    ifndef VECTOR_CHAR_P_T_P_DEEP_COPY
+#      define VECTOR_CHAR_P_T_P_DEEP_COPY 1
+#    endif
+#    ifndef VECTOR_CHAR_P_T_P_DEEP_COMPARE
+#      define VECTOR_CHAR_P_T_P_DEEP_COMPARE 1
+#    endif
+#  else
+#    ifndef VECTOR_CHAR_P_T_P_DEEP_COPY
+#      define VECTOR_CHAR_P_T_P_DEEP_COPY 0
+#    endif
+#    ifndef VECTOR_CHAR_P_T_P_DEEP_COMPARE
+#      define VECTOR_CHAR_P_T_P_DEEP_COMPARE 0
+#    endif
+#  endif
+#endif
+#ifndef VECTOR_CHAR_P_T_P_DEEP_COPY
+#define VECTOR_CHAR_P_T_P_DEEP_COPY 0
+#endif /* !defined VECTOR_CHAR_P_T_P_DEEP_COPY */
+
+#ifndef VECTOR_CHAR_P_T_P_DEEP_COMPARE
+#define VECTOR_CHAR_P_T_P_DEEP_COMPARE 0
+#endif /* !defined VECTOR_CHAR_P_T_P_DEEP_COMPARE */
+
+#ifdef VECTOR_CHAR_P_T_CONST_P_DEEP
+#  if VECTOR_CHAR_P_T_CONST_P_DEEP
+#    ifndef VECTOR_CHAR_P_T_CONST_P_DEEP_COPY
+#      define VECTOR_CHAR_P_T_CONST_P_DEEP_COPY 1
+#    endif
+#    ifndef VECTOR_CHAR_P_T_CONST_P_DEEP_COMPARE
+#      define VECTOR_CHAR_P_T_CONST_P_DEEP_COMPARE 1
+#    endif
+#  else
+#    ifndef VECTOR_CHAR_P_T_CONST_P_DEEP_COPY
+#      define VECTOR_CHAR_P_T_CONST_P_DEEP_COPY 0
+#    endif
+#    ifndef VECTOR_CHAR_P_T_CONST_P_DEEP_COMPARE
+#      define VECTOR_CHAR_P_T_CONST_P_DEEP_COMPARE 0
+#    endif
+#  endif
+#endif
+#ifndef VECTOR_CHAR_P_T_CONST_P_DEEP_COPY
+#define VECTOR_CHAR_P_T_CONST_P_DEEP_COPY 0
+#endif /* !defined VECTOR_CHAR_P_T_CONST_P_DEEP_COPY */
+
+#ifndef VECTOR_CHAR_P_T_CONST_P_DEEP_COMPARE
+#define VECTOR_CHAR_P_T_CONST_P_DEEP_COMPARE 0
+#endif /* !defined VECTOR_CHAR_P_T_CONST_P_DEEP_COMPARE */
+
+#ifdef CONST_VECTOR_CHAR_P_T_P_DEEP
+#  if CONST_VECTOR_CHAR_P_T_P_DEEP
+#    ifndef CONST_VECTOR_CHAR_P_T_P_DEEP_COPY
+#      define CONST_VECTOR_CHAR_P_T_P_DEEP_COPY 1
+#    endif
+#    ifndef CONST_VECTOR_CHAR_P_T_P_DEEP_COMPARE
+#      define CONST_VECTOR_CHAR_P_T_P_DEEP_COMPARE 1
+#    endif
+#  else
+#    ifndef CONST_VECTOR_CHAR_P_T_P_DEEP_COPY
+#      define CONST_VECTOR_CHAR_P_T_P_DEEP_COPY 0
+#    endif
+#    ifndef CONST_VECTOR_CHAR_P_T_P_DEEP_COMPARE
+#      define CONST_VECTOR_CHAR_P_T_P_DEEP_COMPARE 0
+#    endif
+#  endif
+#endif
+#ifndef CONST_VECTOR_CHAR_P_T_P_DEEP_COPY
+#define CONST_VECTOR_CHAR_P_T_P_DEEP_COPY 0
+#endif /* !defined CONST_VECTOR_CHAR_P_T_P_DEEP_COPY */
+
+#ifndef CONST_VECTOR_CHAR_P_T_P_DEEP_COMPARE
+#define CONST_VECTOR_CHAR_P_T_P_DEEP_COMPARE 0
+#endif /* !defined CONST_VECTOR_CHAR_P_T_P_DEEP_COMPARE */
+
+#ifdef VECTORCHARP_P_DEEP
+#  if VECTORCHARP_P_DEEP
+#    ifndef VECTORCHARP_P_DEEP_COPY
+#      define VECTORCHARP_P_DEEP_COPY 1
+#    endif
+#    ifndef VECTORCHARP_P_DEEP_COMPARE
+#      define VECTORCHARP_P_DEEP_COMPARE 1
+#    endif
+#  else
+#    ifndef VECTORCHARP_P_DEEP_COPY
+#      define VECTORCHARP_P_DEEP_COPY 0
+#    endif
+#    ifndef VECTORCHARP_P_DEEP_COMPARE
+#      define VECTORCHARP_P_DEEP_COMPARE 0
+#    endif
+#  endif
+#endif
+#ifndef VECTORCHARP_P_DEEP_COPY
+#define VECTORCHARP_P_DEEP_COPY 0
+#endif /* !defined VECTORCHARP_P_DEEP_COPY */
+
+#ifndef VECTORCHARP_P_DEEP_COMPARE
+#define VECTORCHARP_P_DEEP_COMPARE 0
+#endif /* !defined VECTORCHARP_P_DEEP_COMPARE */
+
+#ifdef VECTORCHARP_CONST_P_DEEP
+#  if VECTORCHARP_CONST_P_DEEP
+#    ifndef VECTORCHARP_CONST_P_DEEP_COPY
+#      define VECTORCHARP_CONST_P_DEEP_COPY 1
+#    endif
+#    ifndef VECTORCHARP_CONST_P_DEEP_COMPARE
+#      define VECTORCHARP_CONST_P_DEEP_COMPARE 1
+#    endif
+#  else
+#    ifndef VECTORCHARP_CONST_P_DEEP_COPY
+#      define VECTORCHARP_CONST_P_DEEP_COPY 0
+#    endif
+#    ifndef VECTORCHARP_CONST_P_DEEP_COMPARE
+#      define VECTORCHARP_CONST_P_DEEP_COMPARE 0
+#    endif
+#  endif
+#endif
+#ifndef VECTORCHARP_CONST_P_DEEP_COPY
+#define VECTORCHARP_CONST_P_DEEP_COPY 0
+#endif /* !defined VECTORCHARP_CONST_P_DEEP_COPY */
+
+#ifndef VECTORCHARP_CONST_P_DEEP_COMPARE
+#define VECTORCHARP_CONST_P_DEEP_COMPARE 0
+#endif /* !defined VECTORCHARP_CONST_P_DEEP_COMPARE */
+
+#ifdef CONST_VECTORCHARP_P_DEEP
+#  if CONST_VECTORCHARP_P_DEEP
+#    ifndef CONST_VECTORCHARP_P_DEEP_COPY
+#      define CONST_VECTORCHARP_P_DEEP_COPY 1
+#    endif
+#    ifndef CONST_VECTORCHARP_P_DEEP_COMPARE
+#      define CONST_VECTORCHARP_P_DEEP_COMPARE 1
+#    endif
+#  else
+#    ifndef CONST_VECTORCHARP_P_DEEP_COPY
+#      define CONST_VECTORCHARP_P_DEEP_COPY 0
+#    endif
+#    ifndef CONST_VECTORCHARP_P_DEEP_COMPARE
+#      define CONST_VECTORCHARP_P_DEEP_COMPARE 0
+#    endif
+#  endif
+#endif
+#ifndef CONST_VECTORCHARP_P_DEEP_COPY
+#define CONST_VECTORCHARP_P_DEEP_COPY 0
+#endif /* !defined CONST_VECTORCHARP_P_DEEP_COPY */
+
+#ifndef CONST_VECTORCHARP_P_DEEP_COMPARE
+#define CONST_VECTORCHARP_P_DEEP_COMPARE 0
+#endif /* !defined CONST_VECTORCHARP_P_DEEP_COMPARE */
+
+#if VECTOR_CHAR_P_TP_DEEP_COMPARE && !defined(VECTOR_CHAR_P_TP_HASH_RAW)
+#define VECTOR_CHAR_P_TP_HASH_RAW(A1) vector_char_p_hash_raw((A1))
+#endif
+
+#if VECTOR_CHAR_P_T_CONSTP_DEEP_COMPARE && !defined(VECTOR_CHAR_P_T_CONSTP_HASH_RAW)
+#define VECTOR_CHAR_P_T_CONSTP_HASH_RAW(A1) vector_char_p_hash_raw((A1))
+#endif
+
+#if CONST_VECTOR_CHAR_P_TP_DEEP_COMPARE && !defined(CONST_VECTOR_CHAR_P_TP_HASH_RAW)
+#define CONST_VECTOR_CHAR_P_TP_HASH_RAW(A1) vector_char_p_hash_raw((A1))
+#endif
+
+#if VECTORCHARPP_DEEP_COMPARE && !defined(VECTORCHARPP_HASH_RAW)
+#define VECTORCHARPP_HASH_RAW(A1) ((A1)->hash_raw())
+#endif
+
+#if VECTORCHARP_CONSTP_DEEP_COMPARE && !defined(VECTORCHARP_CONSTP_HASH_RAW)
+#define VECTORCHARP_CONSTP_HASH_RAW(A1) ((A1)->hash_raw())
+#endif
+
+#if CONST_VECTORCHARPP_DEEP_COMPARE && !defined(CONST_VECTORCHARPP_HASH_RAW)
+#define CONST_VECTORCHARPP_HASH_RAW(A1) ((A1)->hash_raw())
+#endif
+
+#if VECTOR_CHAR_P_T_P_DEEP_COMPARE && !defined(VECTOR_CHAR_P_T_P_HASH_RAW)
+#define VECTOR_CHAR_P_T_P_HASH_RAW(A1) vector_char_p_hash_raw((A1))
+#endif
+
+#if VECTOR_CHAR_P_T_CONST_P_DEEP_COMPARE && !defined(VECTOR_CHAR_P_T_CONST_P_HASH_RAW)
+#define VECTOR_CHAR_P_T_CONST_P_HASH_RAW(A1) vector_char_p_hash_raw((A1))
+#endif
+
+#if CONST_VECTOR_CHAR_P_T_P_DEEP_COMPARE && !defined(CONST_VECTOR_CHAR_P_T_P_HASH_RAW)
+#define CONST_VECTOR_CHAR_P_T_P_HASH_RAW(A1) vector_char_p_hash_raw((A1))
+#endif
+
+#if VECTORCHARP_P_DEEP_COMPARE && !defined(VECTORCHARP_P_HASH_RAW)
+#define VECTORCHARP_P_HASH_RAW(A1) ((A1)->hash_raw())
+#endif
+
+#if VECTORCHARP_CONST_P_DEEP_COMPARE && !defined(VECTORCHARP_CONST_P_HASH_RAW)
+#define VECTORCHARP_CONST_P_HASH_RAW(A1) ((A1)->hash_raw())
+#endif
+
+#if CONST_VECTORCHARP_P_DEEP_COMPARE && !defined(CONST_VECTORCHARP_P_HASH_RAW)
+#define CONST_VECTORCHARP_P_HASH_RAW(A1) ((A1)->hash_raw())
+#endif
+
+#ifndef VECTORCHARP_HASH_RAW
+#define VECTORCHARP_HASH_RAW(A1) ((A1).hash_raw())
+#endif
+
+#if VECTOR_CHAR_P_TP_DEEP_COMPARE && !defined(VECTOR_CHAR_P_TP_CMP)
+#define VECTOR_CHAR_P_TP_CMP(A1,A2) vector_char_p_cmp((A1),(A2),NULL)
+#endif
+
+#if VECTOR_CHAR_P_T_CONSTP_DEEP_COMPARE && !defined(VECTOR_CHAR_P_T_CONSTP_CMP)
+#define VECTOR_CHAR_P_T_CONSTP_CMP(A1,A2) vector_char_p_cmp((A1),(A2),NULL)
+#endif
+
+#if CONST_VECTOR_CHAR_P_TP_DEEP_COMPARE && !defined(CONST_VECTOR_CHAR_P_TP_CMP)
+#define CONST_VECTOR_CHAR_P_TP_CMP(A1,A2) vector_char_p_cmp((A1),(A2),NULL)
+#endif
+
+#if VECTORCHARPP_DEEP_COMPARE && !defined(VECTORCHARPP_CMP)
+#define VECTORCHARPP_CMP(A1,A2) ((A1)->cmp((A2),NULL))
+#endif
+
+#if VECTORCHARP_CONSTP_DEEP_COMPARE && !defined(VECTORCHARP_CONSTP_CMP)
+#define VECTORCHARP_CONSTP_CMP(A1,A2) ((A1)->cmp((A2),NULL))
+#endif
+
+#if CONST_VECTORCHARPP_DEEP_COMPARE && !defined(CONST_VECTORCHARPP_CMP)
+#define CONST_VECTORCHARPP_CMP(A1,A2) ((A1)->cmp((A2),NULL))
+#endif
+
+#if VECTOR_CHAR_P_T_P_DEEP_COMPARE && !defined(VECTOR_CHAR_P_T_P_CMP)
+#define VECTOR_CHAR_P_T_P_CMP(A1,A2) vector_char_p_cmp((A1),(A2),NULL)
+#endif
+
+#if VECTOR_CHAR_P_T_CONST_P_DEEP_COMPARE && !defined(VECTOR_CHAR_P_T_CONST_P_CMP)
+#define VECTOR_CHAR_P_T_CONST_P_CMP(A1,A2) vector_char_p_cmp((A1),(A2),NULL)
+#endif
+
+#if CONST_VECTOR_CHAR_P_T_P_DEEP_COMPARE && !defined(CONST_VECTOR_CHAR_P_T_P_CMP)
+#define CONST_VECTOR_CHAR_P_T_P_CMP(A1,A2) vector_char_p_cmp((A1),(A2),NULL)
+#endif
+
+#if VECTORCHARP_P_DEEP_COMPARE && !defined(VECTORCHARP_P_CMP)
+#define VECTORCHARP_P_CMP(A1,A2) ((A1)->cmp((A2),NULL))
+#endif
+
+#if VECTORCHARP_CONST_P_DEEP_COMPARE && !defined(VECTORCHARP_CONST_P_CMP)
+#define VECTORCHARP_CONST_P_CMP(A1,A2) ((A1)->cmp((A2),NULL))
+#endif
+
+#if CONST_VECTORCHARP_P_DEEP_COMPARE && !defined(CONST_VECTORCHARP_P_CMP)
+#define CONST_VECTORCHARP_P_CMP(A1,A2) ((A1)->cmp((A2),NULL))
+#endif
+
+#ifndef VECTORCHARP_CMP
+#define VECTORCHARP_CMP(A1,A2) ((A1).cmp((A2),NULL))
+#endif
+
+#ifndef VECTORCHARP_ZERO
+#define VECTORCHARP_ZERO (VectorCharP::static_zero())
+#endif
+
+#if VECTOR_CHAR_P_TP_DEEP_COPY && !defined(VECTOR_CHAR_P_TP_ICOPY)
+#define VECTOR_CHAR_P_TP_ICOPY(A1,A2) vector_char_p_copy_err((A1),(A2))
+#endif
+
+#if VECTOR_CHAR_P_T_CONSTP_DEEP_COPY && !defined(VECTOR_CHAR_P_T_CONSTP_ICOPY)
+#define VECTOR_CHAR_P_T_CONSTP_ICOPY(A1,A2) vector_char_p_copy_err((A1),(A2))
+#endif
+
+#if CONST_VECTOR_CHAR_P_TP_DEEP_COPY && !defined(CONST_VECTOR_CHAR_P_TP_ICOPY)
+#define CONST_VECTOR_CHAR_P_TP_ICOPY(A1,A2) vector_char_p_copy_err((A1),(A2))
+#endif
+
+#if VECTORCHARPP_DEEP_COPY && !defined(VECTORCHARPP_ICOPY)
+#define VECTORCHARPP_ICOPY(A1,A2) ((A1)->copy_err((A2)))
+#endif
+
+#if VECTORCHARP_CONSTP_DEEP_COPY && !defined(VECTORCHARP_CONSTP_ICOPY)
+#define VECTORCHARP_CONSTP_ICOPY(A1,A2) ((A1)->copy_err((A2)))
+#endif
+
+#if CONST_VECTORCHARPP_DEEP_COPY && !defined(CONST_VECTORCHARPP_ICOPY)
+#define CONST_VECTORCHARPP_ICOPY(A1,A2) ((A1)->copy_err((A2)))
+#endif
+
+#if VECTOR_CHAR_P_T_P_DEEP_COPY && !defined(VECTOR_CHAR_P_T_P_ICOPY)
+#define VECTOR_CHAR_P_T_P_ICOPY(A1,A2) vector_char_p_copy_err((A1),(A2))
+#endif
+
+#if VECTOR_CHAR_P_T_CONST_P_DEEP_COPY && !defined(VECTOR_CHAR_P_T_CONST_P_ICOPY)
+#define VECTOR_CHAR_P_T_CONST_P_ICOPY(A1,A2) vector_char_p_copy_err((A1),(A2))
+#endif
+
+#if CONST_VECTOR_CHAR_P_T_P_DEEP_COPY && !defined(CONST_VECTOR_CHAR_P_T_P_ICOPY)
+#define CONST_VECTOR_CHAR_P_T_P_ICOPY(A1,A2) vector_char_p_copy_err((A1),(A2))
+#endif
+
+#if VECTORCHARP_P_DEEP_COPY && !defined(VECTORCHARP_P_ICOPY)
+#define VECTORCHARP_P_ICOPY(A1,A2) ((A1)->copy_err((A2)))
+#endif
+
+#if VECTORCHARP_CONST_P_DEEP_COPY && !defined(VECTORCHARP_CONST_P_ICOPY)
+#define VECTORCHARP_CONST_P_ICOPY(A1,A2) ((A1)->copy_err((A2)))
+#endif
+
+#if CONST_VECTORCHARP_P_DEEP_COPY && !defined(CONST_VECTORCHARP_P_ICOPY)
+#define CONST_VECTORCHARP_P_ICOPY(A1,A2) ((A1)->copy_err((A2)))
+#endif
+
+#if VECTOR_CHAR_P_TP_DEEP_COPY && !defined(VECTOR_CHAR_P_TP_OCOPY)
+#define VECTOR_CHAR_P_TP_OCOPY(A1,A2) vector_char_p_copy_err((A1),(A2))
+#endif
+
+#if VECTOR_CHAR_P_T_CONSTP_DEEP_COPY && !defined(VECTOR_CHAR_P_T_CONSTP_OCOPY)
+#define VECTOR_CHAR_P_T_CONSTP_OCOPY(A1,A2) vector_char_p_copy_err((A1),(A2))
+#endif
+
+#if CONST_VECTOR_CHAR_P_TP_DEEP_COPY && !defined(CONST_VECTOR_CHAR_P_TP_OCOPY)
+#define CONST_VECTOR_CHAR_P_TP_OCOPY(A1,A2) vector_char_p_copy_err((A1),(A2))
+#endif
+
+#if VECTORCHARPP_DEEP_COPY && !defined(VECTORCHARPP_OCOPY)
+#define VECTORCHARPP_OCOPY(A1,A2) ((A1)->copy_err((A2)))
+#endif
+
+#if VECTORCHARP_CONSTP_DEEP_COPY && !defined(VECTORCHARP_CONSTP_OCOPY)
+#define VECTORCHARP_CONSTP_OCOPY(A1,A2) ((A1)->copy_err((A2)))
+#endif
+
+#if CONST_VECTORCHARPP_DEEP_COPY && !defined(CONST_VECTORCHARPP_OCOPY)
+#define CONST_VECTORCHARPP_OCOPY(A1,A2) ((A1)->copy_err((A2)))
+#endif
+
+#if VECTOR_CHAR_P_T_P_DEEP_COPY && !defined(VECTOR_CHAR_P_T_P_OCOPY)
+#define VECTOR_CHAR_P_T_P_OCOPY(A1,A2) vector_char_p_copy_err((A1),(A2))
+#endif
+
+#if VECTOR_CHAR_P_T_CONST_P_DEEP_COPY && !defined(VECTOR_CHAR_P_T_CONST_P_OCOPY)
+#define VECTOR_CHAR_P_T_CONST_P_OCOPY(A1,A2) vector_char_p_copy_err((A1),(A2))
+#endif
+
+#if CONST_VECTOR_CHAR_P_T_P_DEEP_COPY && !defined(CONST_VECTOR_CHAR_P_T_P_OCOPY)
+#define CONST_VECTOR_CHAR_P_T_P_OCOPY(A1,A2) vector_char_p_copy_err((A1),(A2))
+#endif
+
+#if VECTORCHARP_P_DEEP_COPY && !defined(VECTORCHARP_P_OCOPY)
+#define VECTORCHARP_P_OCOPY(A1,A2) ((A1)->copy_err((A2)))
+#endif
+
+#if VECTORCHARP_CONST_P_DEEP_COPY && !defined(VECTORCHARP_CONST_P_OCOPY)
+#define VECTORCHARP_CONST_P_OCOPY(A1,A2) ((A1)->copy_err((A2)))
+#endif
+
+#if CONST_VECTORCHARP_P_DEEP_COPY && !defined(CONST_VECTORCHARP_P_OCOPY)
+#define CONST_VECTORCHARP_P_OCOPY(A1,A2) ((A1)->copy_err((A2)))
+#endif
+
+#if VECTOR_CHAR_P_TP_DEEP_COPY && !defined(VECTOR_CHAR_P_TP_IFREE)
+#define VECTOR_CHAR_P_TP_IFREE(A1) vector_char_p_delete((A1))
+#endif
+
+#if VECTOR_CHAR_P_T_CONSTP_DEEP_COPY && !defined(VECTOR_CHAR_P_T_CONSTP_IFREE)
+#define VECTOR_CHAR_P_T_CONSTP_IFREE(A1) vector_char_p_delete((A1))
+#endif
+
+#if CONST_VECTOR_CHAR_P_TP_DEEP_COPY && !defined(CONST_VECTOR_CHAR_P_TP_IFREE)
+#define CONST_VECTOR_CHAR_P_TP_IFREE(A1) vector_char_p_delete((A1))
+#endif
+
+#if VECTORCHARPP_DEEP_COPY && !defined(VECTORCHARPP_IFREE)
+#define VECTORCHARPP_IFREE(A1) delete((A1))
+#endif
+
+#if VECTORCHARP_CONSTP_DEEP_COPY && !defined(VECTORCHARP_CONSTP_IFREE)
+#define VECTORCHARP_CONSTP_IFREE(A1) delete((A1))
+#endif
+
+#if CONST_VECTORCHARPP_DEEP_COPY && !defined(CONST_VECTORCHARPP_IFREE)
+#define CONST_VECTORCHARPP_IFREE(A1) delete((A1))
+#endif
+
+#if VECTOR_CHAR_P_T_P_DEEP_COPY && !defined(VECTOR_CHAR_P_T_P_IFREE)
+#define VECTOR_CHAR_P_T_P_IFREE(A1) vector_char_p_delete((A1))
+#endif
+
+#if VECTOR_CHAR_P_T_CONST_P_DEEP_COPY && !defined(VECTOR_CHAR_P_T_CONST_P_IFREE)
+#define VECTOR_CHAR_P_T_CONST_P_IFREE(A1) vector_char_p_delete((A1))
+#endif
+
+#if CONST_VECTOR_CHAR_P_T_P_DEEP_COPY && !defined(CONST_VECTOR_CHAR_P_T_P_IFREE)
+#define CONST_VECTOR_CHAR_P_T_P_IFREE(A1) vector_char_p_delete((A1))
+#endif
+
+#if VECTORCHARP_P_DEEP_COPY && !defined(VECTORCHARP_P_IFREE)
+#define VECTORCHARP_P_IFREE(A1) delete((A1))
+#endif
+
+#if VECTORCHARP_CONST_P_DEEP_COPY && !defined(VECTORCHARP_CONST_P_IFREE)
+#define VECTORCHARP_CONST_P_IFREE(A1) delete((A1))
+#endif
+
+#if CONST_VECTORCHARP_P_DEEP_COPY && !defined(CONST_VECTORCHARP_P_IFREE)
+#define CONST_VECTORCHARP_P_IFREE(A1) delete((A1))
+#endif
+
+#if VECTOR_CHAR_P_TP_DEEP_COPY && !defined(VECTOR_CHAR_P_TP_OFREE)
+#define VECTOR_CHAR_P_TP_OFREE(A1) vector_char_p_delete((A1))
+#endif
+
+#if VECTOR_CHAR_P_T_CONSTP_DEEP_COPY && !defined(VECTOR_CHAR_P_T_CONSTP_OFREE)
+#define VECTOR_CHAR_P_T_CONSTP_OFREE(A1) vector_char_p_delete((A1))
+#endif
+
+#if CONST_VECTOR_CHAR_P_TP_DEEP_COPY && !defined(CONST_VECTOR_CHAR_P_TP_OFREE)
+#define CONST_VECTOR_CHAR_P_TP_OFREE(A1) vector_char_p_delete((A1))
+#endif
+
+#if VECTORCHARPP_DEEP_COPY && !defined(VECTORCHARPP_OFREE)
+#define VECTORCHARPP_OFREE(A1) delete((A1))
+#endif
+
+#if VECTORCHARP_CONSTP_DEEP_COPY && !defined(VECTORCHARP_CONSTP_OFREE)
+#define VECTORCHARP_CONSTP_OFREE(A1) delete((A1))
+#endif
+
+#if CONST_VECTORCHARPP_DEEP_COPY && !defined(CONST_VECTORCHARPP_OFREE)
+#define CONST_VECTORCHARPP_OFREE(A1) delete((A1))
+#endif
+
+#if VECTOR_CHAR_P_T_P_DEEP_COPY && !defined(VECTOR_CHAR_P_T_P_OFREE)
+#define VECTOR_CHAR_P_T_P_OFREE(A1) vector_char_p_delete((A1))
+#endif
+
+#if VECTOR_CHAR_P_T_CONST_P_DEEP_COPY && !defined(VECTOR_CHAR_P_T_CONST_P_OFREE)
+#define VECTOR_CHAR_P_T_CONST_P_OFREE(A1) vector_char_p_delete((A1))
+#endif
+
+#if CONST_VECTOR_CHAR_P_T_P_DEEP_COPY && !defined(CONST_VECTOR_CHAR_P_T_P_OFREE)
+#define CONST_VECTOR_CHAR_P_T_P_OFREE(A1) vector_char_p_delete((A1))
+#endif
+
+#if VECTORCHARP_P_DEEP_COPY && !defined(VECTORCHARP_P_OFREE)
+#define VECTORCHARP_P_OFREE(A1) delete((A1))
+#endif
+
+#if VECTORCHARP_CONST_P_DEEP_COPY && !defined(VECTORCHARP_CONST_P_OFREE)
+#define VECTORCHARP_CONST_P_OFREE(A1) delete((A1))
+#endif
+
+#if CONST_VECTORCHARP_P_DEEP_COPY && !defined(CONST_VECTORCHARP_P_OFREE)
+#define CONST_VECTORCHARP_P_OFREE(A1) delete((A1))
+#endif
+
+#ifndef VECTORCHARP_CONSTRUCTOR
+#define VECTORCHARP_CONSTRUCTOR(A1) ((A1)._constructor())
+#endif
+
+#ifndef VECTORCHARP_DESTRUCTOR
+#define VECTORCHARP_DESTRUCTOR(A1) ((A1)._destructor())
+#endif
+
+
+#endif /* defined ERWIN_VECTOR_CHAR_P_f_h */
+

@@ -1,0 +1,19 @@
+
+
+all:
+	(cd .. && $(MAKE) )
+
+.PHONY: all clean install distclean develclean
+
+clean:
+	(cd .. && $(MAKE) clean)
+
+distclean:
+	(cd .. && $(MAKE) distclean)
+
+develclean:
+	(cd .. && $(MAKE) develclean)
+
+install:
+	(cd .. && $(MAKE) install)
+

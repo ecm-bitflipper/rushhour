@@ -1,0 +1,166 @@
+symbol.so symbol.lo symbol.o: symbol.cpp /usr/include/assert.h /usr/include/features.h \
+ /usr/include/bits/predefs.h /usr/include/sys/cdefs.h \
+ /usr/include/bits/wordsize.h /usr/include/gnu/stubs.h \
+ /usr/include/gnu/stubs-32.h erwin/include/erwin/erwin.h \
+ erwin/include/erwin/base.h erwin/include/erwin/defs.h settings.h \
+ erwin/include/erwin/config.h \
+ /usr/lib/gcc/i486-linux-gnu/4.4.1/include-fixed/limits.h \
+ /usr/lib/gcc/i486-linux-gnu/4.4.1/include-fixed/syslimits.h \
+ /usr/include/limits.h /usr/include/bits/posix1_lim.h \
+ /usr/include/bits/local_lim.h /usr/include/linux/limits.h \
+ /usr/include/bits/posix2_lim.h /usr/include/bits/xopen_lim.h \
+ /usr/include/bits/stdio_lim.h /usr/include/stdlib.h \
+ /usr/lib/gcc/i486-linux-gnu/4.4.1/include/stddef.h \
+ /usr/include/bits/waitflags.h /usr/include/bits/waitstatus.h \
+ /usr/include/endian.h /usr/include/bits/endian.h \
+ /usr/include/bits/byteswap.h /usr/include/xlocale.h \
+ /usr/include/sys/types.h /usr/include/bits/types.h \
+ /usr/include/bits/typesizes.h /usr/include/time.h \
+ /usr/include/sys/select.h /usr/include/bits/select.h \
+ /usr/include/bits/sigset.h /usr/include/bits/time.h \
+ /usr/include/sys/sysmacros.h /usr/include/bits/pthreadtypes.h \
+ /usr/include/alloca.h /usr/include/bits/stdlib.h \
+ erwin/include/erwin/asm.h erwin/include/erwin/asm_i386.h \
+ erwin/include/erwin/asm_gen.h erwin/include/erwin/map.h \
+ erwin/include/erwin/vector.h erwin/include/erwin/list.h \
+ erwin/include/erwin/typeinfo.h decls.h erwin/include/erwin/forwards.h \
+ erwin/include/vector_char_p_f.h erwin/include/vector_edge_p_f.h \
+ erwin/include/vector_car_p_f.h erwin/include/map_int_char_p_f.h \
+ erwin/include/symtab_f.h erwin/include/map_board_p_node_p_f.h \
+ erwin/include/vector_board_p_f.h erwin/include/vector_node_p_f.h \
+ erwin/include/v_char_f.h erwin/include/map_int_int_f.h \
+ erwin/include/map_int_rgbcolour_p_f.h erwin/include/vector_char_p.h \
+ erwin/include/erwin/defs.h erwin/include/vector_char_p_d.h \
+ erwin/include/vector_u.h erwin/include/vector_char_p_u.h \
+ erwin/include/erwin/base.h erwin/include/erwin/forwards.h \
+ /usr/include/stdio.h /usr/include/libio.h /usr/include/_G_config.h \
+ /usr/include/wchar.h /usr/lib/gcc/i486-linux-gnu/4.4.1/include/stdarg.h \
+ /usr/include/bits/sys_errlist.h /usr/include/bits/stdio.h \
+ /usr/include/bits/stdio2.h erwin/include/vector_char_p_i.h \
+ erwin/include/vector_edge_p.h erwin/include/vector_char_p.h \
+ erwin/include/vector_car_p.h erwin/include/map_int_char_p.h \
+ erwin/include/map_int_char_p_d.h erwin/include/map_u.h \
+ erwin/include/map_int_char_p_u.h erwin/include/map_int_char_p_i.h \
+ erwin/include/symtab.h erwin/include/symtab_d.h erwin/include/symtab_u.h \
+ erwin/include/symtab_i.h erwin/include/map_board_p_node_p.h \
+ erwin/include/map_board_p_node_p_d.h \
+ erwin/include/map_board_p_node_p_u.h \
+ erwin/include/map_board_p_node_p_i.h erwin/include/vector_board_p.h \
+ erwin/include/vector_node_p.h erwin/include/v_char.h \
+ erwin/include/v_char_d.h erwin/include/v_char_u.h \
+ erwin/include/v_char_i.h erwin/include/map_int_int.h \
+ erwin/include/map_int_int_d.h erwin/include/map_int_int_u.h \
+ erwin/include/map_int_int_i.h erwin/include/map_int_rgbcolour_p.h \
+ erwin/include/map_int_rgbcolour_p_d.h \
+ erwin/include/map_int_rgbcolour_p_u.h \
+ erwin/include/map_int_rgbcolour_p_i.h
+symbol.cpp :
+/usr/include/assert.h :
+/usr/include/features.h :
+/usr/include/bits/predefs.h :
+/usr/include/sys/cdefs.h :
+/usr/include/bits/wordsize.h :
+/usr/include/gnu/stubs.h :
+/usr/include/gnu/stubs-32.h :
+symbol.h :
+erwin/include/erwin/erwin.h :
+erwin/include/erwin/base.h :
+erwin/include/erwin/defs.h :
+settings.h :
+erwin/include/erwin/config.h :
+/usr/lib/gcc/i486-linux-gnu/4.4.1/include-fixed/limits.h :
+/usr/lib/gcc/i486-linux-gnu/4.4.1/include-fixed/syslimits.h :
+/usr/include/limits.h :
+/usr/include/bits/posix1_lim.h :
+/usr/include/bits/local_lim.h :
+/usr/include/linux/limits.h :
+/usr/include/bits/posix2_lim.h :
+/usr/include/bits/xopen_lim.h :
+/usr/include/bits/stdio_lim.h :
+/usr/include/stdlib.h :
+/usr/lib/gcc/i486-linux-gnu/4.4.1/include/stddef.h :
+/usr/include/bits/waitflags.h :
+/usr/include/bits/waitstatus.h :
+/usr/include/endian.h :
+/usr/include/bits/endian.h :
+/usr/include/bits/byteswap.h :
+/usr/include/xlocale.h :
+/usr/include/sys/types.h :
+/usr/include/bits/types.h :
+/usr/include/bits/typesizes.h :
+/usr/include/time.h :
+/usr/include/sys/select.h :
+/usr/include/bits/select.h :
+/usr/include/bits/sigset.h :
+/usr/include/bits/time.h :
+/usr/include/sys/sysmacros.h :
+/usr/include/bits/pthreadtypes.h :
+/usr/include/alloca.h :
+/usr/include/bits/stdlib.h :
+erwin/include/erwin/asm.h :
+erwin/include/erwin/asm_i386.h :
+erwin/include/erwin/asm_gen.h :
+erwin/include/erwin/map.h :
+erwin/include/erwin/vector.h :
+erwin/include/erwin/list.h :
+erwin/include/erwin/typeinfo.h :
+decls.h :
+erwin/include/erwin/forwards.h :
+erwin/include/vector_char_p_f.h :
+erwin/include/vector_edge_p_f.h :
+erwin/include/vector_car_p_f.h :
+erwin/include/map_int_char_p_f.h :
+erwin/include/symtab_f.h :
+erwin/include/map_board_p_node_p_f.h :
+erwin/include/vector_board_p_f.h :
+erwin/include/vector_node_p_f.h :
+erwin/include/v_char_f.h :
+erwin/include/map_int_int_f.h :
+erwin/include/map_int_rgbcolour_p_f.h :
+erwin/include/vector_char_p.h :
+erwin/include/erwin/defs.h :
+erwin/include/vector_char_p_d.h :
+erwin/include/vector_u.h :
+erwin/include/vector_char_p_u.h :
+erwin/include/erwin/base.h :
+erwin/include/erwin/forwards.h :
+/usr/include/stdio.h :
+/usr/include/libio.h :
+/usr/include/_G_config.h :
+/usr/include/wchar.h :
+/usr/lib/gcc/i486-linux-gnu/4.4.1/include/stdarg.h :
+/usr/include/bits/sys_errlist.h :
+/usr/include/bits/stdio.h :
+/usr/include/bits/stdio2.h :
+erwin/include/vector_char_p_i.h :
+erwin/include/vector_edge_p.h :
+erwin/include/vector_char_p.h :
+erwin/include/vector_car_p.h :
+erwin/include/map_int_char_p.h :
+erwin/include/map_int_char_p_d.h :
+erwin/include/map_u.h :
+erwin/include/map_int_char_p_u.h :
+erwin/include/map_int_char_p_i.h :
+erwin/include/symtab.h :
+erwin/include/symtab_d.h :
+erwin/include/symtab_u.h :
+erwin/include/symtab_i.h :
+erwin/include/map_board_p_node_p.h :
+erwin/include/map_board_p_node_p_d.h :
+erwin/include/map_board_p_node_p_u.h :
+erwin/include/map_board_p_node_p_i.h :
+erwin/include/vector_board_p.h :
+erwin/include/vector_node_p.h :
+erwin/include/v_char.h :
+erwin/include/v_char_d.h :
+erwin/include/v_char_u.h :
+erwin/include/v_char_i.h :
+erwin/include/map_int_int.h :
+erwin/include/map_int_int_d.h :
+erwin/include/map_int_int_u.h :
+erwin/include/map_int_int_i.h :
+erwin/include/map_int_rgbcolour_p.h :
+erwin/include/map_int_rgbcolour_p_d.h :
+erwin/include/map_int_rgbcolour_p_u.h :
+erwin/include/map_int_rgbcolour_p_i.h :
+symbol.inc :

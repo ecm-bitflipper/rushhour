@@ -1,0 +1,67 @@
+dnl -*- Mode: M4 -*-
+
+define(_PROGNAME, __REPLACE__)
+
+AC_INIT(_PROGNAME.cpp)
+BASE_VERSION=0.1
+
+dnl Uncomment features that you want to use.  You can use 'optional' as a value
+dnl instead of '1' to make the feature mandatory during configure checks:
+dnl
+dnl If features need other features, these will be enabled automatically.
+dnl Only enable what you need yourself.
+dnl
+dnl define(_USE_DMALLOC,    1)
+dnl define(_USE_ERWIN,      1) dnl use data structure template library
+dnl define(_USE_SYMBOL,     1) dnl make a symbol table implementation
+dnl define(_USE_LIBERROR,   1) dnl message handling library
+dnl define(_USE_AT,         1) dnl library to expand the command line from files (Windos @-feature)
+dnl define(_USE_LIBCONFIG,  1) dnl library to read command line options (from config files, too)
+dnl define(_USE_LICENSE,    1) dnl license checking
+dnl define(_USE_PAG,        1) dnl and select at least one frontend:
+dnl define(_USE_CRLFRONT,   1) dnl if you select more than one frontend, define
+dnl define(_USE_CRL2FRONT,  1) dnl them as 'optional' instead of '1'.
+dnl define(_USE_CRL2,       1) dnl the crl2 reader/writer library
+dnl define(_USE_LIBAICA,    1) dnl cache analysis library for crl
+dnl define(_USE_LIBAICA2,   1) dnl cache analysis library for crl2
+dnl define(_USE_PATHAN,     1) dnl path analysis library for crl
+dnl define(_USE_PATTERN,    1) dnl pattern compiler
+dnl define(_USE_TF14NET,    1) define(_TF14NET_TARGETS, arm thumb x86 ...)
+dnl define(_USE_FRACTION,   1) dnl library for fractions and ranges of fractions
+dnl define(_USE_BEZIER,     1) dnl library for Metafont path algorithms
+dnl define(_USE_STR2INT,    1) dnl library for converting float strings into ints (solve2crl...)
+dnl define(_USE_QT,         1) dnl the Qt widget system
+dnl define(_USE_PNG,        1) dnl PNG image library
+dnl define(_USE_SNDFILE,    1) dnl sound file reading/writing library
+dnl define(_USE_GMP,        1) dnl GNU MP library
+dnl define(_USE_LISP,       1) dnl Lisp basics (scanner, parser, syntree)
+dnl define(_USE_LISHT,      1) dnl Lisht basics (scanner, parser, syntree)
+dnl define(_USE_LIBUNICODE, 1) dnl unicode data directory
+dnl define(_USE_LIBUNINORM, 1) dnl unicode normalisation library
+dnl define(_USE_LOOP,       1) dnl loop analysis library
+dnl define(_USE_XAI,        1) dnl AbsInt XML printing library
+dnl define(_USE_BEX,        1) dnl GPL library for object file reading/writing/modification
+dnl define(_USE_NSL,        1) dnl things like gethostbyname()
+dnl define(_USE_SOCKET,     1) dnl things like socket()
+dnl define(_USE_WINNET,     1) dnl Windos network libraries
+dnl define(_USE_LIBRARY,    1) dnl library of useful data structures
+dnl define(_USE_LIBCRL,     1) dnl the crl library
+dnl define(_USE_ATTRPROP,   1) dnl attribute property library
+dnl define(_USE_MEMBANK,    1) dnl memory banked allocation library
+dnl define(_USE_BOEHM,      1) dnl boehm library
+                           
+builtin(include, make/acmake.m4)
+
+dnl __REPLACE__ for libraries: HT_PREFIX_PROGRAM([lib]_PROGNAME-version)
+
+AC_OUTPUT(Makefile
+__REPLACE__if_you_have_this__ include/Makefile
+__REPLACE__if_you_have_this__ include/_PROGNAME/Makefile
+__REPLACE__if_you_have_doc__  doc/Makefile
+__REPLACE__for_libraries__    [lib]_PROGNAME-version.in
+__REPLACE__for_linktest__     linktest/Makefile
+make/Defs
+make/Rules)
+
+echo "*** prefix=$prefix"
+echo "*** datadir=$datadir"

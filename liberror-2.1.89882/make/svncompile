@@ -1,0 +1,31 @@
+#! /bin/sh
+if ! test -d make; then
+    echo "make subdir not checked out." 1>&2
+    echo "try something like:" 1>&2
+    echo "   svn checkout \$SVNROOT/trunk/tool/htmake make" 1>&2
+    exit 1
+fi
+
+if test "x`uname`" = "xNetBSD"; then
+    MAKE=gmake
+fi
+
+echo "Sweeping..."
+make develclean
+rm -f failure.h
+rm -f *.stamp
+rm -f *.o
+rm -f *.a
+rm -rf erwin
+echo "makeerwin..."
+/bin/sh makeerwin || exit 1
+echo "autoconf..."
+# same machines try to be too smart, the others do not have -f:
+autoconf -f || autoconf || exit 1
+#echo "autoheader... (if needed)"
+#autoheader || exit 1
+echo "configure..."
+./configure "$@" || exit 1
+echo "make..."
+${MAKE-make} clean
+${MAKE-make} $default_make_flags || exit 1

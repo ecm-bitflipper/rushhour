@@ -1,0 +1,43 @@
+dnl Test whether install script is usable...
+
+dnl ****
+dnl **** Requires configure-shellvars *before* invokation!!
+dnl ****
+
+AC_PROG_INSTALL
+
+AC_CACHE_CHECK(whether ${INSTALL} -d can create directories, ac_cv_installd, [
+   ac_cv_installd=yes
+   ${INSTALL} -d -m 755 config.testdir 2>/dev/null > /dev/null || ac_cv_installd=no
+   test -d config.testdir 2>/dev/null > /dev/null || ac_cv_installd=no
+   ${RMDIR} config.testdir 2>/dev/null > /dev/null
+])
+
+AC_CACHE_CHECK(whether ${INSTALL} can copy files, ac_cv_installf, [
+   ac_cv_installf=yes
+   ${MKDIR} config.testdir 2>/dev/null >/dev/null
+   ${ECHO} echo "Hallo" > config.testfile
+   ${INSTALL} -m 644 config.testfile config.testdir 2>/dev/null > /dev/null || ac_cv_installf=no
+   test -f config.testdir/config.testfile 2>/dev/null > /dev/null || ac_cv_installf=no
+   ${RM} config.testdir/config.testfile 2>/dev/null > /dev/null
+   ${RMDIR} config.testdir 2>/dev/null > /dev/null
+   ${RM} config.testfile 2>/dev/null > /dev/null
+])
+
+installok=yes
+test "$ac_cv_installd" = "yes" || installok=no
+test "$ac_cv_installf" = "yes" || installok=no
+
+if test "$installok" = "no" ; then
+   INSTALL="${ac_install_sh}"
+   ${ECHO} "Warning: using fall-back script ${INSTALL}." 1>&2
+fi
+
+test -z "${INSTALL_PROGRAM}" && INSTALL_PROGRAM='${INSTALL}'
+test -z "${INSTALL_DATA}"    && INSTALL_DATA='${INSTALL} -m 644'
+test -z "${INSTALL_DIR}"     && INSTALL_DIR='${INSTALL} -d -m 755'
+
+AC_SUBST(INSTALL)
+AC_SUBST(INSTALL_PROGRAM)
+AC_SUBST(INSTALL_DATA)
+AC_SUBST(INSTALL_DIR)

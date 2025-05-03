@@ -1,0 +1,26 @@
+# -*- Mode: Makefile -*-
+# Copyright & vendor settings:
+
+VENDOR_SUBDIR = absint
+
+ABSINT_URL    = http://www.absint.com/
+UDS_URL       = http://www.uni-sb.de.com/
+
+VENDOR_HTML   = <a href="$(ABSINT_URL)">AbsInt Angewandte Informatik GmbH</a> &amp; \
+                <a href="$(UDS_URL)">Universit&auml;t des Saarlandes</a>
+
+VENDOR        = AbsInt Angewandte Informatik GmbH & Universitaet des Saarlandes
+
+COPYRIGHT = COPYING
+
+LOCAL_FILES += COPYING
+
+# Binary distribution by default:
+DEFAULT_DISTRO = bin
+
+# Copyright:
+
+do-it-all: $(srcdir)/COPYING
+
+$(srcdir)/COPYING: $(top_srcdir)/make/$(VENDOR_SUBDIR)/COPYING
+	cp $< $@

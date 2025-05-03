@@ -1,0 +1,127 @@
+make subdirectory
+-----------------
+
+These should always be the reference files for the build process.
+
+Needs
+~~~~~
+    - GNU autoconf
+    - GNU make
+
+Features
+~~~~~~~~
+    - makes libraries or programs
+
+    - selectable support for:
+          dmalloc
+          erwin
+          PAG
+          CrlFront
+          liberror
+          libcrl2
+          libpathan
+          liblisp
+          symbols
+          flex
+          gperf
+          bison
+
+    - very short Makefiles
+          (extensive use of GNU Make features)
+
+    - per file options to GCC.
+      (Searches --extra-options-gcc: .... lines)
+
+    - compilation of C and C++:
+          automatic dependency updates
+
+    - make targets:
+          all
+          clean, distclean, develclean
+          wincopy, wincopyall
+          count
+
+    - Automatic nmakefile generation for Windows
+
+    - Source and binary packaging
+
+    - Debian/Ubuntu packaging
+
+    - Freshmeat announcement
+
+----------------------------------------------------------------------
+
+Start a new project
+~~~~~~~~~~~~~~~~~~~
+
+    - make a new directory and cd into it.
+
+
+    - cvs checkout -d make ht/make
+
+    - cp make/{configure.in,Makefile.in,.cvsignore,cvscompile} .
+      Edit these, look for REPLACE.
+      (Make a .c or .cpp file for the AC_INIT configure test).
+
+    - for Erwin:
+      cp make/makeerwin .
+      Edit it.
+
+    - for Libraries:
+        - LIBNAME=your_library_name
+          cp make/libTEMPLATE-version.in.in ./lib${LIBNAME}-version.in.in
+
+          Edit it to change the copyright information.
+
+        - mkdir include
+          cp make/Makefile.in.subdir include/
+
+          mkdir include/your_library_name
+          cp make/Makefile.in.subdir include/your_library_name
+
+----------------------------------------------------------------------
+
+Makefile variables
+~~~~~~~~~~~~~~~~~~
+
+CMODULES
+    files to be compiled and linked using C.  File ending: .c
+
+CPPMODULES
+    file to be compiled and linked using C++. File ending: .cpp
+
+CXXMODULES
+CCMODULES
+    Deprecated!
+    (C++ files with different endings.  'make wincopyall' does not support
+    these)
+
+LMODULES
+    Flex modules to be processed with flex and then compiled using
+    either C or C++.  File ending: .l
+
+    Note: a prefix is automatically set by the filename stem.  E.g.
+    test.l would set a prefix of 'test_', i.e., the scanned text
+    would be 'test_text'.  The intermediate C/C++ file would be
+    called test_scanner.c/cpp/cc.
+
+YMODULES
+    Bison modules to be processed with bison and then compiled using
+    either C or C++.  File ending: .y
+
+    Note: a prefix is automatically set by the filename stem.  E.g.
+    test.y would set a prefix of 'test_', i.e., the scanned text
+    would be 'test_text'.  The intermediate C/C++ file would be
+    called test_parser.c/cpp/cc and the header file test_parser.h.
+
+GPERFMODULES
+    Files to be processed with gperf.  File ending: .gperf
+    Output files: same filename stem, but .inc.
+
+    These are not automatically compiled but expected to be
+    #included in another C/C++ file.
+
+    The GPerf command line is search in the input file:
+       Command-line: ...
+
+Many more unfortunately currently without documentation.

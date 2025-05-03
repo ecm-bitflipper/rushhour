@@ -1,0 +1,3 @@
+version.so version.lo version.o: version.cpp include/error/version.h
+version.cpp :
+include/error/version.h :

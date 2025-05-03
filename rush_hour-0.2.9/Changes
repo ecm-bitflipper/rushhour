@@ -1,0 +1,12 @@
+Changes
+-------
+
+ - 0.2.x:
+    - added GDL trace feature: draws nice decision trees now
+    - added option --help
+    - fixed problem with 'make clean'
+      (recognise subdir was still mentioned in Makefile.in)
+    - fixed compilation under Windos
+ 
+ - 0.1.136:
+    Initial stable release

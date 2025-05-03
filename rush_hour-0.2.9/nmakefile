@@ -1,0 +1,100 @@
+
+CC=cl 
+CXX=cl 
+LD=link 
+AR=lib 
+MT=mt 
+NMAKE=nmake  /f nmakefile
+
+WINCXXFLAGS=/O2 /MD  
+WINCFLAGS=/O2 /MD  
+WINCPPFLAGS=/D_CRT_SECURE_NO_DEPRECATE /D_CRT_NONSTDC_NO_DEPRECATE /DPROGNAME_AUX=rush_hour /DIN_LIBRUSH_HOUR_COMPILE /DHAVE_LIBERROR=1  
+WINLDFLAGS=  
+
+WINPREFIX=E:\WINNT
+prefix=$(WINPREFIX)
+exec_prefix=$(prefix)
+includedir=$(prefix)\include
+bindir=$(exec_prefix)\bin
+libdir=$(exec_prefix)\lib
+datadir=$(prefix)\share
+sharedir=$(datadir)\rush_hour
+docdir=$(datadir)\doc\packages\rush_hour
+
+MORE_CPPFLAGS=/DERWIN_DOS=1 /DWINDOWS=1 /DERWIN_MSVC=1 /DMSDOS=1 /DDOS=1 /D_CRT_SECURE_NO_DEPRECATE /D_CRT_NONSTDC_NO_DEPRECATE \
+      /D_POSIX_ \
+      /DPROGNAME_TOKEN=rush_hour \
+      /I. /Ierwin\include /Iinclude \
+      /I$(includedir) 
+LESS_CPPFLAGS=$(WINCPPFLAGS)
+CPPFLAGS=$(LESS_CPPFLAGS) $(MORE_CPPFLAGS)
+COMMON_CFLAGS=/Zm1000
+CXXFLAGS=$(COMMON_CFLAGS) $(WINCXXFLAGS)
+CFLAGS=$(COMMON_CLFAGS) $(WINCFLAGS)
+LDFLAGS= $(WINLDFLAGS) \
+      $(libdir)\error.lib \
+      /SUBSYSTEM:console
+
+ERWIN_OBJS= erwin\lib\init.obj erwin\lib\list.obj erwin\lib\map_board_p_node_p.obj erwin\lib\map_int_char_p.obj erwin\lib\map_int_int.obj erwin\lib\map_int_rgbcolour_p.obj erwin\lib\symtab.obj erwin\lib\v_char.obj erwin\lib\vector_board_p.obj erwin\lib\vector_car_p.obj erwin\lib\vector_edge_p.obj erwin\lib\vector_node_p.obj erwin\lib\map.obj erwin\lib\vector_char_p.obj erwin\lib\vector.obj erwin\lib\base.obj
+
+MKDIR=mkdir
+RM=del
+CP=copy
+
+all: program library
+
+program: rush_hour.exe
+
+rush_hour.exe: rush_hour.obj version.obj symbol.obj  erwin-lib
+	$(LD) @<<tmpmake
+/out:rush_hour.exe rush_hour.obj version.obj symbol.obj 
+erwin/lib/erwin.lib
+$(LDFLAGS) $(LIBS)
+<<
+	-$(MT) -manifest rush_hour.exe.manifest /outputresource:rush_hour.exe;1
+
+
+erwin-lib:
+	cd erwin
+	$(NMAKE) @<<tmpmake
+MORE_CXXFLAGS="$(CXXFLAGS)"
+MORE_CFLAGS="$(CFLAGS)"
+LESS_CPPFLAGS="$(LESS_CPPFLAGS)"
+MORE_CPPFLAGS="$(MORE_CPPFLAGS)"
+<<
+	cd ..
+
+library:
+
+rush_hour.obj: rush_hour.cpp
+	$(CXX) @<<tmpmake
+rush_hour.cpp $(CPPFLAGS) /TP $(CXXFLAGS) /c
+<<
+
+version.obj: version.cpp
+	$(CXX) @<<tmpmake
+version.cpp $(CPPFLAGS) /TP $(CXXFLAGS) /c
+<<
+
+symbol.obj: symbol.cpp
+	$(CXX) @<<tmpmake
+symbol.cpp $(CPPFLAGS) /TP $(CXXFLAGS) /c
+<<
+
+
+clean:
+	cd erwin
+	- $(NMAKE)  clean
+	cd ..
+	- $(RM) rush_hour.obj version.obj symbol.obj  $(ERWIN_OBJS)
+	- $(RM) rush_hour.exe
+	- $(RM) *.o
+	- $(RM) *.obj
+	- $(RM) *.lib
+	- $(RM) *.ext
+
+installdirs:
+	- $(MKDIR) $(bindir)
+
+install: installdirs
+	- $(CP) rush_hour.exe $(bindir)

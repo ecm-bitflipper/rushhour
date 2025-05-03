@@ -1,0 +1,240 @@
+# @MODE_FUNDAMENTAL@ -*- Mode: Makefile -*-
+######################################################################
+
+srcdir    = @srcdir@
+top_srcdir= @top_srcdir@
+
+include $(top_srcdir)/make/Defs
+
+# Copyright and other settings:
+# Please uncomment appropriate and delete non-appropriate:
+#include $(top_srcdir)/make/absint/Config
+   # AbsInt Binary Distribution
+
+#include $(top_srcdir)/make/ht/Config
+   # HT Open Source Distribution
+
+#include $(top_srcdir)/make/ht+absint/Config
+   # HT & AbsInt Open Source Distribution
+
+######################################################################
+
+# Either a program or a library
+PROG    = _REPLACE_
+LIBRARY = _REPLACE_
+   # e.g. for lib....a
+   #
+   # If you have a library, delete the PROG= line and fill in the library
+   # line with the library's base name.  If you have a program, do it
+   # vice versa.
+
+INCLUDE_SUBDIR =
+   # Usually, delete this line.  If you have a non-standard subdirectory
+   # in ./include, then define this to that name.  The standard, default
+   # subdirectory is $(LIBRARY).
+   #
+   # If unsure, leave unset.
+
+GLOBAL_PREFIX=
+   # e.g. for XYZ_version (if unset, same as above name with _ appended)
+   #
+   # If unsure, leave unset.
+
+ERROR_SUBSYSTEM=
+   # if this is 1, defaults to $(GLOBAL_PREFIX) for libraries or
+   # to 0 for programs.
+   #
+   # If unsure, just say 1 .
+
+USE_ERWIN=
+   # prefix of Erwin library (if that is used).
+   # If this is 1, then it is redefined for libraries to $(GLOBAL_PREFIX).
+   # Other values are left untouched.
+   #
+   # If unsure, just say 1 .
+
+USE_ERWIN_CGEN=
+   # Whether to use Erwin CGEN to automatically generate a C interface around
+   # your C++ libary.  This requires a special style of C++ header files.
+   # See the Erwin documentation for details.  E.g. see:
+   #    http://www.theiling.de/refman/erwin2/manual1.html#8:2
+
+INSTALL_ERWIN=
+   # If 0, Erwin will not be installed for libraries during 'make install'.
+   # The default is to install Erwin.
+   #
+   # If unsure, just leave untouched.
+
+INSTALL_VERSION=
+   # For a library, the default is to install the version.h file.  Setting
+   # this to 0 disables this installation.
+
+################### PAG
+USE_PAG=
+   # if set to 1, adds include paths to find pag in the location and
+   # links the pag library (this is for Windows.  Under Unix, this is
+   # done in the configure script).
+   #
+   # If unsure, leave unset.  (You'll know when you want to use PAG. :-))
+
+PAG_FRONTEND=
+   # Frontend for PAG analysis.
+   # Default is 'crl'
+   # This only has an effect when USE_PAG=1 .
+
+PAG_ANALYSIS=
+   # Base name for PAG analysis, i.e. name of your optla specification
+   # without the file extension '.optla'.
+   # Default is none: no pag analysis files will be generated or linked.
+   # This only has an effect whe USE_PAG=1 .
+
+PAG_ITERATOR=
+   # Iterator for PAG analysis.
+   # The default is 'iterate1.t'.
+   # This only has an effect when USE_PAG=1 and PAG_ANALYSER is set.
+
+PAG_OPTLA_USE_M4=
+   # set if you want 'analyzer.optla' to be generated from 'analyzer.optla.m4'
+   # needs USE_PAG=1
+
+################### Symbol
+USE_SYMBOL=
+   # if set to non-empty, a file symbol.inc will automatically be generated from
+   # all source files.  If not set to 1, but to something else, this defines the
+   # symbol prefix for the symbols.  The default prefix is sym_.
+   #
+   # See NO_SYMBOL_C for more info and how to initialise the symbols from
+   # your code.
+   #
+   # For this to work, you need an Erwin type $(GLOBAL_PREFIX)_symtab_t (map
+   # from hashed char const * to any type you like) and there must be a type
+   # $(GLOBAL_PREFIX)symbol_t defined.
+   #
+   # If unsure, say 1 if you use Erwin, leave unset otherwise.
+
+
+   # If your project is C only redefine CXX_EXT as shown below:
+   # CXX_EXT=c
+
+INSTALL_SYMBOL=
+   # For libraries, you have the option of installing the constant symbols
+   # used in the library so that they become visible for the user.
+   # A value of 1 of this option triggers installation and dynamic symbol
+   # translation.
+   #
+   # Please note that this also modifies the symbol table implementation
+   # in such a way that Prefix_string2symbol_func is a function pointer that
+   # can be changed by the user of the library so that the library can
+   # use the same symbol table as some other part of the program.
+   # The default implementation of that function will be called
+   # Prefix_string2symbol_func_default.
+
+NO_SYMBOL_C=
+   # When this is not set but USE_SYMBOL is active, files symbol.$(CXX_EXT)
+   # and symbol.h are copied from the make/ subdirectory and then compiled
+   # whenever symbol.inc is changed.  If this is set to anything non-empty,
+   # you have to handle the compilation of symbols yourself.
+   #
+   # The only thing to additionally have to do is to invoke
+   # $(GLOBAL_PREFIX)symbol_init(&argc, &argv) for the symbols to initialise.
+   #
+   # If unsure, leave unset.
+
+INSTALL_FAILURE=
+   # If you do not want to install the automatically generated failure.h
+   # header file, define this to 0.  For programs, this has no effect.
+   #
+   # If unsure, leave unset.
+
+######################################################################
+
+SUBDIRS=
+   # sub-directories may have their own projects and libraries.
+   # libraries in sub-directories are linked before the top-level
+   # library.  For programs, there is a special target all-post to
+   # link the program after the top-level directory.
+
+######################################################################
+# Parameters and options:
+
+EXTRA_DEFS =
+EXTRA_WIN_DEFS=
+   # Same for Windows compilation.
+
+EXTRA_PROG =
+
+CPPMODULES =
+CMODULES   =
+    # Enter the base names of your source files here.
+    # Use .cpp so that the project can be compiled under Windows
+    # without renaming the files.
+    #
+    # If you use symbols, be sure to add symbol.c/symbol.cpp here
+    # If unsure what the previous sentence really wants to tell you,
+    # ignore it if you left the NO_SYMBOL_C entry empty.
+
+YMODULES   =
+LMODULES   =
+    # flex and bison are automatically invoked for these.  Prefixes
+    # are set up from the names.  E.g. for a file 'test', flex
+    # will be invoked for 'test.l' and the identifiers will be
+    # called 'test_text, test_error, text_lex' instead of 'yy...'.
+
+EXTRA_GENCPPMODULES=
+    # extra generated .cpp files that you want to have compiled
+
+EXTRA_SOURCES=
+    # more source files (Perl, Shell, whatever)
+
+HPPHEADERS =
+HHHEADERS  =
+HHEADERS   =
+    # if you use symbols, be sure to add symbol.h/symbol.hpp here
+
+DOC_FILES  =
+    # Documentation files in the doc/ subdirectory.  These will be
+    # installed in the documentation directory automatically.
+    # Wildcard characters are explicitly allowed
+
+GEN_DOC_FILES=
+    # Same as DOC_FILES, but will be deleted by 'make clean'
+
+######################################################################
+
+do-it-all: all-top
+    # default target
+
+run: # e.g.: run-top
+
+doc:
+   # How to make documentation files
+   # This target target will be automatically run in the all-post-local phase,
+   # i.e., just aber all-post in the sub-directories.  You should generate the
+   # GEN_DOC_FILES with this target.
+
+# For more installations (e.g. links, etc.,) you can use the following targets:
+install-local:
+uninstall-local:
+
+# For invoking 'install' and 'uninstall' actions for subdirs, use the following
+# targets.  Note that the Makefile does not automatically recurse to subdirs
+# for installation -- you have to invoke each subdir that wants to install
+# something manually:
+install-subdirs:
+uninstall-subdirs:
+
+# Misc: (use 'make help' to find out the meaning of the target)
+clean-local:
+distclean-local:
+develclean-local:
+sweep-local:      # removes all back-up files (X.bak and X~, for instance)
+run-local:        # runs programs (e.g. diagnostics)
+test-loca:        # runs test programs
+depend-local:     # generates dependence info for make (for C/C++, this is
+                  # automatically handled with gcc):
+
+# For sub-directories: if you need the things from the parent directory before
+# being built yourself, use 'do-it-all: all-top' and 'all-post'.
+all-post:
+
+include $(top_srcdir)/make/Rules

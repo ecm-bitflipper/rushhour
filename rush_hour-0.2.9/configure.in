@@ -1,0 +1,35 @@
+dnl -*- Mode: M4 -*-
+
+define(_PROGNAME, rush_hour)
+
+AC_INIT(_PROGNAME.cpp)
+BASE_VERSION=0.2
+
+dnl Uncomment features that you want to use.  You can use 'optional' as a value
+dnl instead of '1' to make the feature mandatory during configure checks:
+dnl
+dnl If features need other features, these will be enabled automatically.
+dnl Only enable what you need yourself.
+dnl
+define(_USE_LIBERROR,  1)
+dnl define(_USE_CRL2,      1)
+define(_USE_ERWIN,     1)
+dnl define(_USE_PAG,       1)
+define(_USE_SYMBOL,    1)
+dnl define(_USE_PATHAN,    1)
+dnl define(_USE_AT,        1)
+dnl define(_USE_DMALLOC,   1)
+dnl define(_USE_LISP,      1)
+dnl define(_USE_LICENSE,   1)
+dnl define(_USE_WINNET,    1)   dnl Windos network libraries
+
+builtin(include, make/acmake.m4)
+
+ER_PREFIX_PROGRAM(_PROGNAME)
+
+AC_OUTPUT(Makefile
+make/Defs
+make/Rules)
+
+echo "*** prefix=$prefix"
+echo "*** datadir=$datadir"

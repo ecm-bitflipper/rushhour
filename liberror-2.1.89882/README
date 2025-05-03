@@ -1,0 +1,155 @@
+This is libError, a library for message handling.
+
+(c) Henrik Theiling and AbsInt Angewandte Informatik GmbH
+
+The newest version of this library is always aways available
+at http://www.theiling.de/downloads?get=error .
+
+This library is tested under Linux, Solaris, BSD and Windos.
+
+Getting started
+---------------
+Shell Tool
+~~~~~~~~~~
+The library installs a small tool with basic functionality for
+playing with the options and for using colour messages from
+Shell scripts.  It is a good idea to check out what it does:
+
+   : > eprintf -h
+
+That will display the options.  To display an error message, try:
+   : > eprintf This is an error
+
+or a warning:
+   : > eprintf -warn This is an error
+
+
+Library
+~~~~~~~
+To initialise the library, you need to do the following:
+
+C:
+   : #include <liberror.h>
+   :
+   : ...
+   :
+   : int main (int argc, char **argv)
+   : {
+   :      ...
+   :      err_init (&argc, &argv);
+   :      err_add_stream (C_TAG_ALL, stderr, NULL);
+   :
+   :      ...
+   : }
+
+As soon as you have understood these lines, you might choose to do
+something else instead. :-) (Especially for the err_add_stream part.)
+
+The most important function is:
+
+C:
+   : eprintf (C_TAG_ERR, 0, "This is a bad error: %s does not work", thingy);
+
+The zero (0) in this invocation is an error number.  When writing
+code, *always* introduce 0 here initially.  It means the error number
+is yet unassigned and no error number is printed.  The real error
+numbers are automatically assigned using the 'errcodes' Perl script
+which is also included in this library.
+
+There are several message type tags.  The most important ones are:
+
+  +----------------+----------------------------------------------------+
+  | C_TAG_ERR      | a normal error                                     |
+  +----------------+----------------------------------------------------+
+  | C_TAG_WARN     | a warning                                          |
+  +----------------+----------------------------------------------------+
+  | C_TAG_INFO     | an informational message                           |
+  +----------------+----------------------------------------------------+
+  | C_TAG_NOTE     | a non-informational message to keep the eye of the |
+  |                | user busy                                          |
+  |                |                                                    |
+  +----------------+----------------------------------------------------+
+  | C_TAG_INTERNAL | an internal error: something the user cannot       |
+  |                | do anything about: the program simply has failed.  |
+  |                | Internal error messages are still kept in          |
+  |                | release versions.  Without them, bad things could  |
+  |                | go unnoticed.                                      |
+  |                | Note: This type of error immediately terminates    |
+  |                | the program with exit(1).                          |
+  |                |                                                    |
+  +----------------+----------------------------------------------------+
+  | C_TAG_ASSERT   | an assertion failure.  Similar to C_TAG_INTERNAL,  |
+  |                | but these messages are usually not contained in    |
+  |                | release versions.                                  |
+  |                | Note: This type of error immediately terminates    |
+  |                | the program with abort().                          |
+  |                |                                                    |
+  +----------------+----------------------------------------------------+
+  | C_TAG_BANNER   |  for 'This is program XY, version 0.23 (c) by me'  |
+  +----------------+----------------------------------------------------+
+
+The prefix 'C_TAG_' is a historic mnemonic for 'colour tag'.
+
+There are more tags that can be found in:
+   : include/error/tags.h
+
+File Operation Errors
+~~~~~~~~~~~~~~~~~~~~~
+A typical idiom is:
+
+C:
+   : FILE *f= fopen (filename, "rt");
+   : if (f == NULL)
+   :     eprintf (C_TAG_FATAL, 0, ERR_OPEN_READ, filename);
+
+This prints an error message, the reason for the error (using
+the %m format modifier) and terminates the program with
+exit(1).
+
+   : progname: Fatal Error: Unable to open file 'doesnotexist' for reading.
+   :       Reason: No such file or directory.
+
+The following standard error messages exist:
+
+   : ERR_OPEN_READ
+   : ERR_OPEN_WRITE
+   : ERR_OPEN_READWRITE
+   : ERR_OPEN_APPEND
+
+Program Termination
+~~~~~~~~~~~~~~~~~~~
+
+At the end of your program, you need to decide whether you want to
+return failure or success.  If you think there's nothing wrong, you
+should still check that the error count is zero before returning
+success:
+
+   : exit (err_count(0,0) ? EXIT_FAILURE : EXIT_SUCCESS);
+
+eprintf Family
+~~~~~~~~~~~~~~
+The most basic function invocation is
+C:
+   : eprintf (C_TAG_ERROR, 0, "This is an error.  Please don't ignore");
+
+The 0 is the error number which should always be initially set to 0,
+meaning 'yet no error number'.  To assign error numbers and handle
+them with CVS, use the |errcodes| script.
+
+There is a large family of eprintf variants.  E.g. because giving
+file/line information is common, there's a special eprintf function:
+C:
+   : fleprintf (C_TAG_ERROR, 0, file, line, "formatstring", parameters)
+
+If you want to give the column, too, use:
+C:
+   : flpeprintf (C_TAG_ERROR, 0, file, line, col, "formatstring", parameters)
+
+A full description of eprintf variants can be found in
+   : include/error/printf.h
+
+An overview of the *eprintf family of functions is given in the documentation
+for the eprintf family is with the voleprintf function.
+
+
+

@@ -1,0 +1,86 @@
+Rush Hour Puzzle Solver
+=======================
+(c) Henrik Theiling
+
+http://www.theiling.de/projects/rushhour.html
+
+This solves Rush Hour boards and saves them as nice PostScript files.
+
+Needed
+------
+   - the "Error library" (http://www.theiling.de/downloads?get=error)
+   - GCC C/C++ compiler
+
+Compilation
+-----------
+ - Unpack the tarball archive:
+     : tar xzvpf rush_hour-*-src.tar.gz
+
+ - Switch to the new directory:
+     : cd rush_hour-*-src
+
+ - build the program:
+     : ./configure --prefix=/usr/local
+     : make
+
+     It will materialise as ./rush_hour.
+
+Usage
+-----
+In the directory where rush_hour was created, and where the file
+|level.txt| or |level32.txt| is found, invoke
+    : ./rush_hour 32
+
+It will produce a solution for level 32 and store the result in
+solution32.ps.  You can look at that now:
+    : gv solution32.ps
+
+Or print it:
+    : lpr solution32.ps
+
+Level File Format
+-----------------
+For level number _X_, you can store the level in either the file
+|level|_X_|.txt| or in the generic file |level.txt|.
+
+Look at |level32.txt|.  It reads:
+  : 32:
+  : aaobcc
+  : ..ob..
+  : xxo...
+  : deeffp
+  : d..k.p
+  : hh.k.p
+  : -
+  : This is a comment
+  : This is also a comment.
+
+The |32:| is the level number.  There must be a level number even in
+the special file named after the level it containts.  A level body
+contains the board setup.  The following characters are used:
+
+  +---------+-------------------+
+  | a,...,k | length-2 cars     |
+  | o,...,r | length-3 cars     |
+  | x, y, z | your own cars     |
+  | .       | empty board cell  |
+  +---------+-------------------+
+
+After the board cells are defined, there may be an optional comment,
+starting with line starting with a minus characters.  After the
+optional comment, the board definition is terminated by an empty line.
+
+There may be several boards in one file, each in the format
+described above.
+
+Currently, the board has a fixed size of 6x6 cells.  This can be
+changed in the source code, but it is untested.
+
+Solving Technique
+-----------------
+Brute force breadth first search.
+
+That's generally a complex approach, but it works here since the
+boards are small.
+
+*Enjoy*!

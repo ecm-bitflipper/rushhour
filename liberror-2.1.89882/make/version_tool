@@ -1,0 +1,146 @@
+#! /usr/bin/perl -w
+
+use strict;
+
+sub split_version ($)
+{
+    my ($str)= @_;
+    $str=~ s/\s//g;
+    if ($str=~ /^\d[\da-zA-Z.]*$/) {
+        $str=~ s/([a-zA-Z])(\d)/$1.$2/g;      # 1pre2           -> 1pre.2
+        $str=~ s/(\d)[.-]+([a-zA-Z])/$1$2/g;  # 1.pre2 / 1-pre2 -> 1pre.2
+        my @version= grep { defined $_ && $_ ne "" } split /[.]/, $str;
+        return \@version;
+    }
+    return undef;
+}
+
+sub make_version ($)
+{
+    my ($version)= @_;
+    my $str=
+        join ".",
+            map {
+                my $a= $_;
+                $a=~ s/(\d)([a-zA-Z])/$1-$2/g;  # 1pre -> 1-pre
+                $a;
+            } @$version;
+
+    $str=~ s/([a-zA-Z])\.(\d)/$1$2/g; # 1.0-pre.2 -> 1.0-pre2
+    return $str;
+}
+
+sub get_order($)
+{
+    my $extra= shift;
+
+    return (-9, -1) if lc($extra) =~ /^start$/;     # the lowest number.  Always.
+
+    return (-3, -1) if lc($extra) =~ /^pre$/;       # 2.4.0pre
+    return (-3, $1) if lc($extra) =~ /^(\d+)pre$/;
+
+    return (-2, -1) if lc($extra) =~ /^test$/;
+    return (-2, $1) if lc($extra) =~ /^(\d+)test$/;
+
+    return (-1, -1) if lc($extra) =~ /^rc$/;
+    return (-1, $1) if lc($extra) =~ /^(\d+)rc$/;
+
+    return ( 0, $1) if lc($extra) =~ /^(\d+)$/;
+
+    return (+1, -1) if lc($extra) =~ /^post$/;      # hehe
+    return (+1, $1) if lc($extra) =~ /^(\d+)post$/;
+}
+
+sub max_version($$)
+{
+    my ($version1, $version2)= @_;
+
+    for (my $i=0; $i <= $#$version1 && $i <= $#$version2; $i++) {
+        my ($order1, $value1)= get_order $version1->[$i];
+        my ($order2, $value2)= get_order $version2->[$i];
+        # print STDERR
+        #    "$i / $#$version1 / $#$version2: cmp ($order1, $value1)  ($order2, $value2)\n";
+        unless (defined $order1 && defined $order2) {
+            print STDERR
+               "Error: No idea how to compare these version strings, please resolve\n".
+               "       the conflict manually:\n".
+               "       String 1: ".make_version ($version1)."\n".
+               "       String 2: ".make_version ($version2)."\n";
+            print STDERR
+               "       Unrecognised part '$version1->[$i]'.\n" unless $order1;
+            print STDERR
+               "       Unrecognised part '$version2->[$i]'.\n" unless $order2;
+            exit 1;
+        }
+        return $version1 if $order1 > $order2;
+        return $version2 if $order2 > $order1;
+        return $version1 if $value1 > $value2;
+        return $version2 if $value2 > $value1;
+    }
+    #print STDERR "a\n";
+
+    return $version1 if $#$version1 > $#$version2;
+    return $version2 if $#$version2 > $#$version1;
+
+    return $version1; # the versions are equal
+}
+
+my ($base_version)= split_version "start";
+
+my $main_opt= undef;
+for my $arg (@ARGV) {
+    if (defined $main_opt) {
+        $arg= $main_opt."=".$arg;
+        undef $main_opt;
+    }
+    if ($arg=~ /^-/) {
+        if    ($arg=~ /^-+read$/) { $main_opt= $arg; }
+        elsif ($arg=~ /^-+read=(.*)$/) {
+            my $input= $1;
+            if ($input && open (F, "$input")) {
+                while (<F>) {
+                    my $version= split_version $_;
+                    $base_version= max_version $base_version, $version
+                        if defined $version;
+                }
+                close F;
+            }
+        }
+        elsif ($arg=~ /^-+suffix$/) { $main_opt= $arg; }
+        elsif ($arg=~ /^-+suffix=(.*)$/) {
+            my $suffix= split_version "0.".$1;
+            unless (defined $suffix) {
+                print STDERR "Error: Unable to parse suffix: '$arg'\n";
+                exit 1;
+            }
+            shift @$suffix;
+            push @$base_version, @$suffix;
+        }
+        elsif ($arg=~ /^-+read-suffix$/) { $main_opt= $arg; }
+        elsif ($arg=~ /^-+read-suffix=(.*)$/) {
+            my $suffix= split_version "0.".`cat $1`;
+            unless (defined $suffix) {
+                print STDERR "Error: Unable to parse suffix: '$arg'\n";
+                exit 1;
+            }
+            shift @$suffix;
+            push @$base_version, @$suffix;
+        }
+        else {
+            print STDERR "Error: Unrecognised option '$arg'\n";
+            exit 1;
+        }
+    }
+    else {
+        my $version= split_version $arg;
+        unless (defined $version) {
+            print STDERR "Error: Unable to parse version: '$arg'\n";
+            exit 1;
+        }
+        $base_version= max_version $base_version, $version;
+    }
+}
+
+print make_version($base_version)."\n";
+
+exit 0;

@@ -1,0 +1,523 @@
+# @MODE_FUNDAMENTAL@ -*- Mode: Makefile -*-
+# @configure_input@
+######################################################################
+
+SHELL          = /bin/sh
+
+CXX_EXT=cpp
+
+PROGNAME      := @PROGNAME@
+PROGNAME_UC   := @PROGNAME_UC@
+
+BASE_VERSION      := @BASE_VERSION@
+BASE_VERSION_FILE = $(srcdir)/.base-version
+SUB_VERSION_FILE  = $(srcdir)/.sub-version
+SUB_VERSION       = "`cat $(SUB_VERSION_FILE) || echo 0`"
+
+ifeq ($(wildcard debian),debian)
+DEB_VERSION=`cd debian/compile/$(ARCHIVE_BASE)-$(BASE_VERSION).* && dpkg-parsechangelog | grep Version: | sed 's@^[^0-9]*@@'`
+endif
+UPLOAD_ROOT     = $(UPLOAD_HOST):$(UPLOAD_PATH)
+DEB_UPLOAD_ROOT = $(DEB_UPLOAD_HOST):$(DEB_UPLOAD_PATH)
+
+prefix          = @prefix@
+execprefix      = @execprefix@
+exec_prefix     = @exec_prefix@
+bindir          = @bindir@
+datarootdir     = @datarootdir@
+datadir         = @datadir@
+includedir      = @includedir@
+libdir          = @libdir@
+libexecdir      = @libexecdir@
+sysconfdir      = @sysconfdir@
+localstatedir   = @localstatedir@
+sharedstatedir  = @sharedstatedir@
+
+packagedocdir   = @packagedocdir@
+mydocdir        = @mydocdir@
+mydatadir       = @mydatadir@
+mysysconfdir    = @mysysconfdir@
+mylibexecdir    = @mylibexecdir@
+mylocalstatedir = @mylocalstatedir@
+mysharedstatedir= @mysharedstatedir@
+
+# compatibility defines with older Makefiles
+docdir   = $(mydocdir)
+sharedir = $(mydatadir)
+
+######
+
+INSTALL           = @INSTALL@
+INSTALL_PROGRAM   = @INSTALL_PROGRAM@
+INSTALL_SCRIPT    = @INSTALL_SCRIPT@
+INSTALL_DATA      = @INSTALL_DATA@
+transform         = @program_transform_name@
+
+# Standard software:
+CXX               = @CXX@
+CC                = @CC@
+LINK_CXX          = @LINK_CXX@
+AR                = @AR@
+RANLIB            = @RANLIB@
+LD                = @CC@
+LDXX              = @CXX@
+BISON             = @BISON@
+FLEX              = @FLEX@
+M4                = @M4@
+LN_S              = @LN_S@
+SVN               = @SVN@
+
+GPERF             = @GPERF@
+DOXYGEN           = @DOXYGEN@
+
+UNICODE           = @UNICODE@
+
+PERL              = @PERL@
+PERL_OR_ERR       = @PERL_OR_ERR@
+CLISP             = @CLISP@
+CLISP_OR_ERR      = @CLISP_OR_ERR@
+
+LATEX             = @LATEX@
+DVIPS             = @DVIPS@
+LAMBDA            = @LAMBDA@
+ODVIPS            = @ODVIPS@
+
+# Not-so standard software:
+QTDIR             = @QTDIR@
+
+# Erwin helpers:
+MAKEFAILURE       = @MAKEFAILURE@
+PATH_MAKEFAILURE  = @PATH_MAKEFAILURE@
+
+MAKELOOKUP        = @MAKELOOKUP@
+PATH_MAKELOOKUP   = @PATH_MAKELOOKUP@
+
+MAKESYMBOL        = @MAKESYMBOL@
+PATH_MAKESYMBOL   = @PATH_MAKESYMBOL@
+
+ERWIN_CGEN        = @ERWIN_CGEN@
+PATH_ERWIN_CGEN   = @PATH_ERWIN_CGEN@
+
+# Private software:
+PATTERN           = @PATTERN@
+
+# AbsInt software:
+PAG               = @PAG@
+PAGPATH           = @PAGPATH@
+PAG_FRONTEND      = @PAG_FRONTEND@
+
+READNET           = @READNET@
+PATH_TF14NET      = @PATH_TF14NET@
+
+# misc helpers:
+
+RSH               = ssh
+RCP               = rsync -e $(RSH) -av
+MD5SUM            = md5sum
+SHA1SUM           = sha1sum
+
+EDITFORM          = editform
+FM_XMLRPC         = fm-xmlrpc
+
+# Make-subdirectory:
+MOVE              = $(top_srcdir)/make/move_if_changed
+MKINSTALLDIRS     = $(top_srcdir)/make/mkinstalldirs
+SEND_MAIL         = $(top_srcdir)/make/send_mail
+
+UPDATECHANGES     = $(PERL) $(top_srcdir)/make/updatechanges.pl \
+                        --maintainer='$(VENDOR) <$(VENDOR_EMAIL)>' \
+                        --project='$(ARCHIVE_BASE)'
+
+VERSION_TOOL      = $(PERL_OR_ERR) $(top_srcdir)/make/version_tool
+TAB2SPACE         = $(PERL) $(top_srcdir)/make/tab2space.pl
+
+SVN_COMMIT        = $(SVN) commit
+SVN_UPDATE        = $(SVN) update
+SVN_INFO          = $(SVN) info
+
+LINK_LIB          = $(AR) r
+
+######
+
+IF_HT = :
+
+ARCHIVE_SUFFIX=
+ARCHIVE_SUFFIX_SRC=
+    # Was -src, not it is simply blank to be more like other projects
+
+ARCHIVE_SUFFIX_BIN=-bin
+    # The binary package has this suffix by default.
+
+# For normal source tar files:
+# These defaults are set in Rules.in now so the Makefile can define other
+# default values.  Note that the copyright config may have different defaults
+# for these.
+#TARFLAGS=      # or $(DEFAULT_TARFLAGS) from the copyright definition file
+#TAREXT=.tar    # or $(DEFAULT_TAREXT)   from the copyright definition file
+#  The TARFLAGS are derived from TAREXT if empty.  Recognised extensions:
+#    .tar                     -> empty
+#    .tgz .tar.gz             -> z
+#    .tbz .tbz2 .tar.bz2      -> j
+
+# For the tar files used inside the binary distribution:
+ARCHIVE_TARFLAGS=z
+ARCHIVE_TAREXT=.tgz
+# mkbindist.pl recognises .tar, .tgz, .tar.gz, .tbz, .tar.bz2.
+# For maximum compatibility, .tar is recommended.
+# However, *most* people have gzip, so .tgz is perfect, too: a lot
+# can be put on a CD with it.
+# .tar.gz/.tar.bz2 are not recommended due to two dots.
+# .tbz is not recommended since it's not so common as .tgz.
+# In short: don't change this.
+
+EXTRA_OPTIONS_CXX= @GNUG_TRUE@ $(EXTRA_OPTIONS_GXX)
+EXTRA_OPTIONS_C=   @GNUC_TRUE@ $(EXTRA_OPTIONS_GCC)
+
+CXXFLAGS        = @CXXFLAGS@ $(EXTRA_CXXFLAGS) $(EXTRA_OPTIONS_CXX)
+CFLAGS          = @CFLAGS@ $(EXTRA_CFLAGS) $(EXTRA_OPTIONS_C)
+
+ifneq (@DEFINES@,$(subst %,@,%DEFINES%))
+CONFIG_DEFINES  = @DEFINES@
+else
+CONFIG_DEFINES  =
+endif
+
+DEFINES         = PROGNAME_AUX=$(PROGNAME) \
+                  IN_LIB$(PROGNAME_UC)_COMPILE \
+                  $(CONFIG_DEFINES) \
+                  $(USER_DEFINES) \
+                  $(EXTRA_DEFINES)
+
+DEFS            = $(addprefix -D,$(DEFINES)) \
+                  $(EXTRA_DEFS) \
+                  -DUNIX \
+                  @DEFS@
+
+CPPFLAGS        = -I$(srcdir)/include \
+                  -I$(srcdir)/erwin/include \
+                  -I$(srcdir) \
+                  -I$(top_srcdir)/include \
+                  -I$(top_srcdir)/erwin/include \
+                  -I$(top_srcdir) \
+                  @CPPFLAGS@ \
+                  $(DEFS) \
+                  $(EXTRA_CPPFLAGS)
+
+ifneq (@BRANCH@,$(subst %,@,%BRANCH%))
+BRANCH          = @BRANCH@
+else
+BRANCH          = (unknown)
+endif
+
+ifneq (@WINDIR@,$(subst %,@,%WINDIR%))
+WINDIR          = @WINDIR@
+else
+WINDIR          = $(HOME)/winnt
+endif
+
+ifneq (@WINPREFIX@,$(subst %,@,%WINPREFIX%))
+WINPREFIX       = @WINPREFIX@
+else
+WINPREFIX       = E:\WINNT
+endif
+
+WIN_NOLOGO =
+  # Until we find something better that /nologo, i.e., something that echos the
+  # compile options, we don't use any logo suppression.
+
+ifneq (@RELEASE@,$(subst %,@,%RELEASE%))
+RELEASE=@RELEASE@
+else
+RELEASE=0
+endif
+
+ifeq ($(origin WINCPPFLAGS), undefined)
+ifneq (@WINCPPFLAGS@,$(subst %,@,%WINCPPFLAGS%))
+CONFIG_WINCPPFLAGS=@WINCPPFLAGS@
+endif
+endif
+ALLWINCPPFLAGS=$(CONFIG_WINCPPFLAGS) $(addprefix /D,$(DEFINES)) $(WINCPPFLAGS)
+
+ifeq ($(origin WINCFLAGS), undefined)
+ifneq (@WINCFLAGS@,$(subst %,@,%WINCFLAGS%))
+CONFIG_WINCFLAGS=@WINCFLAGS@
+endif
+endif
+ALLWINCFLAGS=$(CONFIG_WINCFLAGS) $(WINCFLAGS)
+
+ifeq ($(origin WINCXXFLAGS), undefined)
+ifneq (@WINCXXFLAGS@,$(subst %,@,%WINCXXFLAGS%))
+CONFIG_WINCXXFLAGS=@WINCXXFLAGS@
+endif
+endif
+ALLWINCXXFLAGS=$(CONFIG_WINCXXFLAGS) $(WINCXXFLAGS)
+
+ifeq ($(origin WINLDFLAGS), undefined)
+ifneq (@WINLDFLAGS@,$(subst %,@,%WINLDFLAGS%))
+CONFIG_WINLDFLAGS=@WINLDFLAGS@
+endif
+endif
+ALLWINLDFLAGS=$(CONFIG_WINLDFLAGS) $(WINLDFLAGS)
+
+WIN_VERSION_SUFFIX=-dos32-msvc
+
+PCC2CC = $(top_srcdir)/controllers/pcc2cc
+
+######################################################################
+
+@SET_MAKE@
+
+######################################################################
+
+DOC_INSTALL_DIRS =           \
+            $(packagedocdir) \
+            $(datadir)/info  \
+            $(datadir)/man
+
+#DOC_FILES=
+#GEN_DOC_FILES=    # will be deleted by 'clean'
+
+#SHARE_FILES=
+#GEN_SHARE_FILES=  # will be deleted by 'clean'
+
+GENCXXMODULES= $(addsuffix _scanner,$(LMODULES)) \
+               $(addsuffix _parser,$(YMODULES)) \
+               $(addsuffix _moc,$(MOCHEADERS)) \
+               $(MAKELOOKUPCXXMODULES) \
+               $(PCCMODULES) \
+               $(EXTRA_GENCCMODULES) \
+               $(EXTRA_GENCXXMODULES) \
+               $(EXTRA_GENCPPMODULES) \
+               version
+
+GENCMODULES=   $(EXTRA_GENCMODULES)
+
+GENINCMODULES= $(GPERFMODULES) \
+               $(MAKELOOKUPINCMODULES) \
+               $(EXTRA_GENINCMODULES)
+
+#GENHHHEADERS= # $(addsuffix _parser,$(YMODULES)) \
+#              $(EXTRA_GENHHMODULES)
+#
+
+GENHMODULES+= $(EXTRA_GENHMODULES)
+
+ALLLATEXMODULES= $(LATEXMODULES) \
+                 $(GENLATEXMODULES) \
+                 $(EXTRA_GENLATEXMODULES)
+
+ALLCCMODULES= $(CCMODULES) \
+              $(GENCCMODULES) \
+              $(EXTRA_CCMODULES)
+
+ALLCPPMODULES= $(CPPMODULES) \
+               $(GENCPPMODULES) \
+               $(EXTRA_CPPMODULES)
+
+ALLINCMODULES= $(INCMODULES) \
+               $(GENINCMODULES) \
+               $(EXTRA_INCMODULES)
+
+ALLCXXMODULES= $(ALLCPPMODULES) \
+               $(ALLCCMODULES) \
+               $(EXTRA_CXXMODULES)
+
+ALLCMODULES=   $(MODULES) \
+               $(CMODULES) \
+               $(GENCMODULES) \
+               $(EXTRA_CMODULES)
+
+EXTRA_MODULE_FILES= $(addsuffix .cc,  $(GENCCMODULES)  $(EXTRA_CCMODULES))  \
+                    $(addsuffix .c,   $(GENCMODULES)   $(EXTRA_CMODULES))   \
+                    $(addsuffix .inc, $(GENINCMODULES) $(EXTRA_INCMODULES)) \
+                    $(addsuffix .cpp, $(GENCPPMODULES) $(EXTRA_CPPMODULES))
+
+OBJMODULES=   $(CMODULES) \
+              $(MODULES) \
+              $(CCMODULES) \
+              $(CPPMODULES) \
+              $(GENCXXMODULES) \
+              $(EXTRA_OBJMODULES)
+
+SOBJS=        $(addsuffix .so, $(OBJMODULES)) \
+              $(EXTRA_SOBJS)
+
+OBJS=         $(addsuffix .o, $(OBJMODULES)) \
+              $(EXTRA_OBJS)
+
+WIN_OBJS=     $(addsuffix .obj, $(OBJMODULES)) \
+              $(EXTRA_WIN_OBJS)
+
+DEP_FILES=    $(addprefix .deps/,$(addsuffix .P, $(OBJMODULES))) \
+              $(EXTRA_DEP_FILES)
+
+AUTO_EXTRA_SOURCES= \
+              $(addsuffix .c,  $(EXTRA_CMODULES)) \
+              $(addsuffix .cc, $(EXTRA_CCMODULES)) \
+              $(addsuffix .cpp, $(EXTRA_CPPMODULES)) \
+              $(addsuffix $(CXX_EXT), $(EXTRA_CXXMODULES)) \
+              $(EXTRA_SCRIPT) $(EXTRA_SCRIPTS)
+
+TOPDIR_SOURCES= configure.in \
+
+
+TOPDIR_FILES= configure
+
+MAKESUB= make
+
+LICENCE_CONFIGS= \
+              ht \
+              absint \
+              ht+absint \
+              absint+uds \
+              gplv3
+
+MAKESUB_SOURCES=                                      \
+              $(MAKESUB)/Rules.in                     \
+              $(MAKESUB)/Defs.in                      \
+              $(MAKESUB)/COPYING                      \
+              $(MAKESUB)/Makefile.in                  \
+              $(MAKESUB)/Makefile.in.subdir           \
+              $(MAKESUB)/README                       \
+              $(MAKESUB)/MANUAL.txt                   \
+              $(MAKESUB)/acfm.m4                      \
+              $(MAKESUB)/actools.m4                   \
+              $(MAKESUB)/acmake.m4                    \
+              $(MAKESUB)/crl2front.m4                 \
+              $(MAKESUB)/crlfront.m4                  \
+              $(MAKESUB)/config.guess                 \
+              $(MAKESUB)/config.sub                   \
+              $(MAKESUB)/configure.in                 \
+              $(MAKESUB)/svncompile                   \
+              $(MAKESUB)/dmalloc.m4                   \
+              $(MAKESUB)/install-sh                   \
+              $(MAKESUB)/libTEMPLATE-version.in.in    \
+              $(MAKESUB)/libaica.m4                   \
+              $(MAKESUB)/libat.m4                     \
+              $(MAKESUB)/libattrprop.m4               \
+              $(MAKESUB)/libbex.m4                    \
+              $(MAKESUB)/libbezier.m4                 \
+              $(MAKESUB)/libconfig.m4                 \
+              $(MAKESUB)/libcrl.m4                    \
+              $(MAKESUB)/libcrl2.m4                   \
+              $(MAKESUB)/liberror.m4                  \
+              $(MAKESUB)/libfraction.m4               \
+              $(MAKESUB)/liblicence.m4                \
+              $(MAKESUB)/liblisp.m4                   \
+              $(MAKESUB)/libloop.m4                   \
+              $(MAKESUB)/libmembank.m4                \
+              $(MAKESUB)/libboehm.m4                  \
+              $(MAKESUB)/libopenobex.m4               \
+              $(MAKESUB)/libpathan.m4                 \
+              $(MAKESUB)/libpng.m4                    \
+              $(MAKESUB)/libqt.m4                     \
+              $(MAKESUB)/library.m4                   \
+              $(MAKESUB)/librandom.m4                 \
+              $(MAKESUB)/libsetup.m4                  \
+              $(MAKESUB)/libsndfile.m4                \
+              $(MAKESUB)/liblisht.m4                  \
+              $(MAKESUB)/libgmp.m4                    \
+              $(MAKESUB)/libstr2int.m4                \
+              $(MAKESUB)/libtf14net.m4                \
+              $(MAKESUB)/libunicode.m4                \
+              $(MAKESUB)/libuninorm.m4                \
+              $(MAKESUB)/libusb.m4                    \
+              $(MAKESUB)/libxai.m4                    \
+              $(MAKESUB)/makeerwin                    \
+              $(MAKESUB)/missing                      \
+              $(MAKESUB)/mkinstalldirs                \
+              $(MAKESUB)/move_if_changed              \
+              $(MAKESUB)/pag.m4                       \
+              $(MAKESUB)/subdir/Makefile.in           \
+              $(MAKESUB)/version_tool                 \
+              $(MAKESUB)/symbol.c                     \
+              $(MAKESUB)/symbol.h                     \
+              $(MAKESUB)/mkversion_h.sh               \
+              $(MAKESUB)/init.pl                      \
+              $(MAKESUB)/mkbininstall.pl              \
+              $(MAKESUB)/depgdl.pl                    \
+              $(MAKESUB)/tab2space.pl                 \
+              $(foreach licence,$(LICENCE_CONFIGS),   \
+                  $(addprefix $(MAKESUB)/$(licence)/, \
+                      Config                          \
+                      COPYING))
+
+MAKESUB_FILES=\
+              $(MAKESUB)/Rules \
+              $(MAKESUB)/Defs
+
+LOCAL_FILES:=
+
+######################################################################
+# SOURCES:
+
+# $(SOURCES) are not the source files for the C compiler but rather the source
+# files for any generator.  Also excluded are all header files.
+SOURCES   = $(addsuffix .cc,    $(CCMODULES)) \
+            $(addsuffix .cpp,   $(CPPMODULES)) \
+            $(addsuffix .inc,   $(INCMODULES)) \
+            $(addsuffix .pcc,   $(PCCMODULES)) \
+            $(addsuffix .gperf, $(GPERFMODULES)) \
+            $(addsuffix .ehash, $(MAKELOOKUPINCMODULES)) \
+            $(addsuffix .ehash, $(MAKELOOKUPCXXMODULES)) \
+            $(addsuffix .c,     $(MODULES) $(CMODULES)) \
+            $(addsuffix .y,     $(YMODULES)) \
+            $(addsuffix .l,     $(LMODULES)) \
+            $(addsuffix .pat,   $(PATMODULES)) \
+            $(addsuffix .tex,   $(LATEXMODULES)) \
+            $(AUTO_EXTRA_SOURCES) \
+            $(EXTRA_SOURCES)
+
+ALLMODULES= $(addsuffix .cc,    $(ALLCCMODULES)) \
+            $(addsuffix .cpp,   $(ALLCPPMODULES)) \
+            $(addsuffix .inc,   $(ALLINCMODULES)) \
+            $(addsuffix .pcc,   $(ALLPCCMODULES)) \
+            $(addsuffix .gperf, $(ALLGPERFMODULES)) \
+            $(addsuffix .ehash, $(ALLMAKELOOKUPMODULES)) \
+            $(addsuffix .c,     $(ALLCMODULES)) \
+            $(addsuffix .y,     $(ALLYMODULES)) \
+            $(addsuffix .l,     $(ALLLMODULES)) \
+            $(addsuffix .pat,   $(ALLPATMODULES)) \
+            $(addsuffix .tex,   $(ALLLATEXMODULES)) \
+            $(AUTO_EXTRA_SOURCES) \
+            $(EXTRA_SOURCES)
+
+# $(HEADERS) are only the non-generated header files:
+HEADERS   = $(addsuffix .hh, $(HHHEADERS))  \
+            $(addsuffix .h,  $(HHEADERS))   \
+            $(addsuffix .hpp,$(HPPHEADERS)) \
+            $(EXTRA_HEADERS)
+
+EASY += \
+   clean         clean-all-local        clean-local        clean-subdirs \
+   clean-depend  clean-depend-all-local clean-depend-local clean-depend-subdirs \
+   develclean    develclean-all-local   develclean-local   develclean-subdirs \
+   distclean     distclean-all-local    distclean-local    distclean-subdirs \
+   sweep         sweep-all-local        sweep-local        sweep-subdirs \
+   clean-sub     clean-sub-subdirs      clean-sub-top      clean-depend-subdirs-pre \
+   echo-version \
+   erwin-clean \
+   help          help-arch       help-archive      help-iso \
+   help-tar      help-tarbz2     help-targz \
+   less-help     more-help
+   # Targets that do not depend on generated source files.  Some
+   # rules that depend on 'Makefile' will be disabled for these.
+   # The most important things to list here are cleaning targets,
+   # because they might otherwise fail due to the need for
+   # regenerating some stuff that will be deleted by that
+   # very target.
+
+ifeq ($(MAKECMDGOALS),)
+  IS_EASY = 0
+else
+  ifneq ($(filter-out $(EASY),$(MAKECMDGOALS)),)
+    IS_EASY = 0
+  else
+    IS_EASY = 1
+  endif
+endif
+
+# The default target is 'do-it-all':
+do-it-all:
+.PHONY: do-it-all
+

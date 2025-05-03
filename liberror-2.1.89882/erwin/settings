@@ -1,0 +1,21 @@
+# Generated automatically by untemplatize -init
+# Do not edit!  Instead, when changing settings, re-generate the whole directory!
+#
+# If you do not obey this, please at least think twice about what you
+# are doing.
+
+[untemplatize]
+-I=
+-global-prefix=err_
+-cpp-support=1
+-subdir=src,include/error,include/error
+-cpp-lib=0
+
+# The following are default values only.  They can be overridden by the user later.
+-cpp=cpp,h
+    # Note that if you specify -cpp (without args) on the command line, it
+    # will still mean -cpp=cpp,hpp dispite the defaults here.  These defaults
+    # will only be used if you do not specify -cpp at all.
+-cpp-only=0
+-cap=1
+-split=0

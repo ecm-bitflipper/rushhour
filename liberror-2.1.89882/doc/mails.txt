@@ -1,0 +1,243 @@
+Mark-up style for GUI with Qt
+-----------------------------
+The style for this is called err_style_qt.  To use this if a certain command
+line option is given, do the following:
+
+   : if (...we_want_to_use_the_special_mode_for_qt...) {
+   :     err_remove_stream (C_TAG_ALL, stderr);
+   :     err_add_stream    (C_TAG_ALL, stderr, err_style_qt);
+   : }
+
+Or possibly use a different stream if necessary.  Available styles:
+
+   : err_style_plain
+   : err_style_qt
+   : err_style_qt3
+
+See include/error/style.h.
+
+
+Addreses as error locations
+---------------------------
+A new family of eprintf-functions was added, with base name leprintf,
+for location-eprintf.  Analogous to the flpeprintf and fleprintf
+families, the parameter right in front of the format string is
+the location parameter.  The leprintf family is most flexible:
+you can specify no location, a file only, a file and line, a
+file, line and position, or an address (which wasn't possible
+at all before).  To do so, in C++, use the constructor ErrLocation:
+
+  : leprintf (C_TAG_ERROR, 0, ErrLocation (),                "my error");
+  : leprintf (C_TAG_ERROR, 0, ErrLocation (file),            "my error");
+  : leprintf (C_TAG_ERROR, 0, ErrLocation (file, line),      "my error");
+  : leprintf (C_TAG_ERROR, 0, ErrLocation (file, line, pos), "my error");
+
+In C, you can write this as this:
+
+  : eprintf  (C_TAG_ERROR, 0,                                "my error");
+  : leprintf (C_TAG_ERROR, 0, err_in_file (file),            "my error");
+  : leprintf (C_TAG_ERROR, 0, err_in_line (file, line),      "my error");
+  : leprintf (C_TAG_ERROR, 0, err_at_position (file, line, pos), "my error");
+
+In the same order, these are equivalent to the following function
+invocations:
+
+  : eprintf    (C_TAG_ERROR, 0,                  "my error");
+  : fleprintf  (C_TAG_ERROR, 0, file, 0,         "my error");
+  : fleprintf  (C_TAG_ERROR, 0, file, line,      "my error");
+  : flpeprintf (C_TAG_ERROR, 0, file, line, pos, "my error");
+
+Additionally, the leprintf supports addresses:
+
+C++:
+  : leprintf (C_TAG_ERROR, 0, ErrLocation (myaddress), "my error");
+
+C:
+  : leprintf (C_TAG_ERROR, 0, err_at_address (myaddress), "my error");
+
+(Any integer type will select the constructor for an address location.)
+
+The library will try to automatically resolve addresses to source line
+locations.  See documentation of function err_set_resolve_address().
+
+Please really use the C++ functions in C++, although the C versions
+work in C++, too, because the C functions return a pointer to a static
+variable, which is not the most nice thing to think of.
+
+
+Filtering by Colour Tag (C_TAG)
+-------------------------------
+
+There is a function
+
+    : err_show_tag (TAG, BOOL)
+
+that selects whether the TAG should be displayed or suppressed.
+
+For sub-systems, this is similar:
+
+    : err_show_subsystem (SUBSYSTEM_ID, BOOL);
+
+Example:
+    : err_show_subsystem (err_subsystem ("parser"), 0);
+
+Subsystems now need not be declared anymore, but can directly be
+used by using the above function err_subsystem().  Example:
+
+    : eprintf (C_TAG_ERR + err_subsystem ("parser"), 0, "Parse error: ...");
+
+This can also be customised via a command line option by the user.
+
+Groups
+------
+Groups are introduced to make filtering sub-sets of messages easier.
+They work much like sub-systems, but the group name is never displayed.
+They are for internal grouping only that is not meant to be
+visible to the user.
+
+There are new functions:
+
+   : err_group (STRING)
+   :    // equivalent to err_subsystem (), but for groups
+
+   : err_show_group (GROUP_ID, BOOL)
+   :    // equivalent to err_show_subsystem (), but for groups
+
+This is especially useful for debug messages, which you can easily
+group now.
+
+This can also be customised via a command line option by the user.
+
+Colors in XTerm
+---------------
+By default, if the output stream is a tty, ANSI color escape sequences
+are issued by the error library.  They are not yet configurable, but
+will be soon.  To switch the colors on or off or back to the default
+behaviour, use the following variable:
+
+    : err_style_plain_color
+
+It can take the following values:
+    : ERR_STYLE_COLOR_ALWAYS
+    : ERR_STYLE_COLOR_NEVER
+    : ERR_STYLE_COLOR_IF_TTY
+
+This can also be customised via a command line option by the user.
+
+Message callbacks (hooks)
+-------------------------
+The callback mechanism was improved: you can now define an order of
+the callbacks.  An additional parameter to err_add_callback and
+err_remove_callback defines the priority and thereby the order
+of the callbacks.  Additionally, a new function err_clear_callback
+is added to remove all callbacks for a given tag/priority combination.
+
+To get the behaviour of the old interface, use priority == 1.
+
+The priority works as follows:
+
+   - All priorities > 0 are invoked before the call to the print
+     function.  They are invoked in ascending order of the priority
+     (1, 2, 3, ...).  Callbacks with the same priority that are
+     added later are invoked later.
+
+   - All priorities < 0 are invoked after the call to the print
+     function.  They are invoked in ascending order of the priority
+     (..., -3, -2, -1). Callbacks with the same priority that are
+     added later are invoked earlier.
+
+For err_remove_callback and err_remove_callback, priority == 0
+works on all priorities.
+
+There are callback entries now by default.  The tags C_TAG_FATAL
+and C_TAG_ASSERTION will automatically terminate the program
+when issued.  They are added with priority -1, so because they
+are the first on the agendae, these are the last callbacks
+to be invoked.
+
+Unfilterable C_TAGs
+-------------------
+Due to the fact that they are considered errors that cause the
+immediate termination of the program, the following errors
+can neither be suppressed or buffered:
+
+    : C_TAG_FATAL
+    : C_TAG_ASSERTION
+
+(Note that they can be hidden, however.)
+
+This is hardwired behaviour of the error library now, since these
+errors are both fatal to the program, so the hooks and error counting
+must always be informed about this.
+
+Because the default hooks of these message contain the actions
+    +---------------------+------------------------+
+    | exit(EXIT_FAILURE)  | for C_TAG_FATAL        |
+    | abort()             | for C_TAG_ASSERTION    |
+    +---------------------+------------------------+
+
+if is impossible to use C_TAG_MORE with C_TAG_FATAL or
+C_TAG_ASSERTION.
+
+Most of the time, though, C_TAG_MORE is not used, so this is
+considered good default behaviour.  For longer error messages before
+dying, new tags are added that behave otherwise identical to
+C_TAG_FATAL and C_TAG_ASSERTION, but do not have the above function
+calls on their corresponding hooks:
+
+    : C_TAG_PRE_FATAL
+    : C_TAG_PRE_ASSERTION
+
+(Note that these are variants of C_TAG_FATAL and C_TAG_ASSERTION.
+They use the same hooks, counters, etc., but do not cause the end of
+the program.  Therefore, they also cannot be filtered.)
+
+Plain Style Changes
+-------------------
+There are now different plain styles.  The original err_style_plain
+is a configurable alias for err_style_colon and err_style_quotes now.
+The original plain style is called err_style_colon now.  The new
+style err_style_quotes is the default for err_style_plain now.
+
+The change was done because the colon style does not look as nice as
+quotes style, especially for error regions.
+
+Colon
+~~~~~
+
+   : FILE:LINE:POS: PROGNAME[PID]: Error NUMBER:
+or
+   : FILE:LINE:POS:-FILE:LINE:POS: PROGNAME[PID]: Error NUMBER:
+   :     TEXT
+
+(or the like)
+
+Quotes
+~~~~~~
+   : PROGNAME[PID]: Error NUMBER: In "FILE", line LINE(POS):
+or
+   : PROGNAME[PID]: Error NUMBER: In "FILE", line LINE(POS..POS):
+or
+   : PROGNAME[PID]: Error NUMBER: In "FILE", lines LINE(POS) .. LINE (POS):
+or
+   : PROGNAME[PID]: Error NUMBER: In "FILE", line LINE(POS) .. "FILE" line LINE (POS):
+   :      TEXT
+
+Message Counters
+----------------
+All messages are now counted.  There are a lot of counters, since
+tags, subsystems, groups and messages are counted separately.
+
+Further, it is distinguished what has happend to the message.  The
+following message statuses are distinguished:
+  +------------------------+-----------------------------------------------+
+  | ERR_STATUS_RECEIVED    | the message was received (an eprintf          |
+  |                        | function was invoked)                         |
+  +------------------------+-----------------------------------------------+
+  | ERR_STATUS_ISSUED      | the message was allowed to be issued,         |
+  |                        | i.e., it was not suppressed (by err_issue_... |
+  |                        | functions)                                    |
+  +------------------------+-----------------------------------------------+
+  | ERR_STATUS_DISTRIBUTED | the message was delivered to the callbacks    |
+  |                        | and the showing processs.                     |
+  +------------------------+-----------------------------------------------+

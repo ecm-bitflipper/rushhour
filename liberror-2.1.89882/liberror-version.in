@@ -1,0 +1,19 @@
+#! /bin/sh
+#
+# The main purpose of this program is to have a program in bindir so
+# that AC_PREFIX_PROGRAM works.
+#
+# Additionally, users have a program that tells them the version and
+# install path of the library. :-)
+#
+
+prefix=/usr/local
+exec_prefix=${prefix}
+includedir=${prefix}/include
+libdir=${exec_prefix}/lib
+
+echo "This is liberror---VERSION--."
+echo "Copyright (c) Henrik Theiling and AbsInt Angewandte Informatik GmbH"
+echo "   using Erwin --ERWIN-VERSION--."
+echo "   includedir = ${includedir}"
+echo "   libdir     = ${libdir}"

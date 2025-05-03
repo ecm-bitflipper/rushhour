@@ -1,0 +1,62 @@
+dnl -*- Mode: M4 -*-
+
+dnl This requires more files to exist.  And they must be in the right directories.
+dnl Furthermore, the canonical host name is never used.  So dont do this until it
+dnl is needed.
+dnl AC_CANONICAL_SYSTEM
+dnl AC_DEFINE_UNQUOTED(ERWIN_CANONICAL_HOST,"${host}")
+dnl AC_DEFINE_UNQUOTED(ERWIN_CANONICAL_BUILD,"${build}")
+dnl AC_DEFINE_UNQUOTED(ERWIN_CANONICAL_TARGET,"${target}")
+
+dnl Get executable names:
+AC_MSG_CHECKING(shell vars)
+
+RM="${RMPROG-rm}"
+AC_SUBST(RM)
+
+test -z "${RMF}" && RMF="\${RM} -f"
+AC_SUBST(RMF)
+
+test -z "${RMRF}" && RMRF="\${RM} -Rf"
+AC_SUBST(RMRF)
+
+AUTOCONF="${AUTOCONFPROG-autoconf}"
+AC_SUBST(AUTOCONF)
+
+AUTOHEADER="${AUTOHEADERPROG-autoheader}"
+AC_SUBST(AUTOHEADER)
+
+MV="${MVPROG-mv}"
+AC_SUBST(MV)
+
+SYNC="${SYNCPROG-sync}"
+AC_SUBST(SYNC)
+
+CP="${CPPROG-cp}"
+AC_SUBST(CP)
+
+GREP="${GREPPROG-grep}"
+AC_SUBST(GREP)
+
+MKDIR="${MKDIRPROG-mkdir}"
+AC_SUBST(MKDIR)
+
+RMDIR="${RMDIRPROG-rmdir}"
+AC_SUBST(RMDIR)
+
+CAT="${CATPROG-cat}"
+AC_SUBST(CAT)
+
+CHMOD="${CHMODPROG-chmod}"
+AC_SUBST(CHMOD)
+
+DATE="${DATEPROG-date}"
+AC_SUBST(DATE)
+
+ECHO="${ECHOPROG-echo}"
+AC_SUBST(ECHO)
+
+ECHODATE="LC_ALL=C LC_TIME='%a %b %e %T %Z %Y' TZ=GMT ${DATE}"
+AC_SUBST(ECHODATE)
+
+AC_MSG_RESULT(done)

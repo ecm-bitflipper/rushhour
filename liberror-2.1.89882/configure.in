@@ -1,0 +1,62 @@
+dnl -*- Mode: M4 -*-
+
+define(_PROGNAME, error)
+
+AC_INIT(_PROGNAME.cpp)
+BASE_VERSION=2.1
+
+define(_USE_ERWIN,   1)
+define(_USE_SYMBOL,  1)
+define(_USE_DMALLOC, 1)
+
+builtin(include, make/acmake.m4)
+
+ER_PREFIX_PROGRAM([lib]_PROGNAME-version)
+
+AC_PROG_RANLIB
+AC_PATH_PROGS(AR, ar)
+
+AC_ARG_ENABLE(replace-printf,
+[  --enable-replace-printf enables redefinition of printf family.]
+[                          Only works for some targets and only]
+[                          for dynamic linking.])
+if test "x$enable_replace_printf" = xyes; then
+    AC_DEFINE([ERR_REPLACE_PRINTF], 1, [Whether to replace the printf family (be careful...)])
+fi
+
+AC_ARG_ENABLE(hostname,
+[  --enable-hostname       enables printing the hostname in the error]
+[                          message.])
+if test "x$enable_hostname" = xyes; then
+    AC_DEFINE([ERR_WITH_HOSTNAME], 1, [Whether to print hostname])
+fi
+
+AC_ARG_WITH(stderr,
+[  --without-stderr        assume that stderr and stdout do not exist.]
+[                          By default, the library:]
+[                          a) defines prototypes xprintf and vxprintf additional]
+[                             to fxprintf and vfxprintf that do not require a stream]
+[                             to be given but instead default to stdout.]
+[                          b) in conjunction with --enable-replace-printf: replace]
+[                             printf and vprintf additional to fprintf and vfprintf.])
+if test ! "x$with_stderr" = xno; then
+    AC_DEFINE([ERR_HAVE_STDERR], 1, [Whether stderr is available.])
+fi
+
+AC_CONFIG_HEADER(
+include/error/err-config.h)
+
+AC_OUTPUT(Makefile
+include/Makefile
+include/_PROGNAME/Makefile
+test/Makefile
+eprintf/Makefile
+doc/Makefile
+errcodes
+make/Defs
+make/Rules
+[lib]_PROGNAME-version.in,
+[chmod 755 errcodes])
+
+echo "*** prefix=$prefix"
+echo "*** datadir=$datadir"
