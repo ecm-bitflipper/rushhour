@@ -80,5 +80,7 @@ Safari:
 
 ./rush_hour --random --safari --pylons
 
-Okay, so coming back to the availability of these games.  You'll need one of them, Railroad Rush Hour is the most available on eBay.  Safari, when it comes up for sale, is a lot more expensive.  I actually never bought Safari.  I made 3D printed game pieces and re-used the Railroad Rush Hour board.  I hope to publish those 3D models soon and will update this README with the link.
+Okay, so coming back to the availability of these games.  You'll need one of them, Railroad Rush Hour is the most available on eBay.  Safari, when it comes up for sale, is a lot more expensive.  I actually never bought Safari.  I made 3D printed game pieces and re-used the Railroad Rush Hour board.  If you would like to do the same you can download the game piece models here:
+
+https://www.printables.com/model/1284831-binary-arts-safari-puzzle-game-pieces
 
