@@ -60,7 +60,7 @@ Save the file and exit vi.
 sudo apt-get update<br>
 sudo apt-get install g++
 
-Now you finally need the code here from github.  This ancient version of Ubuntu won't be able to connect to github because it's encryption capabilities aren't up to modern standards.  You'll need to download it on a more modern OS/browser and maybe use a USB stick to get it over to Ubuntu.  Unzip somewhere in your home folder.
+Now you finally need the code here from github.  This ancient version of Ubuntu won't be able to connect to github because its encryption capabilities aren't up to modern standards.  You'll need to download it on a more modern OS/browser and maybe use a USB stick to get it over to Ubuntu.  Unzip somewhere in your home folder.
 
 cd liberror-2.1.89882<br>
 make<br>
@@ -83,4 +83,8 @@ Safari:
 Okay, so coming back to the availability of these games.  You'll need one of them, Railroad Rush Hour is the most available on eBay.  Safari, when it comes up for sale, is a lot more expensive.  I actually never bought Safari.  I made 3D printed game pieces and re-used the Railroad Rush Hour board.  If you would like to do the same you can download the game piece models here:
 
 https://www.printables.com/model/1284831-binary-arts-safari-puzzle-game-pieces
+
+Lastly, if you like Railroad Rush Hour but find the hollow pieces flimsy and frustrating as I did, you can print the game pieces from these models:
+
+https://www.printables.com/model/1285980-binary-arts-railroad-rush-hour-puzzle-game-pieces
 
